@@ -1,31 +1,10 @@
 %{
-    #include<iostream>
-    #include <fstream>
-    #include<bits/stdc++.h>
-    using namespace std;
-
-    map <string,int> count_map ;
-    map <string,string> token_map ;
-    map <string,int> place_map ;
-    vector <string> sequence_vec ; 
-
-    void update_data(string lexeme, string token){
-
-        if (count_map.find(lexeme)==count_map.end()){
-            //new lexeme 
-            sequence_vec.push_back(lexeme);
-            place_map[lexeme]=sequence_vec.size()-1 ;
-
-        }
-
-        count_map[lexeme]++ ;
-        token_map[lexeme]=token ;
-    }
+    #include <stdio.h>
+    #include <string.h>
+    #include "parser.tab.h"
 
 %}
 
-
-%option noyywrap c++
 %option yylineno
 
 EndOfLineComment "//".*
@@ -130,34 +109,24 @@ Operator "="|">"|"<"|"!"|"~"|"?"|":"|"->"|"=="|">="|"<="|"!="|"&&"|"||"|"++"|"--
 
 %%
 
-{Comment} {cout<<"Comment detected, data rejected!\n";}
-{Keyword} {update_data(YYText(),"Keyword"); }
-{Separator} {update_data(YYText(),"Separator");}
-{Operator} {update_data(YYText(),"Operator");}
+{Comment} {printf("Comment\n");}
+{LineTerminator} {return(EOL);}
+{Keyword} {yylval.name=strdup(yytext);  return (KEYWORD);}
+{Separator} {yylval.name=strdup(yytext);  return (SEPARATOR);}
+{Operator} {yylval.name=strdup(yytext);  return (OPERATOR);}
 
-{Literal} {update_data(YYText(),"Literal"); }
+{Literal} {yylval.name=strdup(yytext);  return (LITERAL); }
 
-{Identifier} {update_data(YYText(),"Identifier");}
+{Identifier} {yylval.name=strdup(yytext);  return (IDENTIFIER);}
 
-{WhiteSpace} {}
-. {cout<<"ERROR: Illegal character \""<<YYText()<<"\" found on line number "<<yylineno<<"\n";}
+{WhiteSpace} { return (WHITESPACE);}
+. {printf("Other\n");return(OTHER);}
 
 %%
 
-int main(int argc ,char** argv){
-
-    FlexLexer* lexer = new yyFlexLexer ;
-    while(lexer->yylex()!=0);
-
-    ofstream stat_file ;    
-    stat_file.open("stats_B.csv");
-    stat_file<<"Lexeme,Token,Count\n";
-
-    for (int i=0;i<sequence_vec.size();i++){
-        stat_file<<sequence_vec[i]<<","<<token_map[sequence_vec[i]]<<","<<count_map[sequence_vec[i]]<<"\n" ;
-    }
-    stat_file.close();
-
-
-    return 0;
+void showError(){
+    printf("Other input");
+}
+int yywrap(){
+    return 1;
 }
