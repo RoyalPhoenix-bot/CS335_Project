@@ -111,7 +111,6 @@ AssignmentOperator "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|=
 {Comment} {printf("Comment\n");}
 {LineTerminator} {continue;}
 {Keyword} {yylval.name=strdup(yytext);  return (KEYWORD);}
-{Separator} {yylval.name=strdup(yytext);  return (SEPARATOR);}
 "."   {yylval.name=strdup(yytext); return (DOT);}
 "super" {yylval.name=strdup(yytext); return (SUPER);}
 "("     {yylval.name=strdup(yytext); return (OPROUND);}
