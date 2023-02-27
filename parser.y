@@ -18,6 +18,17 @@ int yyerror(char *s);
 
 %%
 
+
+Name:
+	SimpleName
+	| QualifiedName
+;
+
+SimpleName: Identifier;
+
+QualifiedName: Name DOT Identifier;
+
+
 Block:
 	OPCURLY CLCURLY |
 	OPCURLY BlockStatements CLCURLY 
@@ -276,17 +287,17 @@ Dims:
 ;
 
 FieldAccess:
-	Primary DOT identifier
-	| SUPER DOT identifier
+	Primary DOT Identifier
+	| SUPER DOT Identifier
 ;
 
 MethodInvocation:
 	Name OPROUND CLROUND
 	| Name OPROUND ArgumentList CLROUND
-	| Primary DOT identifier OPROUND CLROUND
-	| Primary DOT identifier OPROUND ArgumentList CLROUND
-	| SUPER DOT identifier OPROUND CLROUND 
-	| SUPER DOT identifier OPROUND ArgumentList CLROUND
+	| Primary DOT Identifier OPROUND CLROUND
+	| Primary DOT Identifier OPROUND ArgumentList CLROUND
+	| SUPER DOT Identifier OPROUND CLROUND 
+	| SUPER DOT Identifier OPROUND ArgumentList CLROUND
 ;
 
 ArrayAccess:
