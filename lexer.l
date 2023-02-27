@@ -106,11 +106,14 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 
 AssignmentOperator "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="
 
+Modifier    "public"|"private"|"protected"|"static"|"abstract"|"final"|"native"|"synchronized"|"transient"|"volatile"
+
 %%
 
 {Comment} {printf("Comment\n");}
 {LineTerminator} {continue;}
-{Keyword} {yylval.name=strdup(yytext);  return (KEYWORD);}
+{Modifier}  {yylval.name=strdup(yytext); return (Modifier);}
+"package"   {yylval.name=strdup(yytext); return (PACKAGE);}
 "."   {yylval.name=strdup(yytext); return (DOT);}
 "super" {yylval.name=strdup(yytext); return (SUPER);}
 "("     {yylval.name=strdup(yytext); return (OPROUND);}
@@ -149,7 +152,7 @@ AssignmentOperator "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|=
 {Literal} {yylval.name=strdup(yytext);  return (LITERAL); }
 
 {Identifier} {yylval.name=strdup(yytext);  return (IDENTIFIER);}
-
+{Keyword} {yylval.name=strdup(yytext);  return (KEYWORD);}
 {WhiteSpace} { continue;}
 . {printf("Other\n");return(OTHER);}
 

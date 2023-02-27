@@ -11,6 +11,7 @@ int yyerror(char *s);
 
 %token <name> KEYWORD EOL SEPARATOR ASSIGNMENTOPERATOR LITERAL IDENTIFIER WHITESPACE OTHER
 %token <name> OPROUND CLROUND OPSQR CLSQR THIS DOT SUPER NEW PLUS MINUS COLON SEMICOLON TILDA EX QUES ASTERIX FSLASH MOD LSHIFT RSHIFT URSHIFT LT GT LTE GTE INSTANCEOF DOUBLEEQ NOTEQ AND XOR OR DAND DOR 
+%token <name> PACKAGE MODIFIER
 
 %union{
 	char* name;
@@ -18,6 +19,54 @@ int yyerror(char *s);
 
 %%
 
+
+CompilationUnit:
+	PackageDeclaration ImportDeclarations TypeDeclarations
+	| ImportDeclarations TypeDeclarations
+	| PackageDeclaration TypeDeclarations
+	| PackageDeclaration ImportDeclarations
+	| PackageDeclaration
+	| ImportDeclarations
+	| TypeDeclarations
+;
+
+ImportDeclarations:
+	ImportDeclaration
+	| ImportDeclarations ImportDeclaration
+;
+
+TypeDeclarations:
+	TypeDeclaration
+	| TypeDeclarations TypeDeclaration;
+;
+
+PackageDeclaration:
+	PACKAGE Name SEMICOLON;
+
+ImportDeclaration:
+	SingleTypeImportDeclaration
+	| TypeImportOnDemandDeclaration
+;
+
+SingleTypeImportDeclaration:
+	IMPORT Name SEMICOLON;
+
+TypeImportOnDemandDeclaration:
+	IMPORT Name DOT ASTERIX SEMICOLON;
+
+TypeDeclaration:
+	ClassDeclaration
+	| InterfaceDeclaration
+	| SEMICOLON
+;
+
+Modifiers:
+	Modifier
+	| Modifiers Modifier
+;
+
+Modifier:
+	MODIFIER;
 
 Name:
 	SimpleName
