@@ -17,11 +17,6 @@ int yyerror(char *s);
 }
 
 %%
-input: javasyntax;
-
-javasyntax: keywords | javasyntax keywords
-	| identifier | javasyntax identifier
-;
 
 Block:
 	OPCURLY CLCURLY |
@@ -430,13 +425,7 @@ Expression:
 
 ConstantExpression: Expression;
 
-keywords: KEYWORD ;
-
-identifier: IDENTIFIER ;
-
 AssignmentOperator: ASSIGNMENTOPERATOR;
-
-ExpressionName: IDENTIFIER;
 
 ArrayInitializer: OPCURLY VariableInitializers COMMA CLCURLY 
 				| OPCURLY COMMA CLCURLY
@@ -448,13 +437,13 @@ VariableInitializers: VariableInitializer
 					| VariableInitializers COMMA VariableInitializer
 ;
 
-InterfaceDeclaration: Modifiers interface Identifier ExtendsInterfaces InterfaceBody
-					| interface Identifier ExtendsInterfaces InterfaceBody
-					| Modifiers interface Identifier InterfaceBody
-					| interface Identifier InterfaceBody
+InterfaceDeclaration: Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody
+					| INTERFACE Identifier ExtendsInterfaces InterfaceBody
+					| Modifiers INTERFACE Identifier InterfaceBody
+					| INTERFACE Identifier InterfaceBody
 ;
 
-ExtendsInterfaces: extends InterfaceType
+ExtendsInterfaces: EXTENDS InterfaceType
 				 | ExtendsInterfaces COMMA InterfaceType
 ;
 
@@ -476,20 +465,20 @@ ConstantDeclaration: FieldDeclaration
 AbstractMethodDeclaration: MethodHeader SEMICOLON
 ;
 
-ClassDeclaration: Modifiers class Identifier Super Interfaces ClassBody
-				| class Identifier Super Interfaces ClassBody
-				| class Identifier Interfaces ClassBody
-				| class Identifier Super ClassBody
-				| class Identifier ClassBody
-				| Modifiers class Identifier Interfaces ClassBody
-				| Modifiers class Identifier Super ClassBody
-				| Modifiers class Identifier ClassBody
+ClassDeclaration: Modifiers CLASS Identifier Super Interfaces ClassBody
+				| CLASS Identifier Super Interfaces ClassBody
+				| CLASS Identifier Interfaces ClassBody
+				| CLASS Identifier Super ClassBody
+				| CLASS Identifier ClassBody
+				| Modifiers CLASS Identifier Interfaces ClassBody
+				| Modifiers CLASS Identifier Super ClassBody
+				| Modifiers CLASS Identifier ClassBody
 ;
 
-Super: extends ClassType
+Super: EXTENDS ClassType
 ;
 
-Interfaces: implements InterfaceTypeList
+Interfaces: IMPLEMENTS InterfaceTypeList
 ;
 
 InterfaceTypeList: InterfaceType
@@ -538,10 +527,10 @@ MethodHeader: Modifiers Type MethodDeclarator Throws
 			| Type MethodDeclarator Throws
 			| Modifiers Type MethodDeclarator 
 			| Type MethodDeclarator
-			| Modifiers void MethodDeclarator Throws
-			| Modifiers void MethodDeclarator 
-			| void MethodDeclarator Throws
-			| void MethodDeclarator
+			| Modifiers VOID MethodDeclarator Throws
+			| Modifiers VOID MethodDeclarator 
+			| VOID MethodDeclarator Throws
+			| VOID MethodDeclarator
 ;
 
 MethodDeclarator: Identifier OPROUND FormalParameterList CLROUND
@@ -556,7 +545,7 @@ FormalParameterList: FormalParameter
 FormalParameter: Type VariableDeclaratorId
 ;
 
-Throws: throws ClassTypeList
+Throws: THROWS ClassTypeList
 ;
 
 ClassTypeList: ClassType
@@ -566,7 +555,7 @@ ClassTypeList: ClassType
 MethodBody: Block SEMICOLON
 ;
 
-StaticInitializer: static Block
+StaticInitializer: STATIC Block
 ;
 
 ConstructorDeclaration:	Modifiers ConstructorDeclarator Throws ConstructorBody
@@ -585,10 +574,10 @@ ConstructorBody: OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
 			   | OPCURLY CLCURLY
 ;
 
-ExplicitConstructorInvocation: this OPROUND ArgumentList CLROUND SEMICOLON
-							 | this OPROUND CLROUND SEMICOLON
-							 | super OPROUND ArgumentList CLROUND SEMICOLON
-							 | super OPROUND CLROUND SEMICOLON
+ExplicitConstructorInvocation: THIS OPROUND ArgumentList CLROUND SEMICOLON
+							 | THIS OPROUND CLROUND SEMICOLON
+							 | SUPER OPROUND ArgumentList CLROUND SEMICOLON
+							 | SUPER OPROUND CLROUND SEMICOLON
 ;
 
 %%
