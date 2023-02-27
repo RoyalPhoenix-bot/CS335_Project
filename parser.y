@@ -19,6 +19,69 @@ int yyerror(char *s);
 
 %%
 
+Goal:
+	CompilationUnit
+;
+
+Literal:
+	IntegerLiteral|
+	FloatingPointLiteral|
+	BooleanLiteral|
+	CharacterLiteral|
+	StringLiteral|
+	NullLiteral
+;
+
+Type:
+	PrimitiveType|
+	ReferenceType
+;
+
+PrimitiveType:
+	NumericType|
+	BOOLEAN
+;
+
+NumericType:
+	IntegralType|
+	FloatingPointType
+;
+
+IntegralType:
+	BYTE|
+	SHORT|
+	INT|
+	LONG|
+	CHAR
+;
+
+FloatingPointType
+	FLOAT|
+	DOUBLE
+;
+
+ReferenceType:
+	ClassOrInterfaceType|
+	ArrayType
+;
+
+ClassOrInterfaceType:
+	Name
+;
+
+ClassType:
+	ClassOrInterfaceType
+;
+
+InterfaceType:
+	ClassOrInterfaceType 
+;
+
+ArrayType:
+	PrimitiveType OPSQR CLSQR|
+	Name OPSQR CLSQR|
+	ArrayType OPSQR CLSQR
+;
 
 CompilationUnit:
 	PackageDeclaration ImportDeclarations TypeDeclarations
