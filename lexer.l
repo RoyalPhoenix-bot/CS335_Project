@@ -110,7 +110,7 @@ Operator "="|">"|"<"|"!"|"~"|"?"|":"|"->"|"=="|">="|"<="|"!="|"&&"|"||"|"++"|"--
 %%
 
 {Comment} {printf("Comment\n");}
-{LineTerminator} {return(EOL);}
+{LineTerminator} {continue;}
 {Keyword} {yylval.name=strdup(yytext);  return (KEYWORD);}
 {Separator} {yylval.name=strdup(yytext);  return (SEPARATOR);}
 {Operator} {yylval.name=strdup(yytext);  return (OPERATOR);}
@@ -119,7 +119,7 @@ Operator "="|">"|"<"|"!"|"~"|"?"|":"|"->"|"=="|">="|"<="|"!="|"&&"|"||"|"++"|"--
 
 {Identifier} {yylval.name=strdup(yytext);  return (IDENTIFIER);}
 
-{WhiteSpace} { return (WHITESPACE);}
+{WhiteSpace} { continue;}
 . {printf("Other\n");return(OTHER);}
 
 %%

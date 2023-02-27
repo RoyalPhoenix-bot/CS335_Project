@@ -22,9 +22,15 @@ int yyerror(char *s);
 }
 
 %%
-input: identifier
+input: javasyntax;
 
-identifier: IDENTIFIER EOL | IDENTIFIER
+javasyntax: keywords | javasyntax keywords
+	| identifier | javasyntax identifier
+;
+
+keywords: KEYWORD ;
+
+identifier: IDENTIFIER ;
 
 %%
 
