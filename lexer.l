@@ -102,10 +102,9 @@ NullLiteral "null"
 Literal {IntegerLiteral}|{FloatingPointLiteral}|{BooleanLiteral}|{CharacterLiteral}|{StringLiteral}|{TextBlock}|{NullLiteral}
 
 
-Separator "::"|"..."|[(){};,.@]|"["|"]"
+Separator "::"|"..."|[(){};,@]|"["|"]"
 
-
-Operator "="|">"|"<"|"!"|"~"|"?"|":"|"->"|"=="|">="|"<="|"!="|"&&"|"||"|"++"|"--"|"+"|"-"|"*"|"/"|"&"|"|"|"^"|"%"|"<<"|">>"|">>>"|"+="|"-="|"*="|"/="|"&="|"|="|"^="|"%="|"<<="|">>="|">>>="
+AssignmentOperator "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="
 
 %%
 
@@ -113,7 +112,40 @@ Operator "="|">"|"<"|"!"|"~"|"?"|":"|"->"|"=="|">="|"<="|"!="|"&&"|"||"|"++"|"--
 {LineTerminator} {continue;}
 {Keyword} {yylval.name=strdup(yytext);  return (KEYWORD);}
 {Separator} {yylval.name=strdup(yytext);  return (SEPARATOR);}
-{Operator} {yylval.name=strdup(yytext);  return (OPERATOR);}
+"."   {yylval.name=strdup(yytext); return (DOT);}
+"super" {yylval.name=strdup(yytext); return (SUPER);}
+"("     {yylval.name=strdup(yytext); return (OPROUND);}
+")"     {yylval.name=strdup(yytext); return (CLROUND);}
+"["     {yylval.name=strdup(yytext); return (OPSQR);}
+"]"     {yylval.name=strdup(yytext); return (CLSQR);}
+"this"  {yylval.name=strdup(yytext); return (THIS);}
+"new"   {yylval.name=strdup(yytext); return (NEW);}
+"+"     {yylval.name=strdup(yytext); return (PLUS);}
+"-"     {yylval.name=strdup(yytext); return (MINUS);}
+":"     {yylval.name=strdup(yytext); return (COLON);}
+";"     {yylval.name=strdup(yytext); return (SEMICOLON);}
+"~"     {yylval.name=strdup(yytext); return (TILDA);}
+"!"     {yylval.name=strdup(yytext); return (EX);}
+"?"     {yylval.name=strdup(yytext); return (QUES);}
+"*"     {yylval.name=strdup(yytext); return (ASTERIX);}
+"/"     {yylval.name=strdup(yytext); return (FSLASH);}
+"%"     {yylval.name=strdup(yytext); return (MOD);}
+"<<"    {yylval.name=strdup(yytext); return (LSHIFT);}
+">>"    {yylval.name=strdup(yytext); return (RSHIFT);}
+">>>"   {yylval.name=strdup(yytext); return (URSHIFT);}
+"<"     {yylval.name=strdup(yytext); return (LT);}
+">"     {yylval.name=strdup(yytext); return (GT);}
+"<="    {yylval.name=strdup(yytext); return (LTE);}
+">="    {yylval.name=strdup(yytext); return (GTE);}
+"instanceof"    {yylval.name=strdup(yytext); return (INSTANCEOF);}
+"=="    {yylval.name=strdup(yytext); return (DOUBLEEQ);}
+"!="    {yylval.name=strdup(yytext); return (NOTEQ);}
+"&"     {yylval.name=strdup(yytext); return (AND);}
+"^"     {yylval.name=strdup(yytext); return (XOR);}
+"|"     {yylval.name=strdup(yytext); return (OR);}
+"&&"    {yylval.name=strdup(yytext); return (DAND);}
+"||"    {yylval.name=strdup(yytext); return (DOR);}
+{AssignmentOperator} {yylval.name=strdup(yytext);  return (ASSIGNMENTOPERATOR);}
 
 {Literal} {yylval.name=strdup(yytext);  return (LITERAL); }
 
