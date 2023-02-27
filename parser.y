@@ -227,6 +227,159 @@ AssignmentOperator: ASSIGNMENTOPERATOR;
 
 ExpressionName: IDENTIFIER;
 
+ArrayInitializer: OPCURLY VariableInitializers COMMA CLCURLY 
+				| OPCURLY COMMA CLCURLY
+				| OPCURLY VariableInitializers CLCURLY
+				| OPCURLY CLCURLY
+;
+
+VariableInitializers: VariableInitializer
+					| VariableInitializers COMMA VariableInitializer
+;
+
+InterfaceDeclaration: Modifiers interface Identifier ExtendsInterfaces InterfaceBody
+					| interface Identifier ExtendsInterfaces InterfaceBody
+					| Modifiers interface Identifier InterfaceBody
+					| interface Identifier InterfaceBody
+;
+
+ExtendsInterfaces: extends InterfaceType
+				 | ExtendsInterfaces COMMA InterfaceType
+;
+
+InterfaceBody: OPCURLY InterfaceMemberDeclarations CLCURLY
+			 | OPCURLY CLCURLY
+;
+
+InterfaceMemberDeclarations: InterfaceMemberDeclaration
+						   | InterfaceMemberDeclarations InterfaceMemberDeclaration
+;
+
+InterfaceMemberDeclaration: ConstantDeclaration 
+						  |	AbstractMethodDeclaration
+;
+
+ConstantDeclaration: FieldDeclaration
+;
+
+AbstractMethodDeclaration: MethodHeader SEMICOLON
+;
+
+ClassDeclaration: Modifiers class Identifier Super Interfaces ClassBody
+				| class Identifier Super Interfaces ClassBody
+				| class Identifier Interfaces ClassBody
+				| class Identifier Super ClassBody
+				| class Identifier ClassBody
+				| Modifiers class Identifier Interfaces ClassBody
+				| Modifiers class Identifier Super ClassBody
+				| Modifiers class Identifier ClassBody
+;
+
+Super: extends ClassType
+;
+
+Interfaces: implements InterfaceTypeList
+;
+
+InterfaceTypeList: InterfaceType
+				 | InterfaceTypeList COMMA InterfaceType
+;
+
+ClassBody: OPCURLY ClassBodyDeclarationsopt CLCURLY
+;
+
+ClassBodyDeclarations: ClassBodyDeclaration
+					 | ClassBodyDeclarations ClassBodyDeclaration
+;
+
+ClassBodyDeclaration: ClassMemberDeclaration
+					| StaticInitializer
+					| ConstructorDeclaration
+;
+
+ClassMemberDeclaration: FieldDeclaration
+					  | MethodDeclaration
+;
+
+FieldDeclaration: Modifiers Type VariableDeclarators SEMICOLON
+				| Type VariableDeclarators SEMICOLON
+;
+
+VariableDeclarators: VariableDeclarator
+				   | VariableDeclarators COMMA VariableDeclarator
+;
+
+VariableDeclarator: VariableDeclaratorId
+				  | VariableDeclaratorId EQUALTO VariableInitializer
+
+VariableDeclaratorId: Identifier
+					| VariableDeclaratorId OPSQR CLSQR
+;
+
+VariableInitializer: Expression
+				   | ArrayInitializer
+;
+
+MethodDeclaration: MethodHeader MethodBody
+;
+
+MethodHeader: Modifiers Type MethodDeclarator Throws
+			| Type MethodDeclarator Throws
+			| Modifiers Type MethodDeclarator 
+			| Type MethodDeclarator
+			| Modifiers void MethodDeclarator Throws
+			| Modifiers void MethodDeclarator 
+			| void MethodDeclarator Throws
+			| void MethodDeclarator
+;
+
+MethodDeclarator: Identifier OPROUND FormalParameterList CLROUND
+				| Identifier OPROUND CLROUND
+				| MethodDeclarator OPSQR CLSQR
+;
+
+FormalParameterList: FormalParameter
+				   | FormalParameterList COMMA FormalParameter
+;
+
+FormalParameter: Type VariableDeclaratorId
+;
+
+Throws: throws ClassTypeList
+;
+
+ClassTypeList: ClassType
+     		 | ClassTypeList COMMA ClassType
+;
+
+MethodBody: Block SEMICOLON
+;
+
+StaticInitializer: static Block
+;
+
+ConstructorDeclaration:	Modifiers ConstructorDeclarator Throws ConstructorBody
+					  | ConstructorDeclarator Throws ConstructorBody
+					  | ConstructorDeclarator ConstructorBody
+					  | Modifiers ConstructorDeclarator ConstructorBody
+;
+
+ConstructorDeclarator: SimpleName OPROUND FormalParameterList CLROUND
+					 | SimpleName OPROUND CLROUND
+;
+
+ConstructorBody: OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
+			   | OPCURLY BlockStatements CLCURLY
+			   | OPCURLY ExplicitConstructorInvocation CLCURLY
+			   | OPCURLY CLCURLY
+;
+
+ExplicitConstructorInvocation: this OPROUND ArgumentList CLROUND SEMICOLON
+							 | this OPROUND CLROUND SEMICOLON
+							 | super OPROUND ArgumentList CLROUND SEMICOLON
+							 | super OPROUND CLROUND SEMICOLON
+;
+
 %%
 
 int yyerror(char *s)
