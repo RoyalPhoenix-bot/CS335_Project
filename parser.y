@@ -23,6 +23,217 @@ javasyntax: keywords | javasyntax keywords
 	| identifier | javasyntax identifier
 ;
 
+Block:
+	OPCURLY CLCURLY |
+	OPCURLY BlockStatements CLCURLY 
+;
+
+BlockStatements: BlockStatement |
+	BlockStatements BlockStatement
+;
+
+BlockStatement:
+	LocalVariableDeclarationStatement
+	Statement
+;
+
+LocalVariableDeclarationStatement:
+	LocalVariableDeclaration
+;
+
+LocalVariableDeclaration:
+	Type VariableDeclarators
+;
+
+Statement:
+	StatementWithoutTrailingSubstatement|
+	LabeledStatement|
+	IfThenStatement|
+	IfThenElseStatement|
+	WhileStatement|
+	ForStatement
+;
+
+StatementNoShortIf:
+	StatementWithoutTrailingSubstatement|
+	LabeledStatementNoShortIf|
+	IfThenElseStatementNoShortIf|
+	WhileStatementNoShortIf|
+	ForStatementNoShortIf
+;
+
+StatementWithoutTrailingSubstatement:
+	Block|
+	EmptyStatement|
+	ExpressionStatement|
+	SwitchStatement|
+	DoStatement|
+	BreakStatement|
+	ContinueStatement|
+	ReturnStatement|
+	SynchronizedStatement|
+	ThrowStatement|
+	TryStatement
+%%
+
+EmptyStatement:
+	SEMICOLON
+;
+
+LabeledStatement:
+	Identifier COLON Statement
+;
+
+LabeledStatementNoShortIf:
+	Identifier COLON StatementNoShortIf
+;
+
+ExpressionStatement:
+	StatementExpression SEMICOLON
+;
+
+StatementExpression:
+	Assignment|
+	PreIncrementExpression|
+	PreDecrementExpression|
+	PostIncrementExpression|
+	PostDecrementExpression|
+	MethodInvocation|
+	ClassInstanceCreationExpression
+;
+
+IfThenStatement:
+	IF OPROUND Expression CLROUND Statement
+;
+
+IfThenElseStatement:
+	IF OPROUND Expression CLROUND StatementNoShortIf ELSE Statement
+;
+
+IfThenElseStatementNoShortIf:
+	IF OPROUND Expression CLROUND StatementNoShortIf ELSE StatementNoShortIf
+;
+
+SwitchStatement:
+	SWITCH OPROUND Expression CLROUND SwitchBlock
+;
+
+SwitchBlock:
+	OPCURLY CLCURLY|
+	OPCURLY SwitchLabels CLCURLY|
+	OPCURLY SwitchBlockStatementGroups CLCURLY|
+	OPCURLY SwitchBlockStatementGroups SwitchLabels CLCURLY
+;
+
+SwitchBlockStatementGroups:
+	SwitchBlockStatementGroup|
+	SwitchBlockStatementGroups SwitchBlockStatementGroup
+;
+
+SwitchBlockStatementGroup:
+	SwitchLabels BlockStatements
+;
+
+SwitchLabels:
+	SwitchLabel|
+	SwitchLabels SwitchLabel
+;
+
+SwitchLabel
+	CASE ConstantExpression COLON|
+	DEFAULT COLON
+;
+
+WhileStatement:
+	WHILE OPROUND Expression CLROUND Statement
+;
+
+WhileStatementNoShortIf:
+	WHILE OPROUND Expression CLROUND StatementNoShortIf
+;
+
+DoStatement:
+	DO Statement WHILE OPROUND Expression CLROUND SEMICOLON
+;
+
+ForStatement:
+	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement|
+	FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement|
+	FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND Statement|
+	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND Statement|
+	FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND Statement|
+	FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND Statement|
+	FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND Statement|
+	FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND Statement
+;
+
+ForStatementNoShortIf:
+	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf|
+	FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf|
+	FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf|
+	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf|
+	FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf|
+	FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf|
+	FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf|
+	FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf
+;
+
+ForInit:
+	StatementExpressionList|
+	LocalVariableDeclaration
+;
+
+ForUpdate:
+	StatementExpressionList
+;
+
+StatementExpressionList:
+	StatementExpression|
+	StatementExpressionList COMMA StatementExpression
+;
+
+BreakStatement:
+	BREAK Identifier SEMICOLON|
+	BREAK SEMICOLON|
+;
+
+ContinueStatement:
+	CONTINUE Identifier SEMICOLON|
+	CONTINUE SEMICOLON
+;
+
+ReturnStatement:
+	RETURN Expression SEMICOLON|
+	RETURN SEMICOLON
+;
+
+ThrowStatement:
+	THROW Expression SEMICOLON
+;
+
+SynchronizedStatement:
+	SYNCHRONIZED OPROUND Expression CLROUND Block
+;
+
+TryStatement:
+	TRY Block Catches|
+	TRY Block Catches FINALLY| 
+	TRY Block FINALLY| 
+;
+
+Catches:
+	CatchClause|
+	Catches CatchClause
+;
+
+CatchClause:
+	CATCH OPROUND FormalParameter CLROUND Block
+;
+
+Finally:
+	FINALLY Block
+;
+
 Primary:
 	PrimaryNoNewArray
 	| ArrayCreationExpression
