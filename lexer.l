@@ -106,13 +106,13 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 
 AssignmentOperator "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="
 
-Modifier    "public"|"private"|"protected"|"static"|"abstract"|"final"|"native"|"synchronized"|"transient"|"volatile"
+Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transient"|"volatile"
 
 %%
 
 {Comment} {printf("Comment\n");}
 {LineTerminator} {continue;}
-{Modifier}     {yylval.name=strdup(yytext); return (Modifier);}
+{Modifier_}     {yylval.name=strdup(yytext); return (MODIFIER_);}
 "package"      {yylval.name=strdup(yytext); return (PACKAGE);}
 "."            {yylval.name=strdup(yytext); return (DOT);}
 "super"        {yylval.name=strdup(yytext); return (SUPER);}
