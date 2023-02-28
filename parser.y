@@ -303,11 +303,11 @@ PostfixExpression:
 ;
 
 PostIncrementExpression:
-	PostfixExpression PLUS PLUS
+	PostfixExpression DPLUS
 ;
 
 PostDecrementExpression:
-	PostfixExpression MINUS MINUS
+	PostfixExpression DMINUS
 ;
 
 UnaryExpression:

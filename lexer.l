@@ -113,7 +113,7 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 {Comment} {printf("Comment\n");}
 {LineTerminator} {continue;}
 "."            {yylval.name=strdup(yytext); printf("Got a DOT\n"); return (DOT);}
-{IntegerLiteral} {yylval.name=strdup(yytext); return (INTEGERLITERAL);}
+{IntegerLiteral} {yylval.name=strdup(yytext); printf("integer received: %s\n",yytext); return (INTEGERLITERAL);}
 {FloatingPointLiteral} {yylval.name=strdup(yytext); return (FLOATINGPOINTLITERAL);}
 {BooleanLiteral} {yylval.name=strdup(yytext); return (BOOLEANLITERAL);}
 {CharacterLiteral} {yylval.name=strdup(yytext); return (CHARACTERLITERAL);}
