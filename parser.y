@@ -227,7 +227,7 @@ Primary:
 ;
 
 PrimaryNoNewArray:
-	LITERAL
+	Literal
 	| THIS
 	| OPROUND Expression CLROUND
 	| ClassInstanceCreationExpression
@@ -712,8 +712,8 @@ SynchronizedStatement:
 ;
 
 TryStatement: TRY Block Catches
-			| TRY Block Catches FINALLY
-			| TRY Block FINALLY
+			| TRY Block Catches Finally
+			| TRY Block Finally
 ;
 
 Catches:
@@ -725,8 +725,7 @@ CatchClause:
 	CATCH OPROUND FormalParameter CLROUND Block
 ;
 
-Finally:
-	FINALLY Block
+Finally: FINALLY Block
 ;
 
 
