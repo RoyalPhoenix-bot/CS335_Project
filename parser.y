@@ -112,7 +112,7 @@ Name:
 SimpleName: Identifier
 ;
 
-QualifiedName: Name DOT Identifier
+QualifiedName: Name DOT Identifier | THIS DOT Identifier
 ;
 
 CompilationUnit:
