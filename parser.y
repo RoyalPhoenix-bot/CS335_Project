@@ -1,17 +1,15 @@
 %{
-
 #include<bits/stdc++.h>
+// #define YYDEBUG 1
 using namespace std;
 
 int yylex();
 int yyerror(char *s);
-
-
 %}
 
 %token <name> SUPER IF ELSE SWITCH CASE DEFAULT WHILE DO FOR BREAK THROW SYNCHRONIZED TRY FINALLY CATCH VOID STATIC THROWS EXTENDS IMPLEMENTS CLASS INTERFACE BOOLEAN SHORT INT LONG CHAR FLOAT DOUBLE INSTANCEOF THIS NEW 
 %token <name> EOL SEPARATOR ASSIGNMENTOPERATOR LITERAL IDENTIFIER WHITESPACE OTHER
-%token <name> OPROUND CLROUND OPSQR CLSQR DOT PLUS MINUS COLON SEMICOLON TILDA EX QUES ASTERIX FSLASH MOD LSHIFT RSHIFT URSHIFT LT GT LTE GTE DOUBLEEQ NOTEQ AND XOR OR DAND DOR 
+%token <name> OPROUND CLROUND OPSQR CLSQR DOT PLUS MINUS COLON SEMICOLON TILDA EX QUES ASTERIX FSLASH MOD LSHIFT RSHIFT URSHIFT LT GT LTE GTE DOUBLEEQ NOTEQ AND XOR OR DAND DOR DPLUS DMINUS
 %token <name> PACKAGE MODIFIER_ INTEGERLITERAL FLOATINGPOINTLITERAL BOOLEANLITERAL CHARACTERLITERAL STRINGLITERAL NULLLITERAL IMPORT BYTE OPCURLY CLCURLY COMMA EQUALTO CONTINUE RETURN
 
 %union{
@@ -25,12 +23,12 @@ Goal:
 ;
 
 Literal:
-	IntegerLiteral|
-	FloatingPointLiteral|
-	BooleanLiteral|
-	CharacterLiteral|
-	StringLiteral|
-	NullLiteral
+	IntegerLiteral 
+	| FloatingPointLiteral 
+	| BooleanLiteral 
+	| CharacterLiteral 
+	| StringLiteral 
+	| NullLiteral
 ;
 
 IntegerLiteral: INTEGERLITERAL
@@ -55,36 +53,36 @@ Identifier: IDENTIFIER
 ;
 
 Type:
-	PrimitiveType|
-	ReferenceType
+	PrimitiveType 
+	| ReferenceType
 ;
 
 PrimitiveType:
-	NumericType|
-	BOOLEAN
+	NumericType 
+	| BOOLEAN
 ;
 
 NumericType:
-	IntegralType|
-	FloatingPointType
+	IntegralType 
+	| FloatingPointType
 ;
 
 IntegralType:
-	BYTE|
-	SHORT|
-	INT|
-	LONG|
-	CHAR
+	BYTE 
+	| SHORT 
+	| INT 
+	| LONG 
+	| CHAR
 ;
 
 FloatingPointType:
-	FLOAT|
-	DOUBLE
+	FLOAT 
+	| DOUBLE
 ;
 
 ReferenceType:
-	ClassOrInterfaceType|
-	ArrayType
+	ClassOrInterfaceType 
+	| ArrayType
 ;
 
 ClassOrInterfaceType:
@@ -100,9 +98,9 @@ InterfaceType:
 ;
 
 ArrayType:
-	PrimitiveType OPSQR CLSQR|
-	Name OPSQR CLSQR|
-	ArrayType OPSQR CLSQR
+	PrimitiveType OPSQR CLSQR 
+	| Name OPSQR CLSQR 
+	| ArrayType OPSQR CLSQR
 ;
 
 
@@ -118,7 +116,7 @@ QualifiedName: Name DOT Identifier
 ;
 
 CompilationUnit:
-	PackageDeclaration ImportDeclarations TypeDeclarations
+	| PackageDeclaration ImportDeclarations TypeDeclarations
 	| ImportDeclarations TypeDeclarations
 	| PackageDeclaration TypeDeclarations
 	| PackageDeclaration ImportDeclarations
@@ -134,7 +132,7 @@ ImportDeclarations:
 
 TypeDeclarations:
 	TypeDeclaration
-	| TypeDeclarations TypeDeclaration;
+	| TypeDeclarations TypeDeclaration
 ;
 
 PackageDeclaration:
@@ -151,7 +149,8 @@ SingleTypeImportDeclaration:
 TypeImportOnDemandDeclaration:
 	IMPORT Name DOT ASTERIX SEMICOLON;
 
-TypeDeclaration: ClassDeclaration
+TypeDeclaration: 
+	ClassDeclaration
 	| InterfaceDeclaration
 	| SEMICOLON
 ;
@@ -169,14 +168,15 @@ Modifier_:
 	MODIFIER_;
 
 
-ClassDeclaration: Modifiers CLASS Identifier Super Interfaces ClassBody
-				| CLASS Identifier Super Interfaces ClassBody
-				| CLASS Identifier Interfaces ClassBody
-				| CLASS Identifier Super ClassBody
-				| CLASS Identifier ClassBody
-				| Modifiers CLASS Identifier Interfaces ClassBody
-				| Modifiers CLASS Identifier Super ClassBody
-				| Modifiers CLASS Identifier ClassBody
+ClassDeclaration: 
+	Modifiers CLASS Identifier Super Interfaces ClassBody
+	| CLASS Identifier Super Interfaces ClassBody
+	| CLASS Identifier Interfaces ClassBody
+	| CLASS Identifier Super ClassBody
+	| CLASS Identifier ClassBody
+	| Modifiers CLASS Identifier Interfaces ClassBody
+	| Modifiers CLASS Identifier Super ClassBody
+	| Modifiers CLASS Identifier ClassBody
 ;
 
 Super: EXTENDS ClassType
@@ -185,40 +185,49 @@ Super: EXTENDS ClassType
 Interfaces: IMPLEMENTS InterfaceTypeList
 ;
 
-InterfaceTypeList: InterfaceType
-				 | InterfaceTypeList COMMA InterfaceType
+InterfaceTypeList: 
+	InterfaceType
+	| InterfaceTypeList COMMA InterfaceType
 ;
 
-ClassBody: OPCURLY ClassBodyDeclarations CLCURLY
-		 | OPCURLY CLCURLY
+ClassBody: 
+	OPCURLY ClassBodyDeclarations CLCURLY
+	| OPCURLY CLCURLY
 ;
 
-ClassBodyDeclarations: ClassBodyDeclaration
-					 | ClassBodyDeclarations ClassBodyDeclaration
+ClassBodyDeclarations: 
+	ClassBodyDeclaration
+	| ClassBodyDeclarations ClassBodyDeclaration
 ;
 
-ClassBodyDeclaration: ClassMemberDeclaration
-					| StaticInitializer
-					| ConstructorDeclaration
+ClassBodyDeclaration: 
+	ClassMemberDeclaration
+	| StaticInitializer
+	| ConstructorDeclaration
 ;
 
-ClassMemberDeclaration: FieldDeclaration
-					  | MethodDeclaration
+ClassMemberDeclaration: 
+	FieldDeclaration
+	| MethodDeclaration
 ;
 
-FieldDeclaration: Modifiers Type VariableDeclarators SEMICOLON
-				| Type VariableDeclarators SEMICOLON
+FieldDeclaration: 
+	Modifiers Type VariableDeclarators SEMICOLON
+	| Type VariableDeclarators SEMICOLON
 ;
 
-VariableDeclarators: VariableDeclarator
-				   | VariableDeclarators COMMA VariableDeclarator
+VariableDeclarators: 
+	VariableDeclarator
+	| VariableDeclarators COMMA VariableDeclarator
 ;
 
-VariableDeclarator: VariableDeclaratorId
-				  | VariableDeclaratorId EQUALTO VariableInitializer
+VariableDeclarator: 
+	VariableDeclaratorId
+	| VariableDeclaratorId EQUALTO VariableInitializer
 
-VariableDeclaratorId: Identifier
-					| VariableDeclaratorId OPSQR CLSQR
+VariableDeclaratorId: 
+	Identifier
+	| VariableDeclaratorId OPSQR CLSQR
 ;
 
 Primary:
@@ -310,11 +319,11 @@ UnaryExpression:
 ;
 
 PreIncrementExpression:
-	PLUS PLUS UnaryExpression
+	DPLUS UnaryExpression
 ;
 
 PreDecrementExpression:
-	MINUS MINUS UnaryExpression
+	DMINUS UnaryExpression
 ;
 
 UnaryExpressionNotPlusMinus:
@@ -417,30 +426,34 @@ Expression:
 
 ConstantExpression: Expression;
 
-VariableInitializer: Expression
-				   | ArrayInitializer
+VariableInitializer: 
+	Expression
+	| ArrayInitializer
 ;
 
 MethodDeclaration: MethodHeader MethodBody
 ;
 
-MethodHeader: Modifiers Type MethodDeclarator Throws
-			| Type MethodDeclarator Throws
-			| Modifiers Type MethodDeclarator 
-			| Type MethodDeclarator
-			| Modifiers VOID MethodDeclarator Throws
-			| Modifiers VOID MethodDeclarator 
-			| VOID MethodDeclarator Throws
-			| VOID MethodDeclarator
+MethodHeader: 
+	Modifiers Type MethodDeclarator Throws
+	| Type MethodDeclarator Throws
+	| Modifiers Type MethodDeclarator 
+	| Type MethodDeclarator
+	| Modifiers VOID MethodDeclarator Throws
+	| Modifiers VOID MethodDeclarator 
+	| VOID MethodDeclarator Throws
+	| VOID MethodDeclarator
 ;
 
-MethodDeclarator: Identifier OPROUND FormalParameterList CLROUND
-				| Identifier OPROUND CLROUND
-				| MethodDeclarator OPSQR CLSQR
+MethodDeclarator: 
+	Identifier OPROUND FormalParameterList CLROUND
+	| Identifier OPROUND CLROUND
+	| MethodDeclarator OPSQR CLSQR
 ;
 
-FormalParameterList: FormalParameter
-				   | FormalParameterList COMMA FormalParameter
+FormalParameterList: 
+	FormalParameter
+	| FormalParameterList COMMA FormalParameter
 ;
 
 FormalParameter: Type VariableDeclaratorId
@@ -449,59 +462,71 @@ FormalParameter: Type VariableDeclaratorId
 Throws: THROWS ClassTypeList
 ;
 
-ClassTypeList: ClassType
-     		 | ClassTypeList COMMA ClassType
+ClassTypeList: 
+	ClassType
+    | ClassTypeList COMMA ClassType
 ;
 
-MethodBody: Block SEMICOLON
+MethodBody: 
+	Block 
+	| SEMICOLON
 ;
 
 StaticInitializer: STATIC Block
 ;
 
-ConstructorDeclaration:	Modifiers ConstructorDeclarator Throws ConstructorBody
-					  | ConstructorDeclarator Throws ConstructorBody
-					  | ConstructorDeclarator ConstructorBody
-					  | Modifiers ConstructorDeclarator ConstructorBody
+ConstructorDeclaration:	
+	Modifiers ConstructorDeclarator Throws ConstructorBody
+	| ConstructorDeclarator Throws ConstructorBody
+	| ConstructorDeclarator ConstructorBody
+	| Modifiers ConstructorDeclarator ConstructorBody
 ;
 
-ConstructorDeclarator: SimpleName OPROUND FormalParameterList CLROUND
-					 | SimpleName OPROUND CLROUND
+ConstructorDeclarator: 
+	SimpleName OPROUND FormalParameterList CLROUND
+	| SimpleName OPROUND CLROUND
 ;
 
-ConstructorBody: OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
-			   | OPCURLY BlockStatements CLCURLY
-			   | OPCURLY ExplicitConstructorInvocation CLCURLY
-			   | OPCURLY CLCURLY
+ConstructorBody: 
+	OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
+	| OPCURLY BlockStatements CLCURLY
+	| OPCURLY ExplicitConstructorInvocation CLCURLY
+	| OPCURLY CLCURLY
 ;
 
-ExplicitConstructorInvocation: THIS OPROUND ArgumentList CLROUND SEMICOLON
-							 | THIS OPROUND CLROUND SEMICOLON
-							 | SUPER OPROUND ArgumentList CLROUND SEMICOLON
-							 | SUPER OPROUND CLROUND SEMICOLON
+ExplicitConstructorInvocation: 
+	THIS OPROUND ArgumentList CLROUND SEMICOLON
+	| THIS OPROUND CLROUND SEMICOLON
+	| SUPER OPROUND ArgumentList CLROUND SEMICOLON
+	| SUPER OPROUND CLROUND SEMICOLON
 ;
 
 
-InterfaceDeclaration: Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody
-					| INTERFACE Identifier ExtendsInterfaces InterfaceBody
-					| Modifiers INTERFACE Identifier InterfaceBody
-					| INTERFACE Identifier InterfaceBody
+InterfaceDeclaration: 
+	Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody
+	| INTERFACE Identifier ExtendsInterfaces InterfaceBody
+	| Modifiers INTERFACE Identifier InterfaceBody
+	| INTERFACE Identifier InterfaceBody
 ;
 
-ExtendsInterfaces: EXTENDS InterfaceType
-				 | ExtendsInterfaces COMMA InterfaceType
+ExtendsInterfaces: 
+	EXTENDS InterfaceType
+	| ExtendsInterfaces COMMA InterfaceType
 ;
 
-InterfaceBody: OPCURLY InterfaceMemberDeclarations CLCURLY
-			 | OPCURLY CLCURLY
+InterfaceBody: 
+	OPCURLY InterfaceMemberDeclarations CLCURLY
+	| OPCURLY CLCURLY
 ;
 
-InterfaceMemberDeclarations: InterfaceMemberDeclaration
-						   | InterfaceMemberDeclarations InterfaceMemberDeclaration
+InterfaceMemberDeclarations: 
+	InterfaceMemberDeclaration
+	| InterfaceMemberDeclarations InterfaceMemberDeclaration
 ;
 
-InterfaceMemberDeclaration: ConstantDeclaration 
-						  |	AbstractMethodDeclaration
+InterfaceMemberDeclaration: 
+	ConstantDeclaration 
+	| AbstractMethodDeclaration
 ;
 
 ConstantDeclaration: FieldDeclaration
@@ -510,32 +535,35 @@ ConstantDeclaration: FieldDeclaration
 AbstractMethodDeclaration: MethodHeader SEMICOLON
 ;
 
-ArrayInitializer: OPCURLY VariableInitializers COMMA CLCURLY 
-				| OPCURLY COMMA CLCURLY
-				| OPCURLY VariableInitializers CLCURLY
-				| OPCURLY CLCURLY
+ArrayInitializer: 
+	OPCURLY VariableInitializers COMMA CLCURLY 
+	| OPCURLY COMMA CLCURLY
+	| OPCURLY VariableInitializers CLCURLY
+	| OPCURLY CLCURLY
 ;
 
-VariableInitializers: VariableInitializer
-					| VariableInitializers COMMA VariableInitializer
+VariableInitializers: 
+	VariableInitializer
+	| VariableInitializers COMMA VariableInitializer
 ;
 
 Block:
-	OPCURLY CLCURLY |
-	OPCURLY BlockStatements CLCURLY 
+	OPCURLY CLCURLY 
+	| OPCURLY BlockStatements CLCURLY 
 ;
 
-BlockStatements: BlockStatement |
-	BlockStatements BlockStatement
+BlockStatements: 
+	BlockStatement 
+	| BlockStatements BlockStatement
 ;
 
 BlockStatement:
 	LocalVariableDeclarationStatement
-	Statement
+	| Statement
 ;
 
 LocalVariableDeclarationStatement:
-	LocalVariableDeclaration
+	LocalVariableDeclaration SEMICOLON
 ;
 
 LocalVariableDeclaration:
@@ -543,34 +571,34 @@ LocalVariableDeclaration:
 ;
 
 Statement:
-	StatementWithoutTrailingSubstatement|
-	LabeledStatement|
-	IfThenStatement|
-	IfThenElseStatement|
-	WhileStatement|
-	ForStatement
+	StatementWithoutTrailingSubstatement
+	| LabeledStatement
+	| IfThenStatement
+	| IfThenElseStatement
+	| WhileStatement
+	| ForStatement
 ;
 
 StatementNoShortIf:
-	StatementWithoutTrailingSubstatement|
-	LabeledStatementNoShortIf|
-	IfThenElseStatementNoShortIf|
-	WhileStatementNoShortIf|
-	ForStatementNoShortIf
+	StatementWithoutTrailingSubstatement
+	| LabeledStatementNoShortIf
+	| IfThenElseStatementNoShortIf
+	| WhileStatementNoShortIf
+	| ForStatementNoShortIf
 ;
 
 StatementWithoutTrailingSubstatement:
-	Block|
-	EmptyStatement|
-	ExpressionStatement|
-	SwitchStatement|
-	DoStatement|
-	BreakStatement|
-	ContinueStatement|
-	ReturnStatement|
-	SynchronizedStatement|
-	ThrowStatement|
-	TryStatement
+	Block
+	| EmptyStatement
+	| ExpressionStatement
+	| SwitchStatement
+	| DoStatement
+	| BreakStatement
+	| ContinueStatement
+	| ReturnStatement
+	| SynchronizedStatement
+	| ThrowStatement
+	| TryStatement
 
 EmptyStatement:
 	SEMICOLON
@@ -589,13 +617,13 @@ ExpressionStatement:
 ;
 
 StatementExpression:
-	Assignment|
-	PreIncrementExpression|
-	PreDecrementExpression|
-	PostIncrementExpression|
-	PostDecrementExpression|
-	MethodInvocation|
-	ClassInstanceCreationExpression
+	Assignment
+	| PreIncrementExpression
+	| PreDecrementExpression
+	| PostIncrementExpression
+	| PostDecrementExpression
+	| MethodInvocation
+	| ClassInstanceCreationExpression
 ;
 
 IfThenStatement:
@@ -615,15 +643,15 @@ SwitchStatement:
 ;
 
 SwitchBlock:
-	OPCURLY CLCURLY|
-	OPCURLY SwitchLabels CLCURLY|
-	OPCURLY SwitchBlockStatementGroups CLCURLY|
-	OPCURLY SwitchBlockStatementGroups SwitchLabels CLCURLY
+	OPCURLY CLCURLY
+	| OPCURLY SwitchLabels CLCURLY
+	| OPCURLY SwitchBlockStatementGroups CLCURLY
+	| OPCURLY SwitchBlockStatementGroups SwitchLabels CLCURLY
 ;
 
 SwitchBlockStatementGroups:
-	SwitchBlockStatementGroup|
-	SwitchBlockStatementGroups SwitchBlockStatementGroup
+	SwitchBlockStatementGroup
+	| SwitchBlockStatementGroups SwitchBlockStatementGroup
 ;
 
 SwitchBlockStatementGroup:
@@ -631,13 +659,13 @@ SwitchBlockStatementGroup:
 ;
 
 SwitchLabels:
-	SwitchLabel|
-	SwitchLabels SwitchLabel
+	SwitchLabel
+	| SwitchLabels SwitchLabel
 ;
 
 SwitchLabel:
-	CASE ConstantExpression COLON|
-	DEFAULT COLON
+	CASE ConstantExpression COLON
+	| DEFAULT COLON
 ;
 
 WhileStatement:
@@ -653,30 +681,30 @@ DoStatement:
 ;
 
 ForStatement:
-	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement|
-	FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement|
-	FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND Statement|
-	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND Statement|
-	FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND Statement|
-	FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND Statement|
-	FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND Statement|
-	FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND Statement
+	  FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND Statement
+	| FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND Statement
+	| FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND Statement
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND Statement
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND Statement
+	| FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND Statement
 ;
 
 ForStatementNoShortIf:
-	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf|
-	FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf|
-	FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf|
-	FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf|
-	FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf|
-	FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf|
-	FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf|
-	FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf
+	  FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf
+	| FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf
+	| FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf
+	| FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf
 ;
 
 ForInit:
-	StatementExpressionList|
-	LocalVariableDeclaration
+	StatementExpressionList 
+	| LocalVariableDeclaration
 ;
 
 ForUpdate:
@@ -684,23 +712,23 @@ ForUpdate:
 ;
 
 StatementExpressionList:
-	StatementExpression|
-	StatementExpressionList COMMA StatementExpression
+	StatementExpression 
+	| StatementExpressionList COMMA StatementExpression
 ;
 
 BreakStatement:
-	BREAK Identifier SEMICOLON|
-	BREAK SEMICOLON|
+	BREAK Identifier SEMICOLON
+	| BREAK SEMICOLON
 ;
 
 ContinueStatement:
-	CONTINUE Identifier SEMICOLON|
-	CONTINUE SEMICOLON
+	CONTINUE Identifier SEMICOLON
+	| CONTINUE SEMICOLON
 ;
 
 ReturnStatement:
-	RETURN Expression SEMICOLON|
-	RETURN SEMICOLON
+	RETURN Expression SEMICOLON
+	| RETURN SEMICOLON
 ;
 
 ThrowStatement:
@@ -711,14 +739,15 @@ SynchronizedStatement:
 	SYNCHRONIZED OPROUND Expression CLROUND Block
 ;
 
-TryStatement: TRY Block Catches
-			| TRY Block Catches Finally
-			| TRY Block Finally
+TryStatement: 
+	TRY Block Catches
+	| TRY Block Catches Finally
+	| TRY Block Finally
 ;
 
 Catches:
-	CatchClause|
-	Catches CatchClause
+	CatchClause
+	| Catches CatchClause
 ;
 
 CatchClause:
@@ -739,8 +768,7 @@ int yyerror(char *s)
 
 int main()
 {
-    yyparse();
-    
-    
+	// YYDEBUG = 1;
+    yyparse(); 
     return 0;
 }
