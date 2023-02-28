@@ -157,6 +157,8 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 "instanceof"   {yylval.name=strdup(yytext); return (INSTANCEOF);}
 "this"         {yylval.name=strdup(yytext); return (THIS);}
 "new"          {yylval.name=strdup(yytext); return (NEW);}
+"continue"     {yylval.name=strdup(yytext); return (CONTINUE);}
+"return"       {yylval.name=strdup(yytext); return (RETURN);}
 "{"     {yylval.name=strdup(yytext); return (OPCURLY);}
 "}"     {yylval.name=strdup(yytext); return (CLCURLY);}
 "("     {yylval.name=strdup(yytext); return (OPROUND);}

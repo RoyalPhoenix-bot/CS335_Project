@@ -12,7 +12,7 @@ int yyerror(char *s);
 %token <name> SUPER IF ELSE SWITCH CASE DEFAULT WHILE DO FOR BREAK THROW SYNCHRONIZED TRY FINALLY CATCH VOID STATIC THROWS EXTENDS IMPLEMENTS CLASS INTERFACE BOOLEAN SHORT INT LONG CHAR FLOAT DOUBLE INSTANCEOF THIS NEW 
 %token <name> EOL SEPARATOR ASSIGNMENTOPERATOR LITERAL IDENTIFIER WHITESPACE OTHER
 %token <name> OPROUND CLROUND OPSQR CLSQR DOT PLUS MINUS COLON SEMICOLON TILDA EX QUES ASTERIX FSLASH MOD LSHIFT RSHIFT URSHIFT LT GT LTE GTE DOUBLEEQ NOTEQ AND XOR OR DAND DOR 
-%token <name> PACKAGE MODIFIER_ INTEGERLITERAL FLOATINGPOINTLITERAL BOOLEANLITERAL CHARACTERLITERAL STRINGLITERAL NULLLITERAL IMPORT BYTE OPCURLY CLCURLY COMMA EQUALTO
+%token <name> PACKAGE MODIFIER_ INTEGERLITERAL FLOATINGPOINTLITERAL BOOLEANLITERAL CHARACTERLITERAL STRINGLITERAL NULLLITERAL IMPORT BYTE OPCURLY CLCURLY COMMA EQUALTO CONTINUE RETURN
 
 %union{
 	char* name;
@@ -219,6 +219,71 @@ VariableDeclarator: VariableDeclaratorId
 
 VariableDeclaratorId: Identifier
 					| VariableDeclaratorId OPSQR CLSQR
+;
+
+Primary:
+	PrimaryNoNewArray
+	| ArrayCreationExpression
+;
+
+PrimaryNoNewArray:
+	LITERAL
+	| THIS
+	| OPROUND Expression CLROUND
+	| ClassInstanceCreationExpression
+	| FieldAccess
+	| ArrayAccess
+	| MethodInvocation
+;
+
+ClassInstanceCreationExpression:
+	NEW ClassType OPROUND CLROUND
+	| NEW ClassType OPROUND ArgumentList CLROUND
+;
+
+ArgumentList:
+	Expression
+	| ArgumentList COMMA Expression
+;
+
+ArrayCreationExpression:
+	NEW PrimitiveType DimExprs
+	| NEW PrimitiveType DimExprs Dims
+	| NEW ClassOrInterfaceType DimExprs
+	| NEW ClassOrInterfaceType DimExprs Dims
+;
+
+DimExprs:
+	DimExpr
+	| DimExprs DimExpr
+;
+
+DimExpr:
+	OPSQR Expression CLSQR
+;
+
+Dims:
+	OPSQR CLSQR
+	| Dims OPSQR CLSQR
+;
+
+FieldAccess:
+	Primary DOT Identifier
+	| SUPER DOT Identifier
+;
+
+MethodInvocation:
+	Name OPROUND CLROUND
+	| Name OPROUND ArgumentList CLROUND
+	| Primary DOT Identifier OPROUND CLROUND
+	| Primary DOT Identifier OPROUND ArgumentList CLROUND
+	| SUPER DOT Identifier OPROUND CLROUND 
+	| SUPER DOT Identifier OPROUND ArgumentList CLROUND
+;
+
+ArrayAccess:
+	Name OPSQR Expression CLSQR
+	| PrimaryNoNewArray OPSQR Expression CLSQR
 ;
 
 PostfixExpression:
@@ -506,7 +571,6 @@ StatementWithoutTrailingSubstatement:
 	SynchronizedStatement|
 	ThrowStatement|
 	TryStatement
-%%
 
 EmptyStatement:
 	SEMICOLON
@@ -571,7 +635,7 @@ SwitchLabels:
 	SwitchLabels SwitchLabel
 ;
 
-SwitchLabel
+SwitchLabel:
 	CASE ConstantExpression COLON|
 	DEFAULT COLON
 ;
@@ -665,70 +729,6 @@ Finally:
 	FINALLY Block
 ;
 
-Primary:
-	PrimaryNoNewArray
-	| ArrayCreationExpression
-;
-
-PrimaryNoNewArray:
-	LITERAL
-	| THIS
-	| OPROUND Expression CLROUND
-	| ClassInstanceCreationExpression
-	| FieldAccess
-	| ArrayAccess
-	| MethodInvocation
-;
-
-ClassInstanceCreationExpression:
-	NEW ClassType OPROUND CLROUND
-	| NEW ClassType OPROUND ArgumentList CLROUND
-;
-
-ArgumentList:
-	Expression
-	| ArgumentList COMMA Expression
-;
-
-ArrayCreationExpression:
-	NEW PrimitiveType DimExprs
-	| NEW PrimitiveType DimExprs Dims
-	| NEW ClassOrInterfaceTypes DimExprs
-	| NEW ClassOrInterfaceTypes DimExprs Dims
-;
-
-DimExprs:
-	DimExpr
-	| DimExprs DimExpr
-;
-
-DimExpr:
-	OPSQR Expression CLSQR
-;
-
-Dims:
-	OPSQR CLSQR
-	| Dims OPSQR CLSQR
-;
-
-FieldAccess:
-	Primary DOT Identifier
-	| SUPER DOT Identifier
-;
-
-MethodInvocation:
-	Name OPROUND CLROUND
-	| Name OPROUND ArgumentList CLROUND
-	| Primary DOT Identifier OPROUND CLROUND
-	| Primary DOT Identifier OPROUND ArgumentList CLROUND
-	| SUPER DOT Identifier OPROUND CLROUND 
-	| SUPER DOT Identifier OPROUND ArgumentList CLROUND
-;
-
-ArrayAccess:
-	Name OPSQR Expression CLSQR
-	| PrimaryNoNewArray OPSQR Expression CLSQR
-;
 
 %%
 
