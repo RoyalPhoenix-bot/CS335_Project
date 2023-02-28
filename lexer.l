@@ -101,12 +101,8 @@ NullLiteral "null"
 
 Literal {IntegerLiteral}|{FloatingPointLiteral}|{BooleanLiteral}|{CharacterLiteral}|{StringLiteral}|{TextBlock}|{NullLiteral}
 
-
 Separator "::"|"..."|[(){};,@]|"["|"]"
 
-AssignmentOperator "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="
-
-Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transient"|"volatile"
 
 %%
 
@@ -121,7 +117,18 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 {NullLiteral} {yylval.name=strdup(yytext); return (NULLLITERAL);}
 "byte" {yylval.name=strdup(yytext); return (BYTE);}
 "import" {yylval.name=strdup(yytext); return (IMPORT);}
-{Modifier_}     {yylval.name=strdup(yytext); return (MODIFIER_);}
+
+"public"      {yylval.name=strdup(yytext); return (PUBLIC);}
+"protected"      {yylval.name=strdup(yytext); return (PROTECTED);}
+"private"      {yylval.name=strdup(yytext); return (PRIVATE);}
+"static"      {yylval.name=strdup(yytext); return (STATIC);}
+"abstract"      {yylval.name=strdup(yytext); return (ABSTRACT);}
+"final"      {yylval.name=strdup(yytext); return (FINAL);}
+"native"      {yylval.name=strdup(yytext); return (NATIVE);}
+"synchronized"      {yylval.name=strdup(yytext); return (SYNCHRONIZED);}
+"transient"      {yylval.name=strdup(yytext); return (TRANSIENT);}
+"volatile"      {yylval.name=strdup(yytext); return (VOLATILE);}
+
 "package"      {yylval.name=strdup(yytext); return (PACKAGE);}
 ","            {yylval.name=strdup(yytext); return (COMMA);}
 "="            {yylval.name=strdup(yytext); return (EQUALTO);}
@@ -136,12 +143,10 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 "for"          {yylval.name=strdup(yytext); return (FOR);}
 "break"        {yylval.name=strdup(yytext); return (BREAK);}
 "throw"        {yylval.name=strdup(yytext); return (THROW);}
-"synchronized" {yylval.name=strdup(yytext); return (SYNCHRONIZED);}
 "try"          {yylval.name=strdup(yytext); return (TRY);}
 "finally"      {yylval.name=strdup(yytext); return (FINALLY);}
 "catch"        {yylval.name=strdup(yytext); return (CATCH);}
 "void"         {yylval.name=strdup(yytext); printf("Got a void\n"); return (VOID);}
-"static"       {yylval.name=strdup(yytext); return (STATIC);}
 "throws"       {yylval.name=strdup(yytext); return (THROWS);}
 "extends"      {yylval.name=strdup(yytext); return (EXTENDS);}
 "implements"   {yylval.name=strdup(yytext); return (IMPLEMENTS);}
@@ -191,7 +196,16 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 "|"     {yylval.name=strdup(yytext); return (OR);}
 "&&"    {yylval.name=strdup(yytext); return (DAND);}
 "||"    {yylval.name=strdup(yytext); return (DOR);}
-{AssignmentOperator} {yylval.name=strdup(yytext);  return (ASSIGNMENTOPERATOR);}
+"*="     {yylval.name=strdup(yytext); return (STAREQUALTO);}
+"/="     {yylval.name=strdup(yytext); return (BYEQUALTO);}
+"+="     {yylval.name=strdup(yytext); return (PLUSEQUALTO);}
+"-="     {yylval.name=strdup(yytext); return (MINUSEQUALTO);}
+"<<="     {yylval.name=strdup(yytext); return (TWOLEFTSHIFTEQUALTO);}
+">>="     {yylval.name=strdup(yytext); return (TWORIGHTSHIFTEQUALTO);}
+">>>="     {yylval.name=strdup(yytext); return (THREERIGHTSHIFTEQUALTO);}
+"&="     {yylval.name=strdup(yytext); return (ANDEQUALTO);}
+"^="     {yylval.name=strdup(yytext); return (XOREQUALTO);}
+"|="     {yylval.name=strdup(yytext); return (BAREQUALTO);}
 {Literal} {yylval.name=strdup(yytext);  return (LITERAL); }
 {Identifier} {yylval.name=strdup(yytext); printf("An indentifier received\n"); return (IDENTIFIER);}
 {WhiteSpace} { continue;}
