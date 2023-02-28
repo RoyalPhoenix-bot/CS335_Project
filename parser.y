@@ -221,6 +221,137 @@ VariableDeclaratorId: Identifier
 					| VariableDeclaratorId OPSQR CLSQR
 ;
 
+PostfixExpression:
+	Primary
+	| Name
+	| PostIncrementExpression
+	| PostDecrementExpression
+;
+
+PostIncrementExpression:
+	PostfixExpression PLUS PLUS
+;
+
+PostDecrementExpression:
+	PostfixExpression MINUS MINUS
+;
+
+UnaryExpression:
+	PreIncrementExpression
+	| PreDecrementExpression
+	| PLUS UnaryExpression
+	| MINUS UnaryExpression
+	| UnaryExpressionNotPlusMinus
+;
+
+PreIncrementExpression:
+	PLUS PLUS UnaryExpression
+;
+
+PreDecrementExpression:
+	MINUS MINUS UnaryExpression
+;
+
+UnaryExpressionNotPlusMinus:
+	PostfixExpression
+	| TILDA UnaryExpression
+	| EX UnaryExpression
+	| CastExpression
+;
+
+CastExpression:
+	OPROUND PrimitiveType CLROUND UnaryExpression
+	| OPROUND PrimitiveType Dims CLROUND UnaryExpression
+	| OPROUND Expression CLROUND UnaryExpressionNotPlusMinus
+	| OPROUND Name Dims CLROUND UnaryExpressionNotPlusMinus
+;
+
+MultiplicativeExpression:
+	UnaryExpression
+	| MultiplicativeExpression ASTERIX UnaryExpression
+	| MultiplicativeExpression FSLASH UnaryExpression
+	| MultiplicativeExpression MOD UnaryExpression
+;
+
+AdditiveExpression:
+	MultiplicativeExpression
+	| AdditiveExpression PLUS MultiplicativeExpression
+	| AdditiveExpression MINUS MultiplicativeExpression
+;
+
+ShiftExpression:
+	AdditiveExpression
+	| ShiftExpression LSHIFT AdditiveExpression
+	| ShiftExpression RSHIFT AdditiveExpression
+	| ShiftExpression URSHIFT AdditiveExpression
+;
+
+RelationalExpression:
+	ShiftExpression
+	| RelationalExpression LT ShiftExpression
+	| RelationalExpression GT ShiftExpression
+	| RelationalExpression LTE ShiftExpression
+	| RelationalExpression GTE ShiftExpression
+	| RelationalExpression INSTANCEOF ReferenceType
+;
+
+EqualityExpression:
+	RelationalExpression
+	| EqualityExpression DOUBLEEQ RelationalExpression
+	| EqualityExpression NOTEQ RelationalExpression
+;
+
+AndExpression:
+	EqualityExpression
+	| AndExpression AND EqualityExpression
+;
+
+ExclusiveOrExpression:
+	AndExpression
+	| ExclusiveOrExpression XOR AndExpression
+;
+
+InclusiveOrExpression:
+	ExclusiveOrExpression
+	| InclusiveOrExpression OR ExclusiveOrExpression
+;
+
+ConditionalAndExpression:
+	InclusiveOrExpression
+	| ConditionalAndExpression DAND InclusiveOrExpression
+;
+
+ConditionalOrExpression:
+	ConditionalAndExpression
+	| ConditionalOrExpression DOR ConditionalAndExpression
+;
+
+ConditionalExpression:
+	ConditionalOrExpression
+	| ConditionalOrExpression QUES Expression COLON ConditionalExpression
+;
+
+AssignmentExpression:
+	ConditionalExpression
+	| Assignment
+;
+
+Assignment:
+	LeftHandSide ASSIGNMENTOPERATOR AssignmentExpression
+;
+
+LeftHandSide:
+	Name
+	| FieldAccess
+	| ArrayAccess
+;
+
+Expression:
+	AssignmentExpression
+;
+
+ConstantExpression: Expression;
+
 VariableInitializer: Expression
 				   | ArrayInitializer
 ;
@@ -598,137 +729,6 @@ ArrayAccess:
 	Name OPSQR Expression CLSQR
 	| PrimaryNoNewArray OPSQR Expression CLSQR
 ;
-
-PostfixExpression:
-	Primary
-	| Name
-	| PostIncrementExpression
-	| PostDecrementExpression
-;
-
-PostIncrementExpression:
-	PostfixExpression PLUS PLUS
-;
-
-PostDecrementExpression:
-	PostfixExpression MINUS MINUS
-;
-
-UnaryExpression:
-	PreIncrementExpression
-	| PreDecrementExpression
-	| PLUS UnaryExpression
-	| MINUS UnaryExpression
-	| UnaryExpressionNotPlusMinus
-;
-
-PreIncrementExpression:
-	PLUS PLUS UnaryExpression
-;
-
-PreDecrementExpression:
-	MINUS MINUS UnaryExpression
-;
-
-UnaryExpressionNotPlusMinus:
-	PostfixExpression
-	| TILDA UnaryExpression
-	| EX UnaryExpression
-	| CastExpression
-;
-
-CastExpression:
-	OPROUND PrimitiveType CLROUND UnaryExpression
-	| OPROUND PrimitiveType Dims CLROUND UnaryExpression
-	| OPROUND Expression CLROUND UnaryExpressionNotPlusMinus
-	| OPROUND Name Dims CLROUND UnaryExpressionNotPlusMinus
-;
-
-MultiplicativeExpression:
-	UnaryExpression
-	| MultiplicativeExpression ASTERIX UnaryExpression
-	| MultiplicativeExpression FSLASH UnaryExpression
-	| MultiplicativeExpression MOD UnaryExpression
-;
-
-AdditiveExpression:
-	MultiplicativeExpression
-	| AdditiveExpression PLUS MultiplicativeExpression
-	| AdditiveExpression MINUS MultiplicativeExpression
-;
-
-ShiftExpression:
-	AdditiveExpression
-	| ShiftExpression LSHIFT AdditiveExpression
-	| ShiftExpression RSHIFT AdditiveExpression
-	| ShiftExpression URSHIFT AdditiveExpression
-;
-
-RelationalExpression:
-	ShiftExpression
-	| RelationalExpression LT ShiftExpression
-	| RelationalExpression GT ShiftExpression
-	| RelationalExpression LTE ShiftExpression
-	| RelationalExpression GTE ShiftExpression
-	| RelationalExpression INSTANCEOF ReferenceType
-;
-
-EqualityExpression:
-	RelationalExpression
-	| EqualityExpression DOUBLEEQ RelationalExpression
-	| EqualityExpression NOTEQ RelationalExpression
-;
-
-AndExpression:
-	EqualityExpression
-	| AndExpression AND EqualityExpression
-;
-
-ExclusiveOrExpression:
-	AndExpression
-	| ExclusiveOrExpression XOR AndExpression
-;
-
-InclusiveOrExpression:
-	ExclusiveOrExpression
-	| InclusiveOrExpression OR ExclusiveOrExpression
-;
-
-ConditionalAndExpression:
-	InclusiveOrExpression
-	| ConditionalAndExpression DAND InclusiveOrExpression
-;
-
-ConditionalOrExpression:
-	ConditionalAndExpression
-	| ConditionalOrExpression DOR ConditionalAndExpression
-;
-
-ConditionalExpression:
-	ConditionalOrExpression
-	| ConditionalOrExpression QUES Expression COLON ConditionalExpression
-;
-
-AssignmentExpression:
-	ConditionalExpression
-	| Assignment
-;
-
-Assignment:
-	LeftHandSide ASSIGNMENTOPERATOR AssignmentExpression
-;
-
-LeftHandSide:
-	Name
-	| FieldAccess
-	| ArrayAccess
-;
-
-Expression:
-	AssignmentExpression
-;
-
-ConstantExpression: Expression;
 
 %%
 
