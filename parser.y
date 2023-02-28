@@ -117,8 +117,8 @@ SimpleName: Identifier
 QualifiedName: Name DOT Identifier
 ;
 
-CompilationUnit:
-	PackageDeclaration ImportDeclarations TypeDeclarations
+CompilationUnit: 
+	| PackageDeclaration ImportDeclarations TypeDeclarations
 	| ImportDeclarations TypeDeclarations
 	| PackageDeclaration TypeDeclarations
 	| PackageDeclaration ImportDeclarations
@@ -690,7 +690,7 @@ StatementExpressionList:
 
 BreakStatement:
 	BREAK Identifier SEMICOLON|
-	BREAK SEMICOLON|
+	BREAK SEMICOLON
 ;
 
 ContinueStatement:
