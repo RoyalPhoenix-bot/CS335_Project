@@ -123,6 +123,8 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 {Modifier_}     {yylval.name=strdup(yytext); return (MODIFIER_);}
 "package"      {yylval.name=strdup(yytext); return (PACKAGE);}
 "."            {yylval.name=strdup(yytext); return (DOT);}
+","            {yylval.name=strdup(yytext); return (COMMA);}
+"="            {yylval.name=strdup(yytext); return (EQUALTO);}
 "super"        {yylval.name=strdup(yytext); return (SUPER);}
 "if"           {yylval.name=strdup(yytext); return (IF);}
 "else"         {yylval.name=strdup(yytext); return (ELSE);}

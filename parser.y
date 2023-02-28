@@ -12,7 +12,7 @@ int yyerror(char *s);
 %token <name> SUPER IF ELSE SWITCH CASE DEFAULT WHILE DO FOR BREAK THROW SYNCHRONIZED TRY FINALLY CATCH VOID STATIC THROWS EXTENDS IMPLEMENTS CLASS INTERFACE BOOLEAN SHORT INT LONG CHAR FLOAT DOUBLE INSTANCEOF THIS NEW 
 %token <name> EOL SEPARATOR ASSIGNMENTOPERATOR LITERAL IDENTIFIER WHITESPACE OTHER
 %token <name> OPROUND CLROUND OPSQR CLSQR DOT PLUS MINUS COLON SEMICOLON TILDA EX QUES ASTERIX FSLASH MOD LSHIFT RSHIFT URSHIFT LT GT LTE GTE DOUBLEEQ NOTEQ AND XOR OR DAND DOR 
-%token <name> PACKAGE MODIFIER_ INTEGERLITERAL FLOATINGPOINTLITERAL BOOLEANLITERAL CHARACTERLITERAL STRINGLITERAL NULLLITERAL IMPORT BYTE OPCURLY CLCURLY 
+%token <name> PACKAGE MODIFIER_ INTEGERLITERAL FLOATINGPOINTLITERAL BOOLEANLITERAL CHARACTERLITERAL STRINGLITERAL NULLLITERAL IMPORT BYTE OPCURLY CLCURLY COMMA EQUALTO
 
 %union{
 	char* name;
@@ -49,6 +49,9 @@ StringLiteral: STRINGLITERAL
 ;
 
 NullLiteral: NULLLITERAL
+;
+
+Identifier: IDENTIFIER
 ;
 
 Type:
@@ -102,6 +105,18 @@ ArrayType:
 	ArrayType OPSQR CLSQR
 ;
 
+
+Name:
+	SimpleName
+  | QualifiedName
+;
+
+SimpleName: Identifier
+;
+
+QualifiedName: Name DOT Identifier
+;
+
 CompilationUnit:
 	PackageDeclaration ImportDeclarations TypeDeclarations
 	| ImportDeclarations TypeDeclarations
@@ -153,19 +168,161 @@ Modifiers:
 Modifier_:
 	MODIFIER_;
 
-Name:
-	SimpleName
-	| QualifiedName
+
+ClassDeclaration: Modifiers CLASS Identifier Super Interfaces ClassBody
+				| CLASS Identifier Super Interfaces ClassBody
+				| CLASS Identifier Interfaces ClassBody
+				| CLASS Identifier Super ClassBody
+				| CLASS Identifier ClassBody
+				| Modifiers CLASS Identifier Interfaces ClassBody
+				| Modifiers CLASS Identifier Super ClassBody
+				| Modifiers CLASS Identifier ClassBody
 ;
 
-Identifier: IDENTIFIER
+Super: EXTENDS ClassType
 ;
 
-SimpleName: Identifier
+Interfaces: IMPLEMENTS InterfaceTypeList
 ;
 
-QualifiedName: Name DOT Identifier;
+InterfaceTypeList: InterfaceType
+				 | InterfaceTypeList COMMA InterfaceType
+;
 
+ClassBody: OPCURLY ClassBodyDeclarations CLCURLY
+		 | OPCURLY CLCURLY
+;
+
+ClassBodyDeclarations: ClassBodyDeclaration
+					 | ClassBodyDeclarations ClassBodyDeclaration
+;
+
+ClassBodyDeclaration: ClassMemberDeclaration
+					| StaticInitializer
+					| ConstructorDeclaration
+;
+
+ClassMemberDeclaration: FieldDeclaration
+					  | MethodDeclaration
+;
+
+FieldDeclaration: Modifiers Type VariableDeclarators SEMICOLON
+				| Type VariableDeclarators SEMICOLON
+;
+
+VariableDeclarators: VariableDeclarator
+				   | VariableDeclarators COMMA VariableDeclarator
+;
+
+VariableDeclarator: VariableDeclaratorId
+				  | VariableDeclaratorId EQUALTO VariableInitializer
+
+VariableDeclaratorId: Identifier
+					| VariableDeclaratorId OPSQR CLSQR
+;
+
+VariableInitializer: Expression
+				   | ArrayInitializer
+;
+
+MethodDeclaration: MethodHeader MethodBody
+;
+
+MethodHeader: Modifiers Type MethodDeclarator Throws
+			| Type MethodDeclarator Throws
+			| Modifiers Type MethodDeclarator 
+			| Type MethodDeclarator
+			| Modifiers VOID MethodDeclarator Throws
+			| Modifiers VOID MethodDeclarator 
+			| VOID MethodDeclarator Throws
+			| VOID MethodDeclarator
+;
+
+MethodDeclarator: Identifier OPROUND FormalParameterList CLROUND
+				| Identifier OPROUND CLROUND
+				| MethodDeclarator OPSQR CLSQR
+;
+
+FormalParameterList: FormalParameter
+				   | FormalParameterList COMMA FormalParameter
+;
+
+FormalParameter: Type VariableDeclaratorId
+;
+
+Throws: THROWS ClassTypeList
+;
+
+ClassTypeList: ClassType
+     		 | ClassTypeList COMMA ClassType
+;
+
+MethodBody: Block SEMICOLON
+;
+
+StaticInitializer: STATIC Block
+;
+
+ConstructorDeclaration:	Modifiers ConstructorDeclarator Throws ConstructorBody
+					  | ConstructorDeclarator Throws ConstructorBody
+					  | ConstructorDeclarator ConstructorBody
+					  | Modifiers ConstructorDeclarator ConstructorBody
+;
+
+ConstructorDeclarator: SimpleName OPROUND FormalParameterList CLROUND
+					 | SimpleName OPROUND CLROUND
+;
+
+ConstructorBody: OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
+			   | OPCURLY BlockStatements CLCURLY
+			   | OPCURLY ExplicitConstructorInvocation CLCURLY
+			   | OPCURLY CLCURLY
+;
+
+ExplicitConstructorInvocation: THIS OPROUND ArgumentList CLROUND SEMICOLON
+							 | THIS OPROUND CLROUND SEMICOLON
+							 | SUPER OPROUND ArgumentList CLROUND SEMICOLON
+							 | SUPER OPROUND CLROUND SEMICOLON
+;
+
+
+InterfaceDeclaration: Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody
+					| INTERFACE Identifier ExtendsInterfaces InterfaceBody
+					| Modifiers INTERFACE Identifier InterfaceBody
+					| INTERFACE Identifier InterfaceBody
+;
+
+ExtendsInterfaces: EXTENDS InterfaceType
+				 | ExtendsInterfaces COMMA InterfaceType
+;
+
+InterfaceBody: OPCURLY InterfaceMemberDeclarations CLCURLY
+			 | OPCURLY CLCURLY
+;
+
+InterfaceMemberDeclarations: InterfaceMemberDeclaration
+						   | InterfaceMemberDeclarations InterfaceMemberDeclaration
+;
+
+InterfaceMemberDeclaration: ConstantDeclaration 
+						  |	AbstractMethodDeclaration
+;
+
+ConstantDeclaration: FieldDeclaration
+;
+
+AbstractMethodDeclaration: MethodHeader SEMICOLON
+;
+
+ArrayInitializer: OPCURLY VariableInitializers COMMA CLCURLY 
+				| OPCURLY COMMA CLCURLY
+				| OPCURLY VariableInitializers CLCURLY
+				| OPCURLY CLCURLY
+;
+
+VariableInitializers: VariableInitializer
+					| VariableInitializers COMMA VariableInitializer
+;
 
 Block:
 	OPCURLY CLCURLY |
@@ -359,10 +516,9 @@ SynchronizedStatement:
 	SYNCHRONIZED OPROUND Expression CLROUND Block
 ;
 
-TryStatement:
-	TRY Block Catches|
-	TRY Block Catches FINALLY| 
-	TRY Block FINALLY| 
+TryStatement: TRY Block Catches
+			| TRY Block Catches FINALLY
+			| TRY Block FINALLY
 ;
 
 Catches:
@@ -559,7 +715,7 @@ AssignmentExpression:
 ;
 
 Assignment:
-	LeftHandSide AssignmentOperator AssignmentExpression
+	LeftHandSide ASSIGNMENTOPERATOR AssignmentExpression
 ;
 
 LeftHandSide:
@@ -573,161 +729,6 @@ Expression:
 ;
 
 ConstantExpression: Expression;
-
-AssignmentOperator: ASSIGNMENTOPERATOR;
-
-ArrayInitializer: OPCURLY VariableInitializers COMMA CLCURLY 
-				| OPCURLY COMMA CLCURLY
-				| OPCURLY VariableInitializers CLCURLY
-				| OPCURLY CLCURLY
-;
-
-VariableInitializers: VariableInitializer
-					| VariableInitializers COMMA VariableInitializer
-;
-
-InterfaceDeclaration: Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody
-					| INTERFACE Identifier ExtendsInterfaces InterfaceBody
-					| Modifiers INTERFACE Identifier InterfaceBody
-					| INTERFACE Identifier InterfaceBody
-;
-
-ExtendsInterfaces: EXTENDS InterfaceType
-				 | ExtendsInterfaces COMMA InterfaceType
-;
-
-InterfaceBody: OPCURLY InterfaceMemberDeclarations CLCURLY
-			 | OPCURLY CLCURLY
-;
-
-InterfaceMemberDeclarations: InterfaceMemberDeclaration
-						   | InterfaceMemberDeclarations InterfaceMemberDeclaration
-;
-
-InterfaceMemberDeclaration: ConstantDeclaration 
-						  |	AbstractMethodDeclaration
-;
-
-ConstantDeclaration: FieldDeclaration
-;
-
-AbstractMethodDeclaration: MethodHeader SEMICOLON
-;
-
-ClassDeclaration: Modifiers CLASS Identifier Super Interfaces ClassBody
-				| CLASS Identifier Super Interfaces ClassBody
-				| CLASS Identifier Interfaces ClassBody
-				| CLASS Identifier Super ClassBody
-				| CLASS Identifier ClassBody
-				| Modifiers CLASS Identifier Interfaces ClassBody
-				| Modifiers CLASS Identifier Super ClassBody
-				| Modifiers CLASS Identifier ClassBody
-;
-
-Super: EXTENDS ClassType
-;
-
-Interfaces: IMPLEMENTS InterfaceTypeList
-;
-
-InterfaceTypeList: InterfaceType
-				 | InterfaceTypeList COMMA InterfaceType
-;
-
-ClassBody: OPCURLY ClassBodyDeclarationsopt CLCURLY
-;
-
-ClassBodyDeclarations: ClassBodyDeclaration
-					 | ClassBodyDeclarations ClassBodyDeclaration
-;
-
-ClassBodyDeclaration: ClassMemberDeclaration
-					| StaticInitializer
-					| ConstructorDeclaration
-;
-
-ClassMemberDeclaration: FieldDeclaration
-					  | MethodDeclaration
-;
-
-FieldDeclaration: Modifiers Type VariableDeclarators SEMICOLON
-				| Type VariableDeclarators SEMICOLON
-;
-
-VariableDeclarators: VariableDeclarator
-				   | VariableDeclarators COMMA VariableDeclarator
-;
-
-VariableDeclarator: VariableDeclaratorId
-				  | VariableDeclaratorId EQUALTO VariableInitializer
-
-VariableDeclaratorId: Identifier
-					| VariableDeclaratorId OPSQR CLSQR
-;
-
-VariableInitializer: Expression
-				   | ArrayInitializer
-;
-
-MethodDeclaration: MethodHeader MethodBody
-;
-
-MethodHeader: Modifiers Type MethodDeclarator Throws
-			| Type MethodDeclarator Throws
-			| Modifiers Type MethodDeclarator 
-			| Type MethodDeclarator
-			| Modifiers VOID MethodDeclarator Throws
-			| Modifiers VOID MethodDeclarator 
-			| VOID MethodDeclarator Throws
-			| VOID MethodDeclarator
-;
-
-MethodDeclarator: Identifier OPROUND FormalParameterList CLROUND
-				| Identifier OPROUND CLROUND
-				| MethodDeclarator OPSQR CLSQR
-;
-
-FormalParameterList: FormalParameter
-				   | FormalParameterList COMMA FormalParameter
-;
-
-FormalParameter: Type VariableDeclaratorId
-;
-
-Throws: THROWS ClassTypeList
-;
-
-ClassTypeList: ClassType
-     		 | ClassTypeList COMMA ClassType
-;
-
-MethodBody: Block SEMICOLON
-;
-
-StaticInitializer: STATIC Block
-;
-
-ConstructorDeclaration:	Modifiers ConstructorDeclarator Throws ConstructorBody
-					  | ConstructorDeclarator Throws ConstructorBody
-					  | ConstructorDeclarator ConstructorBody
-					  | Modifiers ConstructorDeclarator ConstructorBody
-;
-
-ConstructorDeclarator: SimpleName OPROUND FormalParameterList CLROUND
-					 | SimpleName OPROUND CLROUND
-;
-
-ConstructorBody: OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
-			   | OPCURLY BlockStatements CLCURLY
-			   | OPCURLY ExplicitConstructorInvocation CLCURLY
-			   | OPCURLY CLCURLY
-;
-
-ExplicitConstructorInvocation: THIS OPROUND ArgumentList CLROUND SEMICOLON
-							 | THIS OPROUND CLROUND SEMICOLON
-							 | SUPER OPROUND ArgumentList CLROUND SEMICOLON
-							 | SUPER OPROUND CLROUND SEMICOLON
-;
 
 %%
 
