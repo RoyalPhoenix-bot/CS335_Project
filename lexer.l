@@ -112,6 +112,7 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 
 {Comment} {printf("Comment\n");}
 {LineTerminator} {continue;}
+"."            {yylval.name=strdup(yytext); return (DOT);}
 {IntegerLiteral} {yylval.name=strdup(yytext); return (INTEGERLITERAL);}
 {FloatingPointLiteral} {yylval.name=strdup(yytext); return (FLOATINGPOINTLITERAL);}
 {BooleanLiteral} {yylval.name=strdup(yytext); return (BOOLEANLITERAL);}
@@ -122,7 +123,6 @@ Modifier_    "public"|"private"|"protected"|"abstract"|"final"|"native"|"transie
 "import" {yylval.name=strdup(yytext); return (IMPORT);}
 {Modifier_}     {yylval.name=strdup(yytext); return (MODIFIER_);}
 "package"      {yylval.name=strdup(yytext); return (PACKAGE);}
-"."            {yylval.name=strdup(yytext); return (DOT);}
 ","            {yylval.name=strdup(yytext); return (COMMA);}
 "="            {yylval.name=strdup(yytext); return (EQUALTO);}
 "super"        {yylval.name=strdup(yytext); return (SUPER);}
