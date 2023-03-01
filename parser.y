@@ -2319,7 +2319,39 @@ int yyerror(char* s){
 
 int main()
 {
-	// YYDEBUG = 1;
     yyparse(); 
+
+	freopen("output.dot","w",stdout);
+	cout << "// dot -Tps output.dot -o out.ps\n\n"
+		<< "graph \"Tree\"\n"
+		<< "{\n"
+		<< "\tfontname=\"Helvetica,Arial,sans-serif\"\n"
+    	 << "\tnode [fontsize=10, width=\".2\", height=\".2\", margin=0]\n"
+		 << "\tedge [fontsize=6]\n"
+    	 << "\tgraph[fontsize=8];\n\n"
+    	 << "\tlabel=\"Abstract Syntax Tree\"\n\n";
+
+	for(int i=0;i<nodeType.size();i++){
+		cout << "\tn" << i << ";\n";
+		cout << "\tn" << i << "[label=\"" ;
+		for(int t=0;t<nodeType[i].length();t++){
+			if(nodeType[i][t]=='"'){
+				if(t>0){
+					if(nodeType[i][t]!='\\'){
+						cout << "\\" << nodeType[i][t];
+					}else cout << nodeType[i][t];
+				}else{
+					cout << "\\" << nodeType[i][t];
+				}
+			}else cout << nodeType[i][t];
+		}
+		cout <<"\"];\n";
+		auto child = adj[i];
+		for(int j=0;j<child.size();j++){
+			cout << "\tn" << i << "--" << 'n' << child[j] << ";\n";
+		}
+		cout << endl;
+	}
+	cout << "}" << endl;
     return 0;
 }
