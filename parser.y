@@ -6,7 +6,7 @@ using namespace std;
 int yylex();
 int yyerror(char *s);
 
-vector<int> node;
+int countNodes=0;
 vector<string> nodeType;
 vector<vector<int>> adj;
 
@@ -549,8 +549,8 @@ InterfaceBody:
 ;
 
 InterfaceMemberDeclarations: 
-	InterfaceMemberDeclaration
-	| InterfaceMemberDeclarations InterfaceMemberDeclaration
+	InterfaceMemberDeclaration	{$$ = $1}
+	| InterfaceMemberDeclarations InterfaceMemberDeclaration {int newNum = }
 ;
 
 InterfaceMemberDeclaration: 
