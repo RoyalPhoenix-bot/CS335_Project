@@ -1407,7 +1407,16 @@ InterfaceMemberDeclaration:
 ConstantDeclaration: FieldDeclaration {$$ = $1;}
 ;
 
-AbstractMethodDeclaration: MethodHeader SEMICOLON {$$ = countNodes; nodeType.push_back("AbstractMethodDeclaration"); adj[countNodes].push_back($1); adj[countNodes].push_back($2); countNodes++;}
+AbstractMethodDeclaration: MethodHeader SEMICOLON {
+		nodeType.push_back($2); 
+		int n2 = countNodes;
+		countNodes++; 
+		$$ = countNodes; 
+		nodeType.push_back("AbstractMethodDeclaration"); 
+		adj[countNodes].push_back($1); 
+		adj[countNodes].push_back(n2); 
+		countNodes++;
+	}
 ;
 
 ArrayInitializer: 
@@ -1424,6 +1433,7 @@ ArrayInitializer:
 													$$ = countNodes;
 													nodeType.push_back("ArrayInitializer");
 													adj[countNodes].push_back(opcurl);
+													adj[countNodes].push_back($2);
 													adj[countNodes].push_back(comma);
 													adj[countNodes].push_back(clcurl);
 													countNodes++;
@@ -1618,14 +1628,13 @@ IfThenStatement:
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
 		nodeType.push_back($4); int n3 = countNodes; countNodes++;
-		nodeType.push_back($5); int n4 = countNodes; countNodes++;
 		$$ = countNodes;
 		nodeType.push_back("IfThenStatement");
 		adj[countNodes].push_back(n1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back(n3);
-		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
 		countNodes++;
 	}
 ;
@@ -1720,9 +1729,9 @@ SwitchBlock:
 		$$ = countNodes;
 		nodeType.push_back("SwitchBlock");
 		adj[countNodes].push_back(n1);
-		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n2);
 		countNodes++; 
 	}
 ;
@@ -2013,7 +2022,7 @@ ForStatementNoShortIf:
 		adj[countNodes].push_back($8);
 		countNodes++;
 	}
-	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND {
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
 		nodeType.push_back($4); int n4 = countNodes; countNodes++;
