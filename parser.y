@@ -18,13 +18,15 @@ map<int, vector<int>> adj;
 %token <name> OPROUND CLROUND OPSQR CLSQR DOT PLUS MINUS COLON SEMICOLON TILDA EX QUES ASTERIX FSLASH MOD LSHIFT RSHIFT URSHIFT LT GT LTE GTE DOUBLEEQ NOTEQ AND XOR OR DAND DOR DPLUS DMINUS
 %token <name> PACKAGE STRINGLITERAL NULLLITERAL IMPORT BYTE OPCURLY CLCURLY COMMA CONTINUE RETURN PUBLIC PROTECTED PRIVATE STATIC ABSTRACT FINAL NATIVE SYNCHRONIZED TRANSIENT VOLATILE
 
-%token<nane> INTEGERLITERAL
+%token<name> INTEGERLITERAL
 %token<name> CHARACTERLITERAL 
 %token<name> FLOATINGPOINTLITERAL
 %token<name> BOOLEANLITERAL
+%type<intval> IfThenElseStatementNoShortIf VariableDeclaratorId ExtendsInterfaces Modifiers Throws PrimaryNoNewArray Identifier SingleTypeImportDeclaration SwitchBlock StatementExpressionList Block ForStatement FieldAccess ArrayType Expression ClassOrInterfaceType LabeledStatementNoShortIf Name NullLiteral LabeledStatement InterfaceTypeList AssignmentExpression IfThenStatement VariableDeclarator Literal QualifiedName PreIncrementExpression ReturnStatement EqualityExpression VariableDeclarators PrimitiveType ConditionalOrExpression LeftHandSide Primary Type UnaryExpressionNotPlusMinus PostfixExpression BlockStatements ConstantDeclaration ExpressionStatement TypeImportOnDemandDeclaration ClassDeclaration InclusiveOrExpression ForStatementNoShortIf NumericType StatementNoShortIf Super PostIncrementExpression ContinueStatement InterfaceMemberDeclaration StaticInitializer ShiftExpression ClassInstanceCreationExpression FloatingPointType ArgumentList PostDecrementExpression ClassBodyDeclaration SimpleName IntegralType VariableInitializer UnaryExpression FormalParameterList MethodBody InterfaceBody Finally AssignmentOperator RelationalExpression WhileStatement ClassTypeList ConstructorDeclarator StatementExpression IfThenElseStatement BreakStatement TypeDeclaration FloatingPointLiteral SwitchBlockStatementGroups ClassType LocalVariableDeclaration MethodInvocation ConditionalAndExpression ClassBody FieldDeclaration AdditiveExpression DoStatement Catches Assignment AndExpression SwitchLabel MultiplicativeExpression ForInit ForUpdate FormalParameter ConstructorBody BooleanLiteral Dims Statement SwitchBlockStatementGroup WhileStatementNoShortIf TypeDeclarations ImportDeclaration BlockStatement StatementWithoutTrailingSubstatement ArrayCreationExpression ExplicitConstructorInvocation CastExpression ThrowStatement InterfaceMemberDeclarations ClassBodyDeclarations VariableInitializers SynchronizedStatement DimExprs ConditionalExpression ArrayAccess Interfaces SwitchLabels MethodHeader ReferenceType DimExpr CatchClause CharacterLiteral ConstantExpression Modifier ArrayInitializer MethodDeclaration SwitchStatement ConstructorDeclaration StringLiteral CompilationUnit ImportDeclarations ClassMemberDeclaration EmptyStatement IntegerLiteral AbstractMethodDeclaration TryStatement InterfaceType PackageDeclaration ExclusiveOrExpression InterfaceDeclaration MethodDeclarator LocalVariableDeclarationStatement PreDecrementExpression 
 
 %union{
 	char* name;
+	int intval;
 }
 %debug
 
@@ -127,8 +129,7 @@ SimpleName: Identifier {$$=$1;}
 QualifiedName: Name DOT Identifier {nodeType.push_back($2); nodeType.push_back("QualifiedName"); $$=countNodes+1; adj[$$].push_back($1);adj[$$].push_back(countNodes);adj[$$].push_back($3);countNodes+=2;}
 ;
 
-CompilationUnit:
-	| PackageDeclaration ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);countNodes++;}
+CompilationUnit: PackageDeclaration ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);countNodes++;}
 	| ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 	| PackageDeclaration TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 	| PackageDeclaration ImportDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
@@ -268,8 +269,8 @@ PrimaryNoNewArray:
 ;
 
 ClassInstanceCreationExpression:
-	NEW ClassType OPROUND CLROUND {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back($4); nodeType.push_back("ClassInstanceCreationExpression"); $$=countNodes+3; adj[$$].push_back(countNodes); adj[$$].push_back($1);adj[$$].push_back(countNodes+1);adj[$$].push_back(countNodes+2);countNodes+=4;}
-	| NEW ClassType OPROUND ArgumentList CLROUND {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back($5); nodeType.push_back("ClassInstanceCreationExpression"); $$=countNodes+3; adj[$$].push_back(countNodes); adj[$$].push_back($1);adj[$$].push_back(countNodes+1);adj[$$].push_back($4);adj[$$].push_back(countNodes+2);countNodes+=4;}
+	NEW ClassType OPROUND CLROUND {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back($4); nodeType.push_back("ClassInstanceCreationExpression"); $$=countNodes+3; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);adj[$$].push_back(countNodes+2);countNodes+=4;}
+	| NEW ClassType OPROUND ArgumentList CLROUND {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back($5); nodeType.push_back("ClassInstanceCreationExpression"); $$=countNodes+3; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);adj[$$].push_back($4);adj[$$].push_back(countNodes+2);countNodes+=4;}
 ;
 
 ArgumentList:
@@ -285,7 +286,7 @@ ArrayCreationExpression:
 ;
 
 DimExprs:
-	DimExpr {$$=$1;}
+	DimExpr {$$=$1;}	
 	| DimExprs DimExpr {nodeType.push_back("DimExprs");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 ;
 
@@ -1371,13 +1372,12 @@ ExtendsInterfaces:
 InterfaceBody: 
 	OPCURLY InterfaceMemberDeclarations CLCURLY{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
-		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
 		$$ = countNodes;
 		nodeType.push_back("InterfaceBody");
 		adj[countNodes].push_back(n1);
 		adj[countNodes].push_back($2);
-		adj[countNodes].push_back($3);
-		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n3);
 		countNodes++;
 	}
 	| OPCURLY CLCURLY{
@@ -2277,7 +2277,7 @@ Catches:
 	| Catches CatchClause{
 		$$ = countNodes;
 		nodeType.push_back("Catches");
-		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($1);
 		adj[countNodes].push_back($2);
 		countNodes++;
 	}
