@@ -40,25 +40,25 @@ Literal:
 	| NullLiteral
 ;
 
-IntegerLiteral: INTEGERLITERAL
+IntegerLiteral: INTEGERLITERAL {$$ = new IntegerNode("IntegerLiteral",$1);}
 ;
 
-FloatingPointLiteral: FLOATINGPOINTLITERAL
+FloatingPointLiteral: FLOATINGPOINTLITERAL {$$ = new FloatNode("FloatingPointLiteral",$1);}
 ;
 
-BooleanLiteral: BOOLEANLITERAL
+BooleanLiteral: BOOLEANLITERAL {$$ = new BoolNode("BooleanLiteral",$1);}
 ;
 
-CharacterLiteral: CHARACTERLITERAL
+CharacterLiteral: CHARACTERLITERAL {$$ = new CharNode("CharacterLiteral",$1);}
 ;
 
-StringLiteral: STRINGLITERAL
+StringLiteral: STRINGLITERAL {$$ = new StringNode("StringLiteral",$1);}
 ;
 
-NullLiteral: NULLLITERAL
+NullLiteral: NULLLITERAL {$$ = new StringNode("NullLiteral",$1);}
 ;
 
-Identifier: IDENTIFIER
+Identifier: IDENTIFIER {$$ = new StringNode("Identifier",$1);}
 ;
 
 Type:
@@ -68,7 +68,7 @@ Type:
 
 PrimitiveType:
 	NumericType 
-	| BOOLEAN
+	| BOOLEAN  {$$ = new StringNode("PrimitiveType",$1);}
 ;
 
 NumericType:
@@ -77,16 +77,16 @@ NumericType:
 ;
 
 IntegralType:
-	BYTE 
-	| SHORT 
-	| INT 
-	| LONG 
-	| CHAR
+	BYTE {$$ = new StringNode("IntegralType",$1);}
+	| SHORT {$$ = new StringNode("IntegralType",$1);}
+	| INT {$$ = new StringNode("IntegralType",$1);}
+	| LONG {$$ = new StringNode("IntegralType",$1);}
+	| CHAR {$$ = new StringNode("IntegralType",$1);}
 ;
 
 FloatingPointType:
-	FLOAT 
-	| DOUBLE
+	FLOAT {$$ = new StringNode("FloatingPointType",$1);}
+	| DOUBLE {$$ = new StringNode("FloatingPointType",$1);}
 ;
 
 ReferenceType:
@@ -107,9 +107,9 @@ InterfaceType:
 ;
 
 ArrayType:
-	PrimitiveType OPSQR CLSQR 
-	| Name OPSQR CLSQR 
-	| ArrayType OPSQR CLSQR
+	PrimitiveType OPSQR CLSQR {$$ = new Node("ArrayType",$1,$2,$3);}
+	| Name OPSQR CLSQR {$$ = new Node("ArrayType",$1,$2,$3);}
+	| ArrayType OPSQR CLSQR {$$ = new Node("ArrayType",$1,$2,$3);}
 ;
 
 
@@ -121,14 +121,15 @@ Name:
 SimpleName: Identifier
 ;
 
-QualifiedName: Name DOT Identifier | THIS DOT Identifier
+QualifiedName: Name DOT Identifier {$$ = new Node("QualifiedName",$1,$2,$3);}
+			 | THIS DOT Identifier {$$ = new Node("QualifiedName",$1,$2,$3);}
 ;
 
 CompilationUnit:
-	| PackageDeclaration ImportDeclarations TypeDeclarations
-	| ImportDeclarations TypeDeclarations
-	| PackageDeclaration TypeDeclarations
-	| PackageDeclaration ImportDeclarations
+	| PackageDeclaration ImportDeclarations TypeDeclarations {$$ = new Node("CompilationUnit",$1,$2,$3);}
+	| ImportDeclarations TypeDeclarations {$$ = new Node("CompilationUnit",$1,$2);}
+	| PackageDeclaration TypeDeclarations {$$ = new Node("CompilationUnit",$1,$2);}
+	| PackageDeclaration ImportDeclarations {$$ = new Node("CompilationUnit",$1,$2);}
 	| PackageDeclaration
 	| ImportDeclarations
 	| TypeDeclarations
@@ -136,16 +137,16 @@ CompilationUnit:
 
 ImportDeclarations:
 	ImportDeclaration
-	| ImportDeclarations ImportDeclaration
+	| ImportDeclarations ImportDeclaration {$$ = new Node("ImportDeclarations",$1,$2);}
 ;
 
 TypeDeclarations:
 	TypeDeclaration
-	| TypeDeclarations TypeDeclaration
+	| TypeDeclarations TypeDeclaration {$$ = new Node("TypeDeclarations",$1,$2);}
 ;
 
-PackageDeclaration:
-	PACKAGE Name SEMICOLON;
+PackageDeclaration: PACKAGE Name SEMICOLON {$$ = new Node("PackageDeclaration",$1,$2,$3);}
+;
 
 ImportDeclaration:
 	SingleTypeImportDeclaration
@@ -153,10 +154,12 @@ ImportDeclaration:
 ;
 
 SingleTypeImportDeclaration:
-	IMPORT Name SEMICOLON;
+	IMPORT Name SEMICOLON {$$ = new Node("CompilationUnSingleTypeImportDeclarationit",$1,$2,$3);}
+;
 
 TypeImportOnDemandDeclaration:
-	IMPORT Name DOT ASTERIX SEMICOLON;
+	IMPORT Name DOT ASTERIX SEMICOLON {$$ = new Node("TypeImportOnDemandDeclaration",$1,$2,$3,$4,$5);}
+;
 
 TypeDeclaration: 
 	ClassDeclaration
