@@ -35,263 +35,267 @@ Goal:
 ;
 
 Literal:
-	IntegerLiteral 
-	| FloatingPointLiteral 
-	| BooleanLiteral 
-	| CharacterLiteral 
-	| StringLiteral 
-	| NullLiteral
+	IntegerLiteral {$$ =$1;}
+	| FloatingPointLiteral {$$ =$1;}
+	| BooleanLiteral {$$ =$1;}
+	| CharacterLiteral {$$ =$1;}
+	| StringLiteral {$$ =$1;}
+	| NullLiteral {$$ =$1;}
 ;
 
-IntegerLiteral: INTEGERLITERAL
+IntegerLiteral: INTEGERLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
 ;
 
-FloatingPointLiteral: FLOATINGPOINTLITERAL
+FloatingPointLiteral: FLOATINGPOINTLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
 ;
 
-BooleanLiteral: BOOLEANLITERAL
+BooleanLiteral: BOOLEANLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
 ;
 
-CharacterLiteral: CHARACTERLITERAL
+CharacterLiteral: CHARACTERLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
 ;
 
-StringLiteral: STRINGLITERAL
+StringLiteral: STRINGLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
 ;
 
-NullLiteral: NULLLITERAL
+NullLiteral: NULLLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
 ;
 
-Identifier: IDENTIFIER
+Identifier: IDENTIFIER {$$=countNodes; countNodes++;  nodeType.push_back($1); }
 ;
 
 Type:
-	PrimitiveType 
-	| ReferenceType
+	PrimitiveType {$$ =$1;}
+	| ReferenceType {$$ =$1;}
 ;
 
 PrimitiveType:
-	NumericType 
-	| BOOLEAN
+	NumericType {$$ =$1;}
+	| BOOLEAN {$$=countNodes; countNodes++;  nodeType.push_back($1); }
 ;
 
 NumericType:
-	IntegralType 
-	| FloatingPointType
+	IntegralType {$$=$1;}
+	| FloatingPointType {$$=$1;}
 ;
 
 IntegralType:
-	BYTE 
-	| SHORT 
-	| INT 
-	| LONG 
-	| CHAR
+	BYTE {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| SHORT {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| INT {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| LONG {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| CHAR {$$=countNodes; countNodes++;  nodeType.push_back($1); }
 ;
 
 FloatingPointType:
-	FLOAT 
-	| DOUBLE
+	FLOAT {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| DOUBLE {$$=countNodes; countNodes++;  nodeType.push_back($1); }
 ;
 
 ReferenceType:
-	ClassOrInterfaceType 
-	| ArrayType
+	ClassOrInterfaceType {$$=$1;}
+	| ArrayType {$$=$1;}
 ;
 
 ClassOrInterfaceType:
-	Name
+	Name {$$=$1;}
 ;
 
 ClassType:
-	ClassOrInterfaceType
+	ClassOrInterfaceType {$$=$1;}
 ;
 
 InterfaceType:
-	ClassOrInterfaceType 
+	ClassOrInterfaceType {$$=$1;}
 ;
 
 ArrayType:
-	PrimitiveType OPSQR CLSQR 
-	| Name OPSQR CLSQR 
-	| ArrayType OPSQR CLSQR
+	PrimitiveType OPSQR CLSQR  {nodeType.push_back($2); nodeType.push_back($3); nodeType.push_back("ArrayType"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back(countNodes+1);countNodes+=3;}
+	| Name OPSQR CLSQR {nodeType.push_back($2); nodeType.push_back($3); nodeType.push_back("ArrayType"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back(countNodes+1);countNodes+=3;}
+	| ArrayType OPSQR CLSQR {nodeType.push_back($2); nodeType.push_back($3); nodeType.push_back("ArrayType"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
 
 Name:
-	SimpleName
-  | QualifiedName
+	SimpleName {$$=$1;}
+  | QualifiedName {$$=$1;}
 ;
 
-SimpleName: Identifier
+SimpleName: Identifier {$$=$1;}
 ;
 
-QualifiedName: Name DOT Identifier
+QualifiedName: Name DOT Identifier {nodeType.push_back($2); nodeType.push_back("QualifiedName"); $$=countNodes+1; adj[$$].push_back($1);adj[$$].push_back(countNodes);adj[$$].push_back($3);countNodes+=2;}
 ;
 
 CompilationUnit:
-	| PackageDeclaration ImportDeclarations TypeDeclarations
-	| ImportDeclarations TypeDeclarations
-	| PackageDeclaration TypeDeclarations
-	| PackageDeclaration ImportDeclarations
-	| PackageDeclaration
-	| ImportDeclarations
-	| TypeDeclarations
+	| PackageDeclaration ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);countNodes++;}
+	| ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
+	| PackageDeclaration TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
+	| PackageDeclaration ImportDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
+	| PackageDeclaration {$$=$1;}
+	| ImportDeclarations {$$=$1;}
+	| TypeDeclarations {$$=$1;}
 ;
 
 ImportDeclarations:
-	ImportDeclaration
-	| ImportDeclarations ImportDeclaration
+	ImportDeclaration {$$=$1;}
+	| ImportDeclarations ImportDeclaration {nodeType.push_back("ImportDeclarations");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 ;
 
 TypeDeclarations:
-	TypeDeclaration
-	| TypeDeclarations TypeDeclaration
+	TypeDeclaration {$$=$1;}
+	| TypeDeclarations TypeDeclaration {nodeType.push_back("TypeDeclarations");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 ;
 
 PackageDeclaration:
-	PACKAGE Name SEMICOLON;
+	PACKAGE Name SEMICOLON {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("PackageDeclaration"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;}
+;
 
 ImportDeclaration:
-	SingleTypeImportDeclaration
-	| TypeImportOnDemandDeclaration
+	SingleTypeImportDeclaration {$$=$1;}
+	| TypeImportOnDemandDeclaration {$$=$1;}
 ;
 
 SingleTypeImportDeclaration:
-	IMPORT Name SEMICOLON;
+	IMPORT Name SEMICOLON {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("SingleTypeImportDeclaration"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;}
+;
 
 TypeImportOnDemandDeclaration:
-	IMPORT Name DOT ASTERIX SEMICOLON;
+	IMPORT Name DOT ASTERIX SEMICOLON {nodeType.push_back($1); nodeType.push_back($3);nodeType.push_back($4); nodeType.push_back($5); nodeType.push_back("TypeImportOnDemandDeclaration"); $$=countNodes+4; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);adj[$$].push_back(countNodes+2); adj[$$].push_back(countNodes+3);countNodes+=5;}
+;
 
 TypeDeclaration: 
-	ClassDeclaration
-	| InterfaceDeclaration
-	| SEMICOLON
+	ClassDeclaration {$$=$1;}
+	| InterfaceDeclaration {$$=$1;}
+	| SEMICOLON {$$=countNodes; countNodes++;  nodeType.push_back($1); }
 ;
 
 Modifiers:
-	Modifier
-	| Modifiers Modifier
+	Modifier {$$=$1;}
+	| Modifiers Modifier {nodeType.push_back("Modifiers");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 ;
 
 Modifier:
-	PUBLIC
-	| PROTECTED
-	| PRIVATE
-	| STATIC
-	| ABSTRACT
-	| FINAL
-	| NATIVE
-	| SYNCHRONIZED
-	| TRANSIENT
-	| VOLATILE
+	PUBLIC {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| PROTECTED {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| PRIVATE {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| STATIC {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| ABSTRACT {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| FINAL {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| NATIVE {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| SYNCHRONIZED {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| TRANSIENT {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| VOLATILE {$$=countNodes; countNodes++;  nodeType.push_back($1); }
 ;
 
 
 ClassDeclaration: 
-	Modifiers CLASS Identifier Super Interfaces ClassBody
-	| CLASS Identifier Super Interfaces ClassBody
-	| CLASS Identifier Interfaces ClassBody
-	| CLASS Identifier Super ClassBody
-	| CLASS Identifier ClassBody
-	| Modifiers CLASS Identifier Interfaces ClassBody
-	| Modifiers CLASS Identifier Super ClassBody
-	| Modifiers CLASS Identifier ClassBody
+	Modifiers CLASS Identifier Super Interfaces ClassBody {nodeType.push_back($2); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);adj[$$].push_back($4); adj[$$].push_back($5);adj[$$].push_back($6);countNodes+=2;}
+	| CLASS Identifier Super Interfaces ClassBody {nodeType.push_back($1); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back($4); adj[$$].push_back($5);countNodes+=2;}
+	| CLASS Identifier Interfaces ClassBody {nodeType.push_back($1); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back($4); countNodes+=2;}
+	| CLASS Identifier Super ClassBody {nodeType.push_back($1); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back($4); countNodes+=2;}
+	| CLASS Identifier ClassBody {nodeType.push_back($1); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);countNodes+=2;}
+	| Modifiers CLASS Identifier Interfaces ClassBody {nodeType.push_back($2); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);adj[$$].push_back($4); adj[$$].push_back($5);countNodes+=2;}
+	| Modifiers CLASS Identifier Super ClassBody {nodeType.push_back($2); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);adj[$$].push_back($4); adj[$$].push_back($5);countNodes+=2;}
+	| Modifiers CLASS Identifier ClassBody {nodeType.push_back($2); nodeType.push_back("ClassDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);adj[$$].push_back($4);countNodes+=2;}
 ;
 
-Super: EXTENDS ClassType
+Super: EXTENDS ClassType {nodeType.push_back($1); nodeType.push_back("Super"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2); countNodes+=2;}
 ;
 
-Interfaces: IMPLEMENTS InterfaceTypeList
+Interfaces: IMPLEMENTS InterfaceTypeList {nodeType.push_back($1); nodeType.push_back("Interfaces"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2); countNodes+=2;}
 ;
 
 InterfaceTypeList: 
-	InterfaceType
-	| InterfaceTypeList COMMA InterfaceType
+	InterfaceType {$$=$1;}
+	| InterfaceTypeList COMMA InterfaceType {nodeType.push_back($2); nodeType.push_back("InterfaceTypeList"); $$=countNodes+1; adj[$$].push_back($1);adj[$$].push_back(countNodes); adj[$$].push_back($3); countNodes+=2;}
 ;
 
 ClassBody: 
-	OPCURLY ClassBodyDeclarations CLCURLY
-	| OPCURLY CLCURLY
+	OPCURLY ClassBodyDeclarations CLCURLY {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("ClassBody"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;}
+	| OPCURLY CLCURLY {nodeType.push_back($1); nodeType.push_back($2); nodeType.push_back("ClassBody"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
 ClassBodyDeclarations: 
-	ClassBodyDeclaration
-	| ClassBodyDeclarations ClassBodyDeclaration
+	ClassBodyDeclaration {$$=$1;}
+	| ClassBodyDeclarations ClassBodyDeclaration {nodeType.push_back("ClassBodyDeclarations");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 ;
 
 ClassBodyDeclaration: 
-	ClassMemberDeclaration
-	| StaticInitializer
-	| ConstructorDeclaration
+	ClassMemberDeclaration {$$=$1;}
+	| StaticInitializer {$$=$1;}
+	| ConstructorDeclaration {$$=$1;}
 ;
 
 ClassMemberDeclaration: 
-	FieldDeclaration
-	| MethodDeclaration
+	FieldDeclaration {$$=$1;}
+	| MethodDeclaration {$$=$1;}
 ;
 
 FieldDeclaration: 
-	Modifiers Type VariableDeclarators SEMICOLON
-	| Type VariableDeclarators SEMICOLON
+	Modifiers Type VariableDeclarators SEMICOLON {nodeType.push_back($4); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back(countNodes); countNodes+=2;}
+	| Type VariableDeclarators SEMICOLON {nodeType.push_back($3); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back(countNodes); countNodes+=2;}
 ;
 
 VariableDeclarators: 
-	VariableDeclarator
-	| VariableDeclarators COMMA VariableDeclarator
+	VariableDeclarator {$$=$1;}
+	| VariableDeclarators COMMA VariableDeclarator {nodeType.push_back($2); nodeType.push_back("VariableDeclarators"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);countNodes+=2;}
 ;
 
 VariableDeclarator: 
-	VariableDeclaratorId
-	| VariableDeclaratorId EQUALTO VariableInitializer
+	VariableDeclaratorId {$$=$1;}
+	| VariableDeclaratorId EQUALTO VariableInitializer {nodeType.push_back($2); nodeType.push_back("VariableDeclarator"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);countNodes+=2;}
+;
 
 VariableDeclaratorId: 
-	Identifier
-	| VariableDeclaratorId OPSQR CLSQR
+	Identifier {$$=$1;}
+	| VariableDeclaratorId OPSQR CLSQR {nodeType.push_back($2); nodeType.push_back($3);nodeType.push_back("VariableDeclaratorId"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
 Primary:
-	PrimaryNoNewArray
-	| ArrayCreationExpression
+	PrimaryNoNewArray {$$=$1;}
+	| ArrayCreationExpression {$$=$1;}
 ;
 
 PrimaryNoNewArray:
-	Literal
-	| THIS
-	| OPROUND Expression CLROUND
-	| ClassInstanceCreationExpression
-	| FieldAccess
-	| ArrayAccess
-	| MethodInvocation
+	Literal {$$=$1;}
+	| THIS {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+	| OPROUND Expression CLROUND {nodeType.push_back($1); nodeType.push_back($3);nodeType.push_back("PrimaryNoNewArray"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;}
+	| ClassInstanceCreationExpression {$$=$1;}
+	| FieldAccess {$$=$1;}
+	| ArrayAccess {$$=$1;}
+	| MethodInvocation {$$=$1;}
 ;
 
 ClassInstanceCreationExpression:
-	NEW ClassType OPROUND CLROUND
-	| NEW ClassType OPROUND ArgumentList CLROUND
+	NEW ClassType OPROUND CLROUND {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back($4); nodeType.push_back("ClassInstanceCreationExpression"); $$=countNodes+3; adj[$$].push_back(countNodes); adj[$$].push_back($1);adj[$$].push_back(countNodes+1);adj[$$].push_back(countNodes+2);countNodes+=4;}
+	| NEW ClassType OPROUND ArgumentList CLROUND {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back($5); nodeType.push_back("ClassInstanceCreationExpression"); $$=countNodes+3; adj[$$].push_back(countNodes); adj[$$].push_back($1);adj[$$].push_back(countNodes+1);adj[$$].push_back($4);adj[$$].push_back(countNodes+2);countNodes+=4;}
 ;
 
 ArgumentList:
-	Expression
-	| ArgumentList COMMA Expression
+	Expression {$$=$1;}
+	| ArgumentList COMMA Expression {nodeType.push_back($2); nodeType.push_back("ArgumentList"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back(countNodes);adj[$$].push_back($3);countNodes+=2;}
 ;
 
 ArrayCreationExpression:
-	NEW PrimitiveType DimExprs
-	| NEW PrimitiveType DimExprs Dims
-	| NEW ClassOrInterfaceType DimExprs
-	| NEW ClassOrInterfaceType DimExprs Dims
+	NEW PrimitiveType DimExprs {nodeType.push_back($1); nodeType.push_back("ArrayCreationExpression"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);countNodes+=2;}
+	| NEW PrimitiveType DimExprs Dims {nodeType.push_back($1); nodeType.push_back("ArrayCreationExpression"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back($4);countNodes+=2;}
+	| NEW ClassOrInterfaceType DimExprs {nodeType.push_back($1); nodeType.push_back("ArrayCreationExpression"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);countNodes+=2;}
+	| NEW ClassOrInterfaceType DimExprs Dims {nodeType.push_back($1); nodeType.push_back("ArrayCreationExpression"); $$=countNodes+1; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back($4);countNodes+=2;}
 ;
 
 DimExprs:
-	DimExpr
-	| DimExprs DimExpr
+	DimExpr {$$=$1;}
+	| DimExprs DimExpr {nodeType.push_back("DimExprs");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;}
 ;
 
 DimExpr:
-	OPSQR Expression CLSQR
+	OPSQR Expression CLSQR {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("DimExpr"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
 Dims:
-	OPSQR CLSQR
-	| Dims OPSQR CLSQR
+	OPSQR CLSQR {nodeType.push_back($1); nodeType.push_back($2); nodeType.push_back("Dims"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back(countNodes+1);countNodes+=3;}
+	| Dims OPSQR CLSQR {nodeType.push_back($2); nodeType.push_back($3); nodeType.push_back("Dims"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes); adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
 FieldAccess:
