@@ -8,7 +8,7 @@ int yyerror(char *s);
 
 int countNodes=0;
 vector<string> nodeType;
-vector<vector<int>> adj;
+map<int, vector<int>> adj;
 
 %}
 
@@ -122,7 +122,7 @@ Name:
 SimpleName: Identifier
 ;
 
-QualifiedName: Name DOT Identifier | THIS DOT Identifier
+QualifiedName: Name DOT Identifier
 ;
 
 CompilationUnit:
@@ -550,240 +550,910 @@ InterfaceBody:
 
 InterfaceMemberDeclarations: 
 	InterfaceMemberDeclaration	{$$ = $1;}
-	| InterfaceMemberDeclarations InterfaceMemberDeclaration 
+	| InterfaceMemberDeclarations InterfaceMemberDeclaration {$$ = countNodes; nodeType.push_back("InterfaceMemberDeclarations"); adj[countNodes].push_back($1); adj[countNodes].push_back($2) ; countNodes++;}
 ;
 
 InterfaceMemberDeclaration: 
-	ConstantDeclaration 
-	| AbstractMethodDeclaration
+	ConstantDeclaration {$$ = $1;}
+	| AbstractMethodDeclaration {$$ = $1;}
 ;
 
-ConstantDeclaration: FieldDeclaration
+ConstantDeclaration: FieldDeclaration {$$ = $1;}
 ;
 
-AbstractMethodDeclaration: MethodHeader SEMICOLON
+AbstractMethodDeclaration: MethodHeader SEMICOLON {$$ = countNodes; nodeType.push_back("AbstractMethodDeclaration"); adj[countNodes].push_back($1); adj[countNodes].push_back($2); countNodes++;}
 ;
 
 ArrayInitializer: 
-	OPCURLY VariableInitializers COMMA CLCURLY 
-	| OPCURLY COMMA CLCURLY
-	| OPCURLY VariableInitializers CLCURLY
-	| OPCURLY CLCURLY
+	OPCURLY VariableInitializers COMMA CLCURLY {
+													nodeType.push_back($1);
+													int opcurl = countNodes;
+													countNodes++;
+													nodeType.push_back($3);
+													int comma = countNodes;
+													countNodes++;
+													nodeType.push_back($4);
+													int clcurl = countNodes;
+													countNodes++;
+													$$ = countNodes;
+													nodeType.push_back("ArrayInitializer");
+													adj[countNodes].push_back(opcurl);
+													adj[countNodes].push_back(comma);
+													adj[countNodes].push_back(clcurl);
+													countNodes++;
+												}
+	| OPCURLY COMMA CLCURLY {nodeType.push_back($1); int opcurl = countNodes; countNodes++; nodeType.push_back($2); int comma = countNodes; countNodes++; nodeType.push_back($3); int clcurl = countNodes; countNodes++;
+								$$ = countNodes;
+								nodeType.push_back("ArrayInitializer");
+								adj[countNodes].push_back(opcurl);
+								adj[countNodes].push_back(comma);
+								adj[countNodes].push_back(clcurl);
+								countNodes++;
+							}
+	| OPCURLY VariableInitializers CLCURLY{
+		nodeType.push_back($1); int opcurl = countNodes; countNodes++;
+		nodeType.push_back($3); int clcurl = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ArrayInitializer");
+		adj[countNodes].push_back(opcurl);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(clcurl);
+		countNodes++; 
+
+	}
+	| OPCURLY CLCURLY{
+		nodeType.push_back($1); int opcurl = countNodes;countNodes++;
+		nodeType.push_back($2); int clcurl = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ArrayInitializer");
+		adj[countNodes].push_back(opcurl);
+		adj[countNodes].push_back(clcurl);
+		countNodes++;
+	}
 ;
 
 VariableInitializers: 
-	VariableInitializer
-	| VariableInitializers COMMA VariableInitializer
+	VariableInitializer {$$ = $1;}
+	| VariableInitializers COMMA VariableInitializer{
+		nodeType.push_back($2); int comma = countNodes; countNodes++;
+		$$ =countNodes;
+		nodeType.push_back("VariableInitializers");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(comma);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 Block:
-	OPCURLY CLCURLY 
-	| OPCURLY BlockStatements CLCURLY 
+	OPCURLY CLCURLY {
+		nodeType.push_back($1); int opcurl = countNodes; countNodes++;
+		nodeType.push_back($2); int clcurl = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("Block");
+		adj[countNodes].push_back(opcurl);
+		adj[countNodes].push_back(clcurl);
+		countNodes++;
+	}
+	| OPCURLY BlockStatements CLCURLY {
+		nodeType.push_back($1); int opcurl = countNodes; countNodes++;
+		nodeType.push_back($3); int clcurl = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("Block");
+		adj[countNodes].push_back(opcurl);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(clcurl);
+		countNodes++;
+	}
 ;
 
 BlockStatements: 
-	BlockStatement 
-	| BlockStatements BlockStatement
+	BlockStatement {$$ = $1;}
+	| BlockStatements BlockStatement{
+		$$ = countNodes;
+		nodeType.push_back("BlockStatements");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 BlockStatement:
-	LocalVariableDeclarationStatement
-	| Statement
+	LocalVariableDeclarationStatement {$$ = $1;}
+	| Statement {$$ = $1;}
 ;
 
 LocalVariableDeclarationStatement:
-	LocalVariableDeclaration SEMICOLON
+	LocalVariableDeclaration SEMICOLON {
+		nodeType.push_back($2); int semicolon = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("LocalVariableDeclarationStatement");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(semicolon);
+		countNodes++;
+	}
 ;
 
 LocalVariableDeclaration:
-	Type VariableDeclarators
+	Type VariableDeclarators{
+		$$ = countNodes;
+		nodeType.push_back("LocalVariableDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 Statement:
-	StatementWithoutTrailingSubstatement
-	| LabeledStatement
-	| IfThenStatement
-	| IfThenElseStatement
-	| WhileStatement
-	| ForStatement
+	StatementWithoutTrailingSubstatement {$$ = $1;}
+	| LabeledStatement {$$=$1;}
+	| IfThenStatement {$$=$1;}
+	| IfThenElseStatement {$$=$1;}
+	| WhileStatement {$$=$1;}
+	| ForStatement {$$=$1;}
 ;
 
 StatementNoShortIf:
-	StatementWithoutTrailingSubstatement
-	| LabeledStatementNoShortIf
-	| IfThenElseStatementNoShortIf
-	| WhileStatementNoShortIf
-	| ForStatementNoShortIf
+	StatementWithoutTrailingSubstatement {$$=$1;}
+	| LabeledStatementNoShortIf {$$=$1;}
+	| IfThenElseStatementNoShortIf {$$=$1;}
+	| WhileStatementNoShortIf {$$=$1;}
+	| ForStatementNoShortIf {$$=$1;}
 ;
 
 StatementWithoutTrailingSubstatement:
-	Block
-	| EmptyStatement
-	| ExpressionStatement
-	| SwitchStatement
-	| DoStatement
-	| BreakStatement
-	| ContinueStatement
-	| ReturnStatement
-	| SynchronizedStatement
-	| ThrowStatement
-	| TryStatement
+	Block {$$=$1;}
+	| EmptyStatement {$$=$1;}
+	| ExpressionStatement {$$=$1;}
+	| SwitchStatement {$$=$1;}
+	| DoStatement {$$=$1;}
+	| BreakStatement {$$=$1;}
+	| ContinueStatement {$$=$1;}
+	| ReturnStatement {$$=$1;}
+	| SynchronizedStatement {$$=$1;}
+	| ThrowStatement {$$=$1;}
+	| TryStatement {$$=$1;}
 
 EmptyStatement:
-	SEMICOLON
+	SEMICOLON {
+		nodeType.push_back($1);
+		$$ = countNodes;
+		countNodes++;
+	}
 ;
 
 LabeledStatement:
-	Identifier COLON Statement
+	Identifier COLON Statement{
+		nodeType.push_back($2); int colon = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("LabeledStatement");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(colon);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 LabeledStatementNoShortIf:
-	Identifier COLON StatementNoShortIf
+	Identifier COLON StatementNoShortIf{
+		nodeType.push_back($2); int colon = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("LabeledStatementNoShortIf");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(colon);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 ExpressionStatement:
-	StatementExpression SEMICOLON
+	StatementExpression SEMICOLON{
+		nodeType.push_back($2); int semicolon = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExpressionStatement");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(semicolon);
+		countNodes++;
+	}
 ;
 
 StatementExpression:
-	Assignment
-	| PreIncrementExpression
-	| PreDecrementExpression
-	| PostIncrementExpression
-	| PostDecrementExpression
-	| MethodInvocation
-	| ClassInstanceCreationExpression
+	Assignment {$$=$1;}
+	| PreIncrementExpression {$$=$1;}
+	| PreDecrementExpression {$$=$1;}
+	| PostIncrementExpression {$$=$1;}
+	| PostDecrementExpression {$$=$1;}
+	| MethodInvocation {$$=$1;}
+	| ClassInstanceCreationExpression {$$=$1;}
 ;
 
 IfThenStatement:
-	IF OPROUND Expression CLROUND Statement
+	IF OPROUND Expression CLROUND Statement {
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n3 = countNodes; countNodes++;
+		nodeType.push_back($5); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("IfThenStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		countNodes++;
+	}
 ;
 
 IfThenElseStatement:
-	IF OPROUND Expression CLROUND StatementNoShortIf ELSE Statement
+	IF OPROUND Expression CLROUND StatementNoShortIf ELSE Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("IfThenElseStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++; 
+	}
 ;
 
 IfThenElseStatementNoShortIf:
-	IF OPROUND Expression CLROUND StatementNoShortIf ELSE StatementNoShortIf
+	IF OPROUND Expression CLROUND StatementNoShortIf ELSE StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("IfThenElseStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++; 
+	}
 ;
 
 SwitchStatement:
-	SWITCH OPROUND Expression CLROUND SwitchBlock
+	SWITCH OPROUND Expression CLROUND SwitchBlock{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++; 
+	}
 ;
 
 SwitchBlock:
-	OPCURLY CLCURLY
-	| OPCURLY SwitchLabels CLCURLY
-	| OPCURLY SwitchBlockStatementGroups CLCURLY
-	| OPCURLY SwitchBlockStatementGroups SwitchLabels CLCURLY
+	OPCURLY CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlock");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		countNodes++; 
+	}
+	| OPCURLY SwitchLabels CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlock");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n2);
+		countNodes++; 
+	}
+	| OPCURLY SwitchBlockStatementGroups CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlock");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n2);
+		countNodes++; 
+	}
+	| OPCURLY SwitchBlockStatementGroups SwitchLabels CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($4); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlock");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++; 
+	}
 ;
 
 SwitchBlockStatementGroups:
-	SwitchBlockStatementGroup
-	| SwitchBlockStatementGroups SwitchBlockStatementGroup
+	SwitchBlockStatementGroup {$$ = $1;}
+	| SwitchBlockStatementGroups SwitchBlockStatementGroup{
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlockStatementGroups");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 SwitchBlockStatementGroup:
-	SwitchLabels BlockStatements
+	SwitchLabels BlockStatements{
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlockStatementGroup");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 SwitchLabels:
-	SwitchLabel
-	| SwitchLabels SwitchLabel
+	SwitchLabel {$$ = $1;}
+	| SwitchLabels SwitchLabel{
+		$$ = countNodes;
+		nodeType.push_back("SwitchLabels");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 SwitchLabel:
-	CASE ConstantExpression COLON
-	| DEFAULT COLON
+	CASE ConstantExpression COLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchLabel");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n2);
+		countNodes++; 
+	}
+	| DEFAULT COLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SwitchLabel");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		countNodes++; 
+	}
 ;
 
 WhileStatement:
-	WHILE OPROUND Expression CLROUND Statement
+	WHILE OPROUND Expression CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("WhileStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++; 
+	}
 ;
 
 WhileStatementNoShortIf:
-	WHILE OPROUND Expression CLROUND StatementNoShortIf
+	WHILE OPROUND Expression CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("WhileStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++; 
+	}
 ;
 
 DoStatement:
-	DO Statement WHILE OPROUND Expression CLROUND SEMICOLON
+	DO Statement WHILE OPROUND Expression CLROUND SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("DoStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back(n7);
+		countNodes++; 
+	}
 ;
 
 ForStatement:
-	  FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement
-	| FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement
-	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND Statement
-	| FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND Statement
-	| FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND Statement
-	| FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND Statement
-	| FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND Statement
-	| FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND Statement
+	  FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		nodeType.push_back($8); int n8 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		adj[countNodes].push_back(n8);
+		adj[countNodes].push_back($9);
+		countNodes++;
+	  }
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back($4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back($6);
+		adj[countNodes].push_back(n7);
+		adj[countNodes].push_back($8);
+		countNodes++;
+	}
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back($6);
+		adj[countNodes].push_back(n7);
+		adj[countNodes].push_back($8);
+		countNodes++;
+	}
+	| FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back(n7);
+		adj[countNodes].push_back($8);
+		countNodes++;
+	}
+	| FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++;
+	}
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back($4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++;
+	}
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++;
+	}
+	| FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND Statement{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back($6);
+	}
 ;
 
 ForStatementNoShortIf:
-	  FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf
-	| FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf
-	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf
-	| FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf
-	| FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf
-	| FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf
-	| FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf
-	| FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf
+	  FOR OPROUND ForInit SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		nodeType.push_back($8); int n8 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		adj[countNodes].push_back(n8);
+		adj[countNodes].push_back($9);
+		countNodes++;
+	  }
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON ForUpdate CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back($4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back($6);
+		adj[countNodes].push_back(n7);
+		adj[countNodes].push_back($8);
+		countNodes++;
+	}
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON ForUpdate CLROUND {
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back($6);
+		adj[countNodes].push_back(n7);
+		adj[countNodes].push_back($8);
+		countNodes++;
+	}
+	| FOR OPROUND ForInit SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		nodeType.push_back($7); int n7 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back(n7);
+		adj[countNodes].push_back($8);
+		countNodes++;
+	}
+	| FOR OPROUND         SEMICOLON            SEMICOLON ForUpdate CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++;
+	}
+	| FOR OPROUND         SEMICOLON Expression SEMICOLON           CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back($4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++;
+	}
+	| FOR OPROUND ForInit SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back(n6);
+		adj[countNodes].push_back($7);
+		countNodes++;
+	}
+	| FOR OPROUND         SEMICOLON            SEMICOLON           CLROUND StatementNoShortIf{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ForStatementNoShortIf");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		adj[countNodes].push_back($6);
+	}
 ;
 
 ForInit:
-	StatementExpressionList 
-	| LocalVariableDeclaration
+	StatementExpressionList {$$ = $1;}
+	| LocalVariableDeclaration {$$ = $1;}
 ;
 
 ForUpdate:
-	StatementExpressionList
+	StatementExpressionList {$$ = $1;}
 ;
 
 StatementExpressionList:
-	StatementExpression 
-	| StatementExpressionList COMMA StatementExpression
+	StatementExpression {$$ = $1;}
+	| StatementExpressionList COMMA StatementExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("StatementExpressionList");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 BreakStatement:
-	BREAK Identifier SEMICOLON
-	| BREAK SEMICOLON
+	BREAK Identifier SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("BreakStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
+	| BREAK SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("BreakStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
 ;
 
 ContinueStatement:
-	CONTINUE Identifier SEMICOLON
-	| CONTINUE SEMICOLON
+	CONTINUE Identifier SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ContinueStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
+	| CONTINUE SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ContinueStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
 ;
 
 ReturnStatement:
-	RETURN Expression SEMICOLON
-	| RETURN SEMICOLON
+	RETURN Expression SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ReturnStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
+	| RETURN SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ReturnStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
 ;
 
 ThrowStatement:
-	THROW Expression SEMICOLON
+	THROW Expression SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ThrowStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
 ;
 
 SynchronizedStatement:
-	SYNCHRONIZED OPROUND Expression CLROUND Block
+	SYNCHRONIZED OPROUND Expression CLROUND Block{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("SynchronizedStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++;
+	}
 ;
 
 TryStatement: 
-	TRY Block Catches
-	| TRY Block Catches Finally
-	| TRY Block Finally
+	TRY Block Catches{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("TryStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
+	| TRY Block Catches Finally{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("TryStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		countNodes++;
+	}
+	| TRY Block Finally{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("TryStatement");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 Catches:
-	CatchClause
-	| Catches CatchClause
+	CatchClause {$$ = $1;}
+	| Catches CatchClause{
+		$$ = countNodes;
+		nodeType.push_back("Catches");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 CatchClause:
-	CATCH OPROUND FormalParameter CLROUND Block
+	CATCH OPROUND FormalParameter CLROUND Block{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("CatchClause");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++;
+	}
 ;
 
-Finally: FINALLY Block
+Finally: FINALLY Block{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("Finally");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
 ;
 
 
