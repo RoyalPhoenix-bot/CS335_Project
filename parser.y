@@ -2319,6 +2319,7 @@ int yyerror(char* s){
 
 int main(int argc, char* argv[])
 {
+	int flag=0;
 	for(int i=0;i<argc;i++){
 		string s = argv[i];
 		if(s.substr(0, 7) == "--input"){
@@ -2334,6 +2335,7 @@ int main(int argc, char* argv[])
 				filename+=s[i];
 			}
 			freopen(filename.c_str(),"w",stdout);
+			flag=1;
 		}
 		if(s.substr(0, 9) == "--verbose"){
 			yydebug = 1;
@@ -2349,7 +2351,7 @@ int main(int argc, char* argv[])
 
     yyparse(); 
 
-	freopen("output.dot","w",stdout);
+	if(!flag)freopen("output.dot","w",stdout);
 	cout << "// dot -Tps output.dot -o out.ps\n\n"
 		<< "graph \"Tree\"\n"
 		<< "{\n"
