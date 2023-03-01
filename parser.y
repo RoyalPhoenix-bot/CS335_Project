@@ -549,8 +549,8 @@ InterfaceBody:
 ;
 
 InterfaceMemberDeclarations: 
-	InterfaceMemberDeclaration	{$$ = $1}
-	| InterfaceMemberDeclarations InterfaceMemberDeclaration {int newNum = }
+	InterfaceMemberDeclaration	{$$ = $1;}
+	| InterfaceMemberDeclarations InterfaceMemberDeclaration 
 ;
 
 InterfaceMemberDeclaration: 
