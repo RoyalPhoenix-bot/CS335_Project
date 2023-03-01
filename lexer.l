@@ -108,12 +108,12 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 
 {Comment} {printf("Comment\n");}
 {LineTerminator} {continue;}
-"."            {yylval.name=strdup(yytext); printf("Got a DOT\n"); return (DOT);}
-{IntegerLiteral} {yylval.name=strdup(yytext); printf("integer received: %s\n",yytext); return (INTEGERLITERAL);}
+"."            {yylval.name=strdup(yytext); return (DOT);}
+{IntegerLiteral} {yylval.name=strdup(yytext); return (INTEGERLITERAL);}
 {FloatingPointLiteral} {yylval.name=strdup(yytext); return (FLOATINGPOINTLITERAL);}
 {BooleanLiteral} {yylval.name=strdup(yytext); return (BOOLEANLITERAL);}
 {CharacterLiteral} {yylval.name=strdup(yytext); return (CHARACTERLITERAL);}
-{StringLiteral} {yylval.name=strdup(yytext); printf("Got a string literal\n"); return (STRINGLITERAL);}
+{StringLiteral} {yylval.name=strdup(yytext); return (STRINGLITERAL);}
 {NullLiteral} {yylval.name=strdup(yytext); return (NULLLITERAL);}
 "byte" {yylval.name=strdup(yytext); return (BYTE);}
 "import" {yylval.name=strdup(yytext); return (IMPORT);}
@@ -146,7 +146,7 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 "try"          {yylval.name=strdup(yytext); return (TRY);}
 "finally"      {yylval.name=strdup(yytext); return (FINALLY);}
 "catch"        {yylval.name=strdup(yytext); return (CATCH);}
-"void"         {yylval.name=strdup(yytext); printf("Got a void\n"); return (VOID);}
+"void"         {yylval.name=strdup(yytext); return (VOID);}
 "throws"       {yylval.name=strdup(yytext); return (THROWS);}
 "extends"      {yylval.name=strdup(yytext); return (EXTENDS);}
 "implements"   {yylval.name=strdup(yytext); return (IMPLEMENTS);}
@@ -164,10 +164,10 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 "new"          {yylval.name=strdup(yytext); return (NEW);}
 "continue"     {yylval.name=strdup(yytext); return (CONTINUE);}
 "return"       {yylval.name=strdup(yytext); return (RETURN);}
-"{"     {yylval.name=strdup(yytext); printf("opening curly bracket\n"); return (OPCURLY);}
-"}"     {yylval.name=strdup(yytext); printf("closing curly bracket\n"); return (CLCURLY);}
-"("     {yylval.name=strdup(yytext); printf("opening round bracket\n"); return (OPROUND);}
-")"     {yylval.name=strdup(yytext); printf("closing round bracket\n"); return (CLROUND);}
+"{"     {yylval.name=strdup(yytext); return (OPCURLY);}
+"}"     {yylval.name=strdup(yytext); return (CLCURLY);}
+"("     {yylval.name=strdup(yytext); return (OPROUND);}
+")"     {yylval.name=strdup(yytext); return (CLROUND);}
 "["     {yylval.name=strdup(yytext); return (OPSQR);}
 "]"     {yylval.name=strdup(yytext); return (CLSQR);}
 "+"     {yylval.name=strdup(yytext); return (PLUS);}
@@ -207,7 +207,7 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 "^="     {yylval.name=strdup(yytext); return (XOREQUALTO);}
 "|="     {yylval.name=strdup(yytext); return (BAREQUALTO);}
 {Literal} {yylval.name=strdup(yytext);  return (LITERAL); }
-{Identifier} {yylval.name=strdup(yytext); printf("An indentifier received\n"); return (IDENTIFIER);}
+{Identifier} {yylval.name=strdup(yytext); return (IDENTIFIER);}
 {WhiteSpace} { continue;}
 .       {
             printf("Error: Unrecognized character on line %d\n",yylineno);

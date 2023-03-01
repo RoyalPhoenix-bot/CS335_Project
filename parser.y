@@ -1,6 +1,6 @@
 %{
 #include<bits/stdc++.h>
-// #define YYDEBUG 1
+#define YYDEBUG 1
 using namespace std;
 
 extern int yylineno;
@@ -2317,8 +2317,36 @@ int yyerror(char* s){
     exit(0);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+	for(int i=0;i<argc;i++){
+		string s = argv[i];
+		if(s.substr(0, 7) == "--input"){
+			string filename="";
+			for(int i=8;i<s.size();i++){
+				filename+=s[i];
+			}
+			freopen(filename.c_str(),"r",stdin);
+		}
+		if(s.substr(0, 8) == "--output"){
+			string filename="";
+			for(int i=9;i<s.size();i++){
+				filename+=s[i];
+			}
+			freopen(filename.c_str(),"w",stdout);
+		}
+		if(s.substr(0, 9) == "--verbose"){
+			yydebug = 1;
+		}
+		if(s.substr(0, 6) == "--help"){
+			printf("You can use the following flags : \n");
+			printf("1. --input=[FILENAME]: To specify from where to take the input. \n");
+			printf("2. --output=[FILENAME] : To specify where to redirect the output. \n");
+			printf("3. --verbose : To print detailed error messages.\n");
+			printf("4. --help : To display help regarding the flags. \n");
+		}
+	}
+
     yyparse(); 
 
 	freopen("output.dot","w",stdout);
