@@ -298,8 +298,6 @@ Dims:
 	| Dims OPSQR CLSQR {nodeType.push_back($2); nodeType.push_back($3); nodeType.push_back("Dims"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes); adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
-FieldAccess to before InterfaceMemberDeclarations
-
 FieldAccess:
 	Primary DOT Identifier{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
