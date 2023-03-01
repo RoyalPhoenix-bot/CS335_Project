@@ -209,7 +209,10 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 {Literal} {yylval.name=strdup(yytext);  return (LITERAL); }
 {Identifier} {yylval.name=strdup(yytext); printf("An indentifier received\n"); return (IDENTIFIER);}
 {WhiteSpace} { continue;}
-. {printf("Other\n");return(OTHER);}
+.       {
+            printf("Error: Unrecognized character on line %d\n",yylineno);
+            exit(0);
+        }
 
 %%
 

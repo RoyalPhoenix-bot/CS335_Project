@@ -3,6 +3,7 @@
 // #define YYDEBUG 1
 using namespace std;
 
+extern int yylineno;
 int yylex();
 int yyerror(char *s);
 
@@ -25,6 +26,7 @@ map<int, vector<int>> adj;
 %union{
 	char* name;
 }
+%debug
 
 %%
 
@@ -1459,10 +1461,9 @@ Finally: FINALLY Block{
 
 %%
 
-int yyerror(char *s)
-{
-	printf("%s\n", s);
-	return 0;
+int yyerror(char* s){
+    printf("Error: %s on line %d\n",s,yylineno);
+    exit(0);
 }
 
 int main()
