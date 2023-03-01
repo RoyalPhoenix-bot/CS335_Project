@@ -298,261 +298,1101 @@ Dims:
 	| Dims OPSQR CLSQR {nodeType.push_back($2); nodeType.push_back($3); nodeType.push_back("Dims"); $$=countNodes+2; adj[$$].push_back($1); adj[$$].push_back(countNodes); adj[$$].push_back(countNodes+1);countNodes+=3;}
 ;
 
+FieldAccess to before InterfaceMemberDeclarations
+
 FieldAccess:
-	Primary DOT Identifier
-	| SUPER DOT Identifier
+	Primary DOT Identifier{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("FieldAccess");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| SUPER DOT Identifier{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("FieldAccess");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 MethodInvocation:
-	Name OPROUND CLROUND
-	| Name OPROUND ArgumentList CLROUND
-	| Primary DOT Identifier OPROUND CLROUND
-	| Primary DOT Identifier OPROUND ArgumentList CLROUND
-	| SUPER DOT Identifier OPROUND CLROUND 
-	| SUPER DOT Identifier OPROUND ArgumentList CLROUND
+	Name OPROUND CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodInvocation");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		countNodes++;	
+	}
+	| Name OPROUND ArgumentList CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodInvocation");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;	
+	}
+	| Primary DOT Identifier OPROUND CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodInvocation");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		countNodes++;	
+	}
+	| Primary DOT Identifier OPROUND ArgumentList CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodInvocation");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		countNodes++;	
+	}
+	| SUPER DOT Identifier OPROUND CLROUND {
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodInvocation");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		countNodes++;	
+	}
+	| SUPER DOT Identifier OPROUND ArgumentList CLROUND{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($6); int n6 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodInvocation");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		adj[countNodes].push_back(n6);
+		countNodes++;	
+	}
 ;
 
 ArrayAccess:
-	Name OPSQR Expression CLSQR
-	| PrimaryNoNewArray OPSQR Expression CLSQR
+	Name OPSQR Expression CLSQR{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ArrayAccess");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;	
+	}
+	| PrimaryNoNewArray OPSQR Expression CLSQR{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ArrayAccess");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;	
+	}
 ;
 
 PostfixExpression:
-	Primary
-	| Name
-	| PostIncrementExpression
-	| PostDecrementExpression
+	Primary{
+		$$ = $1;
+	}
+	| Name{
+		$$ = $1;
+	}
+	| PostIncrementExpression{
+		$$ = $1;
+	}
+	| PostDecrementExpression{
+		$$ = $1;
+	}
 ;
 
 PostIncrementExpression:
-	PostfixExpression DPLUS
+	PostfixExpression DPLUS{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("PostIncrementExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		countNodes++;	
+	}
 ;
 
 PostDecrementExpression:
-	PostfixExpression DMINUS
+	PostfixExpression DMINUS{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("PostDecrementExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		countNodes++;	
+	}
 ;
 
 UnaryExpression:
-	PreIncrementExpression
-	| PreDecrementExpression
-	| PLUS UnaryExpression
-	| MINUS UnaryExpression
-	| UnaryExpressionNotPlusMinus
+	PreIncrementExpression{
+		$$ = $1;
+	}
+	| PreDecrementExpression{
+		$$ = $1;
+	}
+	| PLUS UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("UnaryExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+	}
+	| MINUS UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("UnaryExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+	}
+	| UnaryExpressionNotPlusMinus{
+		$$ = $1;
+	}
 ;
 
 PreIncrementExpression:
-	DPLUS UnaryExpression
+	DPLUS UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("PreIncrementExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+	}
 ;
 
 PreDecrementExpression:
-	DMINUS UnaryExpression
+	DMINUS UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("PreDecrementExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+	}
 ;
 
 UnaryExpressionNotPlusMinus:
-	PostfixExpression
-	| TILDA UnaryExpression
-	| EX UnaryExpression
-	| CastExpression
+	PostfixExpression{
+		$$ = $1;
+	}
+	| TILDA UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("UnaryExpressionNotPlusMinus");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+	}
+	| EX UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("UnaryExpressionNotPlusMinus");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+	}
+	| CastExpression{
+		$$ = $1;
+	}
 ;
 
 CastExpression:
-	OPROUND PrimitiveType CLROUND UnaryExpression
-	| OPROUND PrimitiveType Dims CLROUND UnaryExpression
-	| OPROUND Expression CLROUND UnaryExpressionNotPlusMinus
-	| OPROUND Name Dims CLROUND UnaryExpressionNotPlusMinus
+	OPROUND PrimitiveType CLROUND UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("CastExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back($4);
+		countNodes++;	
+	}
+	| OPROUND PrimitiveType Dims CLROUND UnaryExpression{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("CastExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++;	
+	}
+	| OPROUND Expression CLROUND UnaryExpressionNotPlusMinus{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("CastExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back($4);
+		countNodes++;	
+	}
+	| OPROUND Name Dims CLROUND UnaryExpressionNotPlusMinus{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("CastExpression");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++;	
+	}
 ;
 
 MultiplicativeExpression:
-	UnaryExpression
-	| MultiplicativeExpression ASTERIX UnaryExpression
-	| MultiplicativeExpression FSLASH UnaryExpression
-	| MultiplicativeExpression MOD UnaryExpression
+	UnaryExpression{
+		$$ = $1;
+	}
+	| MultiplicativeExpression ASTERIX UnaryExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MultiplicativeExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| MultiplicativeExpression FSLASH UnaryExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MultiplicativeExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| MultiplicativeExpression MOD UnaryExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MultiplicativeExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 AdditiveExpression:
-	MultiplicativeExpression
-	| AdditiveExpression PLUS MultiplicativeExpression
-	| AdditiveExpression MINUS MultiplicativeExpression
+	MultiplicativeExpression{
+		$$ = $1;
+	}
+	| AdditiveExpression PLUS MultiplicativeExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("AdditiveExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| AdditiveExpression MINUS MultiplicativeExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("AdditiveExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 ShiftExpression:
-	AdditiveExpression
-	| ShiftExpression LSHIFT AdditiveExpression
-	| ShiftExpression RSHIFT AdditiveExpression
-	| ShiftExpression URSHIFT AdditiveExpression
+	AdditiveExpression{
+		$$ = $1;
+	}
+	| ShiftExpression LSHIFT AdditiveExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ShiftExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| ShiftExpression RSHIFT AdditiveExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ShiftExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| ShiftExpression URSHIFT AdditiveExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ShiftExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 RelationalExpression:
-	ShiftExpression
-	| RelationalExpression LT ShiftExpression
-	| RelationalExpression GT ShiftExpression
-	| RelationalExpression LTE ShiftExpression
-	| RelationalExpression GTE ShiftExpression
-	| RelationalExpression INSTANCEOF ReferenceType
+	ShiftExpression{
+		$$ = $1;
+	}
+	| RelationalExpression LT ShiftExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("RelationalExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| RelationalExpression GT ShiftExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("RelationalExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| RelationalExpression LTE ShiftExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("RelationalExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| RelationalExpression GTE ShiftExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("RelationalExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| RelationalExpression INSTANCEOF ReferenceType{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("RelationalExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 EqualityExpression:
-	RelationalExpression
-	| EqualityExpression DOUBLEEQ RelationalExpression
-	| EqualityExpression NOTEQ RelationalExpression
+	RelationalExpression{
+		$$ = $1;
+	}
+	| EqualityExpression DOUBLEEQ RelationalExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("EqualityExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| EqualityExpression NOTEQ RelationalExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("EqualityExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 AndExpression:
-	EqualityExpression
-	| AndExpression AND EqualityExpression
+	EqualityExpression{
+		$$ = $1;
+	}
+	| AndExpression AND EqualityExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("AndExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 ExclusiveOrExpression:
-	AndExpression
-	| ExclusiveOrExpression XOR AndExpression
+	AndExpression{
+		$$ = $1;
+	}
+	| ExclusiveOrExpression XOR AndExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExclusiveOrExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 InclusiveOrExpression:
-	ExclusiveOrExpression
-	| InclusiveOrExpression OR ExclusiveOrExpression
+	ExclusiveOrExpression{
+		$$ = $1;
+	}
+	| InclusiveOrExpression OR ExclusiveOrExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InclusiveOrExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 ConditionalAndExpression:
-	InclusiveOrExpression
-	| ConditionalAndExpression DAND InclusiveOrExpression
+	InclusiveOrExpression{
+		$$ = $1;
+	}
+	| ConditionalAndExpression DAND InclusiveOrExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConditionalAndExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 ConditionalOrExpression:
-	ConditionalAndExpression
-	| ConditionalOrExpression DOR ConditionalAndExpression
+	ConditionalAndExpression{
+		$$ = $1;
+	}
+	| ConditionalOrExpression DOR ConditionalAndExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConditionalOrExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 ConditionalExpression:
-	ConditionalOrExpression
-	| ConditionalOrExpression QUES Expression COLON ConditionalExpression
+	ConditionalOrExpression{
+		$$ = $1;
+	}
+	| ConditionalOrExpression QUES Expression COLON ConditionalExpression{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConditionalExpression");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back($5);
+		countNodes++;	
+	}
 ;
 
 AssignmentExpression:
-	ConditionalExpression
-	| Assignment
+	ConditionalExpression{
+		$$ = $1;
+	}
+	| Assignment{
+		$$ = $1;
+	}
 ;
 
 Assignment:
-	LeftHandSide AssignmentOperator AssignmentExpression
+	LeftHandSide AssignmentOperator AssignmentExpression{
+		$$ = countNodes;
+		nodeType.push_back("Assignment");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 AssignmentOperator:
-	EQUALTO
-	| STAREQUALTO
-	| BYEQUALTO
-	| PLUSEQUALTO
-	| MINUSEQUALTO
-	| TWOLEFTSHIFTEQUALTO
-	| TWORIGHTSHIFTEQUALTO
-	| THREERIGHTSHIFTEQUALTO
-	| ANDEQUALTO
-	| XOREQUALTO
-	| BAREQUALTO
+	EQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| STAREQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| BYEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| PLUSEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| MINUSEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| TWOLEFTSHIFTEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| TWORIGHTSHIFTEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| THREERIGHTSHIFTEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| ANDEQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| XOREQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
+	| BAREQUALTO{
+		$$=countNodes;
+		countNodes++;  
+		nodeType.push_back($1);  
+	}
 
 LeftHandSide:
-	Name
-	| FieldAccess
-	| ArrayAccess
+	Name{
+		$$ = $1;
+	}
+	| FieldAccess{
+		$$ = $1;
+	}
+	| ArrayAccess{
+		$$ = $1;
+	}
 ;
 
 Expression:
-	AssignmentExpression
+	AssignmentExpression{
+		$$ = $1;
+	}
 ;
 
-ConstantExpression: Expression;
+ConstantExpression: 
+	Expression {
+		$$ = $1;
+	}
+;
 
 VariableInitializer: 
-	Expression
-	| ArrayInitializer
+	Expression{
+		$$ = $1;
+	}
+	| ArrayInitializer{
+		$$ = $1;
+	}
 ;
 
-MethodDeclaration: MethodHeader MethodBody
+MethodDeclaration: MethodHeader MethodBody{
+	$$ = countNodes;
+	nodeType.push_back("MethodDeclaration");
+	adj[countNodes].push_back($1);
+	adj[countNodes].push_back($2);
+	countNodes++;	
+}
 ;
 
 MethodHeader: 
-	Modifiers Type MethodDeclarator Throws
-	| Type MethodDeclarator Throws
-	| Modifiers Type MethodDeclarator 
-	| Type MethodDeclarator
-	| Modifiers VOID MethodDeclarator Throws
-	| Modifiers VOID MethodDeclarator 
-	| VOID MethodDeclarator Throws
-	| VOID MethodDeclarator
+	Modifiers Type MethodDeclarator Throws{
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		countNodes++;	
+	}
+	| Type MethodDeclarator Throws{
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
+	| Modifiers Type MethodDeclarator {
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+
+	}
+	| Type MethodDeclarator{
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+
+	}
+	| Modifiers VOID MethodDeclarator Throws{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		countNodes++;	
+
+	}
+	| Modifiers VOID MethodDeclarator {
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+
+	}
+	| VOID MethodDeclarator Throws{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+
+	}
+	| VOID MethodDeclarator{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodHeader");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+
+	}
 ;
 
 MethodDeclarator: 
-	Identifier OPROUND FormalParameterList CLROUND
-	| Identifier OPROUND CLROUND
-	| MethodDeclarator OPSQR CLSQR
+	Identifier OPROUND FormalParameterList CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodDeclarator");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;	
+	}
+	| Identifier OPROUND CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodDeclarator");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		countNodes++;	
+	}
+	| MethodDeclarator OPSQR CLSQR{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("MethodDeclarator");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		countNodes++;	
+	}
 ;
 
 FormalParameterList: 
-	FormalParameter
-	| FormalParameterList COMMA FormalParameter
+	FormalParameter{
+		$$ = $1;
+	}
+	| FormalParameterList COMMA FormalParameter{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("FormalParameterList");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
-FormalParameter: Type VariableDeclaratorId
+FormalParameter: Type VariableDeclaratorId{
+		$$ = countNodes;
+		nodeType.push_back("FormalParameter");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+}
 ;
 
-Throws: THROWS ClassTypeList
+Throws: THROWS ClassTypeList{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("Throws");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;	
+}
 ;
 
 ClassTypeList: 
-	ClassType
-    | ClassTypeList COMMA ClassType
+	ClassType{
+		$$ = $1;
+	}
+    | ClassTypeList COMMA ClassType{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ClassTypeList");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;	
+	}
 ;
 
 MethodBody: 
-	Block 
-	| SEMICOLON
+	Block{
+		$$ = $1;
+	}
+	| SEMICOLON{
+		$$ = countNodes;
+		countNodes++;
+		nodeType.push_back($1);
+	}
 ;
 
-StaticInitializer: STATIC Block
+StaticInitializer: STATIC Block{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("StaticInitializer");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+}
 ;
 
 ConstructorDeclaration:	
-	Modifiers ConstructorDeclarator Throws ConstructorBody
-	| ConstructorDeclarator Throws ConstructorBody
-	| ConstructorDeclarator ConstructorBody
-	| Modifiers ConstructorDeclarator ConstructorBody
+	Modifiers ConstructorDeclarator Throws ConstructorBody{
+		$$ = countNodes;
+		nodeType.push_back("ConstructorDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		countNodes++;
+	}
+	| ConstructorDeclarator Throws ConstructorBody{
+		$$ = countNodes;
+		nodeType.push_back("ConstructorDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
+	| ConstructorDeclarator ConstructorBody{
+		$$ = countNodes;
+		nodeType.push_back("ConstructorDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
+	| Modifiers ConstructorDeclarator ConstructorBody{
+		$$ = countNodes;
+		nodeType.push_back("ConstructorDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 ConstructorDeclarator: 
-	SimpleName OPROUND FormalParameterList CLROUND
-	| SimpleName OPROUND CLROUND
+	SimpleName OPROUND FormalParameterList CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConstructorDeclarator");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;
+	}
+	| SimpleName OPROUND CLROUND{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConstructorDeclarator");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+
+	}
 ;
 
 ConstructorBody: 
-	OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY
-	| OPCURLY BlockStatements CLCURLY
-	| OPCURLY ExplicitConstructorInvocation CLCURLY
-	| OPCURLY CLCURLY
+	OPCURLY ExplicitConstructorInvocation BlockStatements CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConstructorBody");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;
+	}
+	| OPCURLY BlockStatements CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConstructorBody");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
+	| OPCURLY ExplicitConstructorInvocation CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConstructorBody");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(n3);
+		countNodes++;
+	}
+	| OPCURLY CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ConstructorBody");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		countNodes++;
+	}
 ;
 
 ExplicitConstructorInvocation: 
-	THIS OPROUND ArgumentList CLROUND SEMICOLON
-	| THIS OPROUND CLROUND SEMICOLON
-	| SUPER OPROUND ArgumentList CLROUND SEMICOLON
-	| SUPER OPROUND CLROUND SEMICOLON
+	THIS OPROUND ArgumentList CLROUND SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExplicitConstructorInvocation");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		countNodes++;
+	}
+	| THIS OPROUND CLROUND SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExplicitConstructorInvocation");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		countNodes++;
+	}
+	| SUPER OPROUND ArgumentList CLROUND SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		nodeType.push_back($5); int n5 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExplicitConstructorInvocation");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		adj[countNodes].push_back(n5);
+		countNodes++;
+	}
+	| SUPER OPROUND CLROUND SEMICOLON{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		nodeType.push_back($3); int n3 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExplicitConstructorInvocation");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back(n3);
+		adj[countNodes].push_back(n4);
+		countNodes++;
+	}
 ;
 
 
 InterfaceDeclaration: 
-	Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody
-	| INTERFACE Identifier ExtendsInterfaces InterfaceBody
-	| Modifiers INTERFACE Identifier InterfaceBody
-	| INTERFACE Identifier InterfaceBody
+	Modifiers INTERFACE Identifier ExtendsInterfaces InterfaceBody{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InterfaceDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		adj[countNodes].push_back($5);
+		countNodes++;
+	}
+	| INTERFACE Identifier ExtendsInterfaces InterfaceBody{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InterfaceDeclaration");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		countNodes++;
+	}
+	| Modifiers INTERFACE Identifier InterfaceBody{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InterfaceDeclaration");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back($4);
+		countNodes++;
+	}
+	| INTERFACE Identifier InterfaceBody{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InterfaceDeclaration");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 ExtendsInterfaces: 
-	EXTENDS InterfaceType
-	| ExtendsInterfaces COMMA InterfaceType
+	EXTENDS InterfaceType{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExtendsInterfaces");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		countNodes++;
+	}
+	| ExtendsInterfaces COMMA InterfaceType{
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ExtendsInterfaces");
+		adj[countNodes].push_back($1);
+		adj[countNodes].push_back(n2);
+		adj[countNodes].push_back($3);
+		countNodes++;
+	}
 ;
 
 InterfaceBody: 
-	OPCURLY InterfaceMemberDeclarations CLCURLY
-	| OPCURLY CLCURLY
+	OPCURLY InterfaceMemberDeclarations CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($4); int n4 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InterfaceBody");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back($3);
+		adj[countNodes].push_back(n4);
+		countNodes++;
+	}
+	| OPCURLY CLCURLY{
+		nodeType.push_back($1); int n1 = countNodes; countNodes++;
+		nodeType.push_back($2); int n2 = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("InterfaceBody");
+		adj[countNodes].push_back(n1);
+		adj[countNodes].push_back(n2);
+		countNodes++;
+	}
 ;
+
 
 InterfaceMemberDeclarations: 
 	InterfaceMemberDeclaration	{$$ = $1;}
