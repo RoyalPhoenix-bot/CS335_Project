@@ -11,6 +11,26 @@ int countNodes=0;
 vector<string> nodeType;
 map<int, vector<int>> adj;
 
+typedef struct localtableparams{
+	string name;
+	string type;
+	string scope;
+	vector<localtableparams>* functionTablePointer;
+	vector<string> functionParams;
+	string functionReturnType;
+
+} localTableParams ;
+
+typedef struct globaltableparams{
+	string name;
+	string type;
+	vector<localTableParams>* localTablePointer; 
+} globalTableParams;
+
+
+
+vector<globalTableParams> globalTable;
+
 %}
 
 %token <name> SUPER IF ELSE SWITCH CASE DEFAULT WHILE DO FOR BREAK THROW TRY FINALLY CATCH VOID THROWS EXTENDS IMPLEMENTS CLASS INTERFACE BOOLEAN SHORT INT LONG CHAR FLOAT DOUBLE INSTANCEOF THIS NEW 
