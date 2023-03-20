@@ -368,7 +368,7 @@ MethodInvocation:
 		countNodes++;
 
 		//3AC code
-		
+		// threeAC.push_back("y = call p,0");
 	}
 	| Name OPROUND ArgumentList CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -380,6 +380,9 @@ MethodInvocation:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back(n4);
 		countNodes++;	
+
+		//3AC
+
 	}
 	| Primary DOT Identifier OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;

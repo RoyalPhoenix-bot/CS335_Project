@@ -110,7 +110,7 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 
 %%
 
-{Comment} {printf("Comment\n");}
+{Comment} {continue;}
 {LineTerminator} {continue;}
 "."            {yylval.name=strdup(yytext); return (DOT);}
 {IntegerLiteral} {yylval.name=strdup(yytext); return (INTEGERLITERAL);}
