@@ -14,8 +14,9 @@ map<int, vector<int>> adj;
 typedef struct localtableparams{
 	string name;
 	string type;
-	int scope1;
-	int scope2;
+	pair<int,int> scope;
+	pair<int,int> parentScope;
+	int offset;
 	vector<localtableparams>* functionTablePointer;
 	vector<string> functionParams;
 	string functionReturnType;
