@@ -59,20 +59,24 @@ BinaryIntegerLiteral {BinaryNumeral}{IntegerTypeSuffix}?
 
 IntegerLiteral {DecimalIntegerLiteral}|{HexIntegerLiteral}|{OctalIntegerLiteral}|{BinaryIntegerLiteral}
 
-FloatTypeSuffix "f"|"F"|"D"|"d"
+FloatTypeSuffix "f"|"F"
+DoubleTypeSuffix "D"|"d"
 Sign [+-]
 SignedInteger {Sign}?{Digits}
 ExponentIndicator "e"|"E"
 ExponentPart {ExponentIndicator}{SignedInteger}
 DecimalFloatingPointLiteral ({Digits}\.{Digits}?{ExponentPart}?{FloatTypeSuffix}?)|(\.{Digits}{ExponentPart}?{FloatTypeSuffix}?)|({Digits}{ExponentPart}{FloatTypeSuffix}?)|({Digits}{ExponentPart}?{FloatTypeSuffix})
+DecimalDoublePointLiteral ({Digits}\.{Digits}?{ExponentPart}?{DoubleTypeSuffix}?)|(\.{Digits}{ExponentPart}?{DoubleTypeSuffix}?)|({Digits}{ExponentPart}{DoubleTypeSuffix}?)|({Digits}{ExponentPart}?{DoubleTypeSuffix})
 
 
 BinaryExponentIndicator "p"|"P"
 BinaryExponent {BinaryExponentIndicator}{SignedInteger}
 HexSignificand ({HexNumeral}\.?)|("0x"{HexDigits}?\.{HexDigits})
 HexadecimalFloatingPointLiteral {HexSignificand}{BinaryExponent}{FloatTypeSuffix}?
+HexadecimalDoublePointLiteral {HexSignificand}{BinaryExponent}{DoubleTypeSuffix}?
 
 FloatingPointLiteral {DecimalFloatingPointLiteral}|{HexadecimalFloatingPointLiteral}
+DoublePointLiteral {DecimalDoublePointLiteral}|{HexadecimalDoublePointLiteral}
 
 
 BooleanLiteral "true"|"false"
@@ -111,6 +115,7 @@ Separator "::"|"..."|[(){};,@]|"["|"]"
 "."            {yylval.name=strdup(yytext); return (DOT);}
 {IntegerLiteral} {yylval.name=strdup(yytext); return (INTEGERLITERAL);}
 {FloatingPointLiteral} {yylval.name=strdup(yytext); return (FLOATINGPOINTLITERAL);}
+{DoublePointLiteral} {yylval.name=strdup(yytext); return (DOUBLEPOINTLITERAL);}
 {BooleanLiteral} {yylval.name=strdup(yytext); return (BOOLEANLITERAL);}
 {CharacterLiteral} {yylval.name=strdup(yytext); return (CHARACTERLITERAL);}
 {StringLiteral} {yylval.name=strdup(yytext); return (STRINGLITERAL);}
