@@ -32,6 +32,15 @@ vector<globalTableParams> globalTable;
 
 vector<string> threeAC;
 
+enum varTypes{
+	intType,
+	floatType,
+	boolType,
+	stringType,
+	arrayType,
+	nullType
+};
+
 %}
 
 %token <name> SUPER IF ELSE SWITCH CASE DEFAULT WHILE DO FOR BREAK THROW TRY FINALLY CATCH VOID THROWS EXTENDS IMPLEMENTS CLASS INTERFACE BOOLEAN SHORT INT LONG CHAR FLOAT DOUBLE INSTANCEOF THIS NEW 
