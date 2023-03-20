@@ -360,7 +360,10 @@ MethodInvocation:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back(n3);
-		countNodes++;	
+		countNodes++;
+
+		//3AC code
+		
 	}
 	| Name OPROUND ArgumentList CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
