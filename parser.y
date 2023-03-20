@@ -29,9 +29,12 @@ typedef struct globaltableparams{
 	vector<localTableParams>* localTablePointer; 
 } globalTableParams;
 
-
-
 vector<globalTableParams> globalTable;
+vector<localTableParams> currSymTab;
+
+
+stack < pair<int,int> > currScopeStack;
+stack<pair<int,int>> parentScopeStack;
 
 %}
 
@@ -50,6 +53,7 @@ vector<globalTableParams> globalTable;
 	char* name;
 	int intval;
 }
+
 %debug
 
 %%
@@ -256,8 +260,14 @@ ClassMemberDeclaration:
 ;
 
 FieldDeclaration: 
-	Modifiers Type VariableDeclarators SEMICOLON {nodeType.push_back($4); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back(countNodes); countNodes+=2;}
-	| Type VariableDeclarators SEMICOLON {nodeType.push_back($3); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back(countNodes); countNodes+=2;}
+	Modifiers Type VariableDeclarators SEMICOLON { 
+												   nodeType.push_back($4); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back(countNodes); countNodes+=2;
+												   localTableParams currRow; currRow.name=nodeType[$3]; currRow.type=nodeType[$2]; currRow.scope = currScopeStack.top(); currRow.parentScope = parentScopeStack.top(); currSymTab.push_back(currRow);
+												 }
+	| Type VariableDeclarators SEMICOLON {
+											nodeType.push_back($3); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back(countNodes); countNodes+=2;
+											localTableParams currRow; currRow.name=nodeType[$2]; currRow.type=nodeType[$1]; currRow.scope = currScopeStack.top(); currRow.parentScope = parentScopeStack.top(); currSymTab.push_back(currRow);
+										 }
 ;
 
 VariableDeclarators: 
@@ -2370,6 +2380,9 @@ int main(int argc, char* argv[])
 			printf("4. --help : To display help regarding the flags. \n");
 		}
 	}
+
+	currScopeStack.push(make_pair(1,1));
+	parentScopeStack.push(make_pair(1,1));
 
     yyparse(); 
 
