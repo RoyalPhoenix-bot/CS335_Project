@@ -368,19 +368,18 @@ MethodInvocation:
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
 		nodeType.push_back($3); int n3 = countNodes; countNodes++;
 		$$ = countNodes;
+		prodNum[$$]=1;
 		nodeType.push_back("MethodInvocation");
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back(n3);
 		countNodes++;
-
-		//3AC code
-		// threeAC.push_back("y = call p,0");
 	}
 	| Name OPROUND ArgumentList CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
 		nodeType.push_back($4); int n4 = countNodes; countNodes++;
 		$$ = countNodes;
+		prodNum[$$]=2;
 		nodeType.push_back("MethodInvocation");
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
@@ -388,14 +387,13 @@ MethodInvocation:
 		adj[countNodes].push_back(n4);
 		countNodes++;	
 
-		//3AC
-
 	}
 	| Primary DOT Identifier OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
 		nodeType.push_back($4); int n4 = countNodes; countNodes++;
 		nodeType.push_back($5); int n5 = countNodes; countNodes++;
 		$$ = countNodes;
+		prodNum[$$]=3;
 		nodeType.push_back("MethodInvocation");
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
@@ -409,6 +407,7 @@ MethodInvocation:
 		nodeType.push_back($4); int n4 = countNodes; countNodes++;
 		nodeType.push_back($6); int n6 = countNodes; countNodes++;
 		$$ = countNodes;
+		prodNum.push_back(4);
 		nodeType.push_back("MethodInvocation");
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
@@ -417,6 +416,8 @@ MethodInvocation:
 		adj[countNodes].push_back($5);
 		adj[countNodes].push_back(n6);
 		countNodes++;	
+
+		prodNum[$$]=4;
 	}
 	| SUPER DOT Identifier OPROUND CLROUND {
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -431,6 +432,8 @@ MethodInvocation:
 		adj[countNodes].push_back(n4);
 		adj[countNodes].push_back(n5);
 		countNodes++;	
+		
+		prodNum[$$]=5;
 	}
 	| SUPER DOT Identifier OPROUND ArgumentList CLROUND{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -446,6 +449,8 @@ MethodInvocation:
 		adj[countNodes].push_back($5);
 		adj[countNodes].push_back(n6);
 		countNodes++;	
+
+		prodNum[$$]=6;
 	}
 ;
 
