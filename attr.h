@@ -33,7 +33,7 @@ public:
 			if(params[i]!=(obj.params)[i]) return false;
 		}
 		for(int i=0;i<threeAC.size();i++){
-			if(params[i]!=(obj.params)[i]) return false;
+			if(threeAC[i]!=(obj.threeAC)[i]) return false;
 		}
 		return true;
 	} 
