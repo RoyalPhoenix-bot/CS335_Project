@@ -91,6 +91,8 @@ void execConditionalExpression(int nodeNum){
             string ltrue = getNewLabel();
             string lfalse = getNewLabel();
             string nextStmt = getNewLabel();
+
+            attr3AC[nodeNum] = attr3AC[c];
             string temp = "if " + attr3AC[c].addrName + " goto " + ltrue;
             (attr3AC[nodeNum].threeAC).push_back(temp);
             temp = "goto " + lfalse;
@@ -105,7 +107,6 @@ void execConditionalExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c5];
             temp = nextStmt + ":";
             (attr3AC[nodeNum].threeAC).push_back(temp);
-
         }
             break;
     }
@@ -375,6 +376,7 @@ void execAdditiveExpression(int nodeNum){
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " - " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
         }
             break;
     }

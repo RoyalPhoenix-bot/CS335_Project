@@ -10,8 +10,6 @@ extern int yylineno;
 int yylex();
 int yyerror(char *s);
 
-
-
 typedef struct localtableparams{
 	string name;
 	varTypes type;
