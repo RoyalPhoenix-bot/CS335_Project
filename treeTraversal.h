@@ -22,6 +22,14 @@ void initializeAttributeVectors(){
 }
 
 void execMethodInvocation(int nodeNum){
-    if(prodNum[nodeNum]==1);
+    switch(prodNum[nodeNum]){
+        case 1:
+
+            break;
+        case 2:
+
+            break;
+    }
+
     return;
 }
