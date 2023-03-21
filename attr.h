@@ -15,7 +15,9 @@ enum varTypes{
 
 typedef struct Attributes{
 	int nodeno;
-	varTypes type;
+	string addrName;
+	int addrConst;
 	vector<string> params;
+	vector<string> threeAC;
 } attr;
 #endif
