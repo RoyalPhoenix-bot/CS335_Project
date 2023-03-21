@@ -23,6 +23,13 @@ public:
 	vector<string> params;
 	vector<string> threeAC;
 	
+	attr(){
+		nodeno=0;
+		addrName="";
+		type=intType;
+		addrConst=0;
+	}
+
 	bool operator==(attr const& obj){
 		if(nodeno!=obj.nodeno) return false;
 		if(type!=obj.type) return false;
@@ -42,6 +49,7 @@ public:
 	} 
 
 	void operator=(attr const& obj){
+
 		type = obj.type;
 		addrName = obj.addrName;
 		addrConst = obj.addrConst;
@@ -58,5 +66,35 @@ public:
 			threeAC.push_back((obj.threeAC)[i]);
 		}
 	} 
+
+
+	attr operator+(attr const& obj){
+		attr res;
+
+		res.type = obj.type;//should be ensured by type checking
+		
+		res.addrName = obj.addrName;//not useful for +
+		res.addrConst = obj.addrConst;//not useful for +
+
+		for(int i=0;i<params.size();i++){
+			res.params.push_back(params[i]);
+		}
+
+		for(int i=0;i<obj.params.size();i++){
+			res.params.push_back((obj.params)[i]);
+		}
+
+		for(int i=0;i<threeAC.size();i++){
+			res.threeAC.push_back(threeAC[i]);
+		}
+
+		for(int i=0;i<obj.threeAC.size();i++){
+			res.threeAC.push_back((obj.threeAC)[i]);
+		}
+
+		return res;
+	} 
+	
 };
+
 #endif
