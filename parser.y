@@ -122,28 +122,63 @@ Literal:
 		}
 ;
 
-IntegerLiteral: INTEGERLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+IntegerLiteral: INTEGERLITERAL {
+	nodeType.push_back($1);
+	countNodes++;
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back("IntegerLiteral");
+	prodNum[$$]=1;
+}
 ;
 
-FloatingPointLiteral: FLOATINGPOINTLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+FloatingPointLiteral: FLOATINGPOINTLITERAL {
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back($1);
+}
 ;
 
-DoublePointLiteral: DOUBLEPOINTLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+DoublePointLiteral: DOUBLEPOINTLITERAL {
+	$$=countNodes; 
+	countNodes++;  
+	nodeType.push_back($1);  
+}
 ;
 
-BooleanLiteral: BOOLEANLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+BooleanLiteral: BOOLEANLITERAL {
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back($1);  
+}
 ;
 
-CharacterLiteral: CHARACTERLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+CharacterLiteral: CHARACTERLITERAL {
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back($1); 
+}
 ;
 
-StringLiteral: STRINGLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+StringLiteral: STRINGLITERAL {
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back($1);  
+}
 ;
 
-NullLiteral: NULLLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
+NullLiteral: NULLLITERAL {
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back($1);  
+}
 ;
 
-Identifier: IDENTIFIER {$$=countNodes; countNodes++;  nodeType.push_back($1); }
+Identifier: IDENTIFIER {
+	$$=countNodes;
+	countNodes++;
+	nodeType.push_back($1);
+}
 ;
 
 Type:
