@@ -128,14 +128,18 @@ IntegerLiteral: INTEGERLITERAL {
 	$$=countNodes;
 	countNodes++;
 	nodeType.push_back("IntegerLiteral");
+	adj[$$].push_back(countNodes-2);
 	prodNum[$$]=1;
 }
 ;
 
 FloatingPointLiteral: FLOATINGPOINTLITERAL {
+	nodeType.push_back($1);
+	countNodes++;
 	$$=countNodes;
 	countNodes++;
-	nodeType.push_back($1);
+	nodeType.push_back("IntegerLiteral");
+	prodNum[$$]=1;
 }
 ;
 
