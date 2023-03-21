@@ -24,6 +24,8 @@ public:
 		if(nodeno!=obj.nodeno) return false;
 		if(type!=obj.type) return false;
 
+		if(params.size()!=(obj.params).size()) return false;
+		
 		for(int i=0;i<params.size();i++){
 			if(params[i]!=(obj.params)[i]) return false;
 		}
