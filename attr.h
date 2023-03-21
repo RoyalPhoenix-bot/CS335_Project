@@ -30,11 +30,12 @@ public:
 		if(addrConst!=obj.addrConst) return false;
 
 		if(params.size()!=(obj.params).size()) return false;
+		if(threeAC.size()!=(obj.threeAC).size()) return false;
 		
 		for(int i=0;i<obj.params.size();i++){
 			if(params[i]!=(obj.params)[i]) return false;
 		}
-		for(int i=0;i<threeAC.size();i++){
+		for(int i=0;i<obj.threeAC.size();i++){
 			if(threeAC[i]!=(obj.threeAC)[i]) return false;
 		}
 		return true;
