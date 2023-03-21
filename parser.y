@@ -71,13 +71,55 @@ Goal:
 ;
 
 Literal:
-	IntegerLiteral {$$ =$1;}
-	| FloatingPointLiteral {$$ =$1;}
-	| DoublePointLiteral {$$ =$1;}
-	| BooleanLiteral {$$ =$1;}
-	| CharacterLiteral {$$ =$1;}
-	| StringLiteral {$$ =$1;}
-	| NullLiteral {$$ =$1;}
+	IntegerLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
+	}
+	| FloatingPointLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=2;
+		}
+	| DoublePointLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=3;
+	}
+	| BooleanLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=4;
+		}
+	| CharacterLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=5;
+	}
+	| StringLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=6;
+	}
+	| NullLiteral {
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=7;
+		}
 ;
 
 IntegerLiteral: INTEGERLITERAL {$$=countNodes; countNodes++;  nodeType.push_back($1);  }
@@ -432,7 +474,7 @@ MethodInvocation:
 		adj[countNodes].push_back(n4);
 		adj[countNodes].push_back(n5);
 		countNodes++;	
-		
+
 		prodNum[$$]=5;
 	}
 	| SUPER DOT Identifier OPROUND ArgumentList CLROUND{
