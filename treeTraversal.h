@@ -14,6 +14,13 @@ map<int,int> prodNum;
 vector<attr> attrSymTab;
 vector<attr> attr3AC;
 
+string getNewLabel(){
+    countL++;
+    string r = "L" + to_string(countL);
+    return r;
+}
+
+
 void initializeAttributeVectors(){
     for(int i=0;i<nodeType.size();i++){
         attr temp;
@@ -80,11 +87,25 @@ void execConditionalExpression(int nodeNum){
         case 2:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
-            tempNum++;
-            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = "t" + to_string(tempNum) + "=" + attr3AC[c].addrName + "*" + attr3AC[c3].addrName;
+            int c5 = adj[nodeNum][4];
+            string ltrue = getNewLabel();
+            string lfalse = getNewLabel();
+            string nextStmt = getNewLabel();
+            string temp = "if " + attr3AC[c].addrName + " goto " + ltrue;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+            temp = "goto " + lfalse;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+            temp = ltrue + ":";
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
+            temp = "goto " + nextStmt;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+            temp = lfalse + ":";
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c5];
+            temp = nextStmt + ":";
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+
         }
             break;
     }
