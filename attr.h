@@ -42,7 +42,6 @@ public:
 	} 
 
 	void operator=(attr const& obj){
-		nodeno = obj.nodeno;
 		type = obj.type;
 		addrName = obj.addrName;
 		addrConst = obj.addrConst;

@@ -5,6 +5,8 @@ using namespace std;
 
 
 int countNodes=0;
+int tempNum=0;
+int countL=0;//counts the L in 'control flow statements' [as given in slides]
 vector<string> nodeType;
 map<int, vector<int>> adj;
 map<int,int> prodNum;
@@ -75,7 +77,15 @@ void execConditionalExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + "=" + attr3AC[c].addrName + "*" + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
 }
@@ -87,7 +97,15 @@ void execConditionalOrExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " || " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
 }
@@ -99,7 +117,15 @@ void execConditionalAndExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " && " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
         
     }
@@ -113,7 +139,15 @@ void execInclusiveOrExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " | " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
     return;
@@ -126,7 +160,15 @@ void execExclusiveOrExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " ^ " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
 }
@@ -138,7 +180,15 @@ void execAndExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " & " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
 }
@@ -150,9 +200,25 @@ void execEqualityExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " == " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 3:
+        case 3:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " != " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
     return;
@@ -165,15 +231,59 @@ void execRelationalExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " < " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 3:
+        case 3:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " > " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 4:
+        case 4:{
+            {
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " <= " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
+        }
             break;
-        case 5:
+        case 5:{
+            {
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >= " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
+        }
             break;
-        case 6:
+        case 6:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " instanceof " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
     return;
@@ -186,11 +296,35 @@ void execShiftExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " << " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 3:
+        case 3:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >> " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 4:
+        case 4:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >>> " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
 }
@@ -202,9 +336,25 @@ void execAdditiveExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " + " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 3:
+        case 3:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " - " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
     return;
@@ -217,11 +367,35 @@ void execMultiplicativeExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " * " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 3:
+        case 3:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " / " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 4:
+        case 4:{
+            c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " % " + attr3AC[c3].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
     }
     return;
@@ -230,13 +404,27 @@ void execMultiplicativeExpression(int nodeNum){
 void execUnaryExpression(int nodeNum){
     int c;
     switch(prodNum[nodeNum]){
-        case 1:
+        case 1:{
+            c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+        }
             break;
         case 2:
+            c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
             break;
         case 3:
+            c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 4:
+        case 4:{
+            c = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " =- " + attr3AC[c].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
         case 5:
             c = adj[nodeNum][0];
@@ -253,11 +441,27 @@ void execUnaryExpressionNotPlusMinus(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
-        case 2:
+        case 2:{
+            c = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " =~ " + attr3AC[c].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
-        case 3:
+        case 3:{
+            c = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t" + to_string(tempNum) + " =! " + attr3AC[c].addrName;
+            (attr3AC[nodeNum].threeAC).push_back(temp);
+        }
             break;
         case 4:
+            c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
             break;
     }
 
