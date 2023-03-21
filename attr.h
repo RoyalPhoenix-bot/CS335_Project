@@ -13,9 +13,21 @@ enum varTypes{
 };
 
 
-typedef struct Attributes{
+class attr{
+	
+public:
 	int nodeno;
 	varTypes type;
 	vector<string> params;
-} attr;
+	
+	bool operator=(attr const& obj){
+		if(nodeno!=obj.nodeno) return false;
+		if(type!=obj.type) return false;
+
+		for(int i=0;i<params.size();i++){
+			if(params[i]!=(obj.params)[i]) return false;
+		}
+		return true;
+	} 
+};
 #endif
