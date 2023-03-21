@@ -14,7 +14,7 @@ int yyerror(char *s);
 
 typedef struct localtableparams{
 	string name;
-	int type;
+	varTypes type;
 	pair<int,int> scope;
 	pair<int,int> parentScope;
 	int offset;
@@ -34,14 +34,6 @@ vector<localTableParams> currSymTab;
 
 vector<string> threeAC;
 
-enum varTypes{
-	intType,
-	floatType,
-	boolType,
-	stringType,
-	arrayType,
-	nullType
-};
 
 %}
 
