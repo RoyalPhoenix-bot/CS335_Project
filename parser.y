@@ -488,7 +488,6 @@ MethodInvocation:
 		nodeType.push_back($4); int n4 = countNodes; countNodes++;
 		nodeType.push_back($6); int n6 = countNodes; countNodes++;
 		$$ = countNodes;
-		prodNum.push_back(4);
 		nodeType.push_back("MethodInvocation");
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
@@ -888,7 +887,11 @@ EqualityExpression:
 
 AndExpression:
 	EqualityExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("AndExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| AndExpression AND EqualityExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -897,13 +900,18 @@ AndExpression:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
-		countNodes++;	
+		countNodes++;
+		prodNum[$$]=2;	
 	}
 ;
 
 ExclusiveOrExpression:
 	AndExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("ExclusiveOrExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| ExclusiveOrExpression XOR AndExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -913,12 +921,17 @@ ExclusiveOrExpression:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 ;
 
 InclusiveOrExpression:
 	ExclusiveOrExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("InclusiveOrExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| InclusiveOrExpression OR ExclusiveOrExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -928,12 +941,17 @@ InclusiveOrExpression:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 ;
 
 ConditionalAndExpression:
 	InclusiveOrExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("ConditionalAndExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| ConditionalAndExpression DAND InclusiveOrExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -943,12 +961,17 @@ ConditionalAndExpression:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 ;
 
 ConditionalOrExpression:
 	ConditionalAndExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("ConditionalOrExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| ConditionalOrExpression DOR ConditionalAndExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -957,13 +980,18 @@ ConditionalOrExpression:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
-		countNodes++;	
+		countNodes++;
+		prodNum[$$]=2;	
 	}
 ;
 
 ConditionalExpression:
 	ConditionalOrExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("ConditionalExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| ConditionalOrExpression QUES Expression COLON ConditionalExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -976,15 +1004,24 @@ ConditionalExpression:
 		adj[countNodes].push_back(n4);
 		adj[countNodes].push_back($5);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 ;
 
 AssignmentExpression:
 	ConditionalExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("AssignmentExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| Assignment{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("AssignmentExpression");
+		adj[$$].push_back($1);
+		prodNum[$$]=2;
 	}
 ;
 
@@ -995,97 +1032,170 @@ Assignment:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
-		countNodes++;	
+		countNodes++;
+		prodNum[$$]=1;	
 	}
 ;
 
 AssignmentOperator:
 	EQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=1;
 	}
 	| STAREQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=2;
 	}
 	| BYEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=3; 
 	}
 	| PLUSEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=4;
 	}
 	| MINUSEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=5;
 	}
 	| TWOLEFTSHIFTEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=6;
 	}
 	| TWORIGHTSHIFTEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=7; 
 	}
 	| THREERIGHTSHIFTEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=8;
 	}
 	| ANDEQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=9;  
 	}
 	| XOREQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=10;  
 	}
 	| BAREQUALTO{
+		nodeType.push_back($1);
+		countNodes++;
 		$$=countNodes;
-		countNodes++;  
-		nodeType.push_back($1);  
+		countNodes++;
+		nodeType.push_back("AssignmentOperator");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=11;  
 	}
 
 LeftHandSide:
 	Name{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("LeftHandSide");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| FieldAccess{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("LeftHandSide");
+		adj[$$].push_back($1);
+		prodNum[$$]=2;
 	}
 	| ArrayAccess{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("LeftHandSide");
+		adj[$$].push_back($1);
+		prodNum[$$]=3;
 	}
 ;
 
 Expression:
 	AssignmentExpression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 ;
 
 ConstantExpression: 
 	Expression {
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 ;
 
 VariableInitializer: 
 	Expression{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("VariableInitializer");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| ArrayInitializer{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("VariableInitializer");
+		adj[$$].push_back($1);
+		prodNum[$$]=2;
 	}
 ;
 
@@ -1095,6 +1205,7 @@ MethodDeclaration: MethodHeader MethodBody{
 	adj[countNodes].push_back($1);
 	adj[countNodes].push_back($2);
 	countNodes++;	
+	prodNum[$$]=1;
 }
 ;
 
@@ -1107,6 +1218,7 @@ MethodHeader:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back($4);
 		countNodes++;	
+		prodNum[$$]=1;
 	}
 	| Type MethodDeclarator Throws{
 		$$ = countNodes;
@@ -1115,6 +1227,7 @@ MethodHeader:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 	| Modifiers Type MethodDeclarator {
 		$$ = countNodes;
@@ -1123,7 +1236,7 @@ MethodHeader:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
-
+		prodNum[$$]=3;
 	}
 	| Type MethodDeclarator{
 		$$ = countNodes;
@@ -1131,7 +1244,7 @@ MethodHeader:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back($2);
 		countNodes++;	
-
+		prodNum[$$]=4;
 	}
 	| Modifiers VOID MethodDeclarator Throws{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1142,7 +1255,7 @@ MethodHeader:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back($4);
 		countNodes++;	
-
+		prodNum[$$]=5;
 	}
 	| Modifiers VOID MethodDeclarator {
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1152,7 +1265,7 @@ MethodHeader:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
-
+		prodNum[$$]=6;
 	}
 	| VOID MethodDeclarator Throws{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1162,7 +1275,7 @@ MethodHeader:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
-
+		prodNum[$$]=7;
 	}
 	| VOID MethodDeclarator{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1171,7 +1284,7 @@ MethodHeader:
 		adj[countNodes].push_back(n1);
 		adj[countNodes].push_back($2);
 		countNodes++;	
-
+		prodNum[$$]=8;
 	}
 ;
 
@@ -1186,6 +1299,7 @@ MethodDeclarator:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back(n4);
 		countNodes++;	
+		prodNum[$$]=1;
 	}
 	| Identifier OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1196,6 +1310,7 @@ MethodDeclarator:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back(n3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 	| MethodDeclarator OPSQR CLSQR{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1206,12 +1321,17 @@ MethodDeclarator:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back(n3);
 		countNodes++;	
+		prodNum[$$]=3;
 	}
 ;
 
 FormalParameterList: 
 	FormalParameter{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("FormalParameterList");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| FormalParameterList COMMA FormalParameter{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1221,6 +1341,7 @@ FormalParameterList:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 ;
 
@@ -1230,6 +1351,7 @@ FormalParameter: Type VariableDeclaratorId{
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back($2);
 		countNodes++;
+		prodNum[$$]=1;
 }
 ;
 
@@ -1240,12 +1362,17 @@ Throws: THROWS ClassTypeList{
 		adj[countNodes].push_back(n1);
 		adj[countNodes].push_back($2);
 		countNodes++;	
+		prodNum[$$]=1;
 }
 ;
 
 ClassTypeList: 
 	ClassType{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("ClassTypeList");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
     | ClassTypeList COMMA ClassType{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1255,17 +1382,26 @@ ClassTypeList:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
 		countNodes++;	
+		prodNum[$$]=2;
 	}
 ;
 
 MethodBody: 
 	Block{
-		$$ = $1;
+		$$ =countNodes;
+		countNodes++;
+		nodeType.push_back("Literal");
+		adj[$$].push_back($1);
+		prodNum[$$]=1;
 	}
 	| SEMICOLON{
-		$$ = countNodes;
-		countNodes++;
 		nodeType.push_back($1);
+		countNodes++;
+		$$=countNodes;
+		countNodes++;
+		nodeType.push_back("IntegerLiteral");
+		adj[$$].push_back(countNodes-2);
+		prodNum[$$]=2;
 	}
 ;
 
@@ -1276,6 +1412,7 @@ StaticInitializer: STATIC Block{
 		adj[countNodes].push_back(n1);
 		adj[countNodes].push_back($2);
 		countNodes++;
+		prodNum[$$]=1;
 }
 ;
 
@@ -1288,6 +1425,7 @@ ConstructorDeclaration:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back($4);
 		countNodes++;
+		prodNum[$$]=1;
 	}
 	| ConstructorDeclarator Throws ConstructorBody{
 		$$ = countNodes;
@@ -1296,6 +1434,7 @@ ConstructorDeclaration:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
 		countNodes++;
+		prodNum[$$]=2;
 	}
 	| ConstructorDeclarator ConstructorBody{
 		$$ = countNodes;
@@ -1303,6 +1442,7 @@ ConstructorDeclaration:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back($2);
 		countNodes++;
+		prodNum[$$]=3;
 	}
 	| Modifiers ConstructorDeclarator ConstructorBody{
 		$$ = countNodes;
@@ -1311,6 +1451,7 @@ ConstructorDeclaration:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
 		countNodes++;
+		prodNum[$$]=4;
 	}
 ;
 
@@ -1325,6 +1466,7 @@ ConstructorDeclarator:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back(n4);
 		countNodes++;
+		prodNum[$$]=1;
 	}
 	| SimpleName OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1335,7 +1477,7 @@ ConstructorDeclarator:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back(n3);
 		countNodes++;
-
+		prodNum[$$]=2;
 	}
 ;
 
@@ -1350,6 +1492,7 @@ ConstructorBody:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back(n4);
 		countNodes++;
+		prodNum[$$]=1;
 	}
 	| OPCURLY BlockStatements CLCURLY{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1360,6 +1503,7 @@ ConstructorBody:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back(n3);
 		countNodes++;
+		prodNum[$$]=2;
 	}
 	| OPCURLY ExplicitConstructorInvocation CLCURLY{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1370,6 +1514,7 @@ ConstructorBody:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back(n3);
 		countNodes++;
+		prodNum[$$]=3;
 	}
 	| OPCURLY CLCURLY{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1379,6 +1524,7 @@ ConstructorBody:
 		adj[countNodes].push_back(n1);
 		adj[countNodes].push_back(n2);
 		countNodes++;
+		prodNum[$$]=4;
 	}
 ;
 
@@ -1396,6 +1542,7 @@ ExplicitConstructorInvocation:
 		adj[countNodes].push_back(n4);
 		adj[countNodes].push_back(n5);
 		countNodes++;
+		prodNum[$$]=1;	
 	}
 	| THIS OPROUND CLROUND SEMICOLON{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1409,6 +1556,7 @@ ExplicitConstructorInvocation:
 		adj[countNodes].push_back(n3);
 		adj[countNodes].push_back(n4);
 		countNodes++;
+		prodNum[$$]=2;	
 	}
 	| SUPER OPROUND ArgumentList CLROUND SEMICOLON{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1423,6 +1571,7 @@ ExplicitConstructorInvocation:
 		adj[countNodes].push_back(n4);
 		adj[countNodes].push_back(n5);
 		countNodes++;
+		prodNum[$$]=3;	
 	}
 	| SUPER OPROUND CLROUND SEMICOLON{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1436,6 +1585,7 @@ ExplicitConstructorInvocation:
 		adj[countNodes].push_back(n3);
 		adj[countNodes].push_back(n4);
 		countNodes++;
+		prodNum[$$]=4;	
 	}
 ;
 
@@ -1451,6 +1601,7 @@ InterfaceDeclaration:
 		adj[countNodes].push_back($4);
 		adj[countNodes].push_back($5);
 		countNodes++;
+		prodNum[$$]=1;
 	}
 	| INTERFACE Identifier ExtendsInterfaces InterfaceBody{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1461,6 +1612,7 @@ InterfaceDeclaration:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back($4);
 		countNodes++;
+		prodNum[$$]=2;
 	}
 	| Modifiers INTERFACE Identifier InterfaceBody{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1471,6 +1623,7 @@ InterfaceDeclaration:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back($4);
 		countNodes++;
+		prodNum[$$]=3;
 	}
 	| INTERFACE Identifier InterfaceBody{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -1480,6 +1633,7 @@ InterfaceDeclaration:
 		adj[countNodes].push_back($2);
 		adj[countNodes].push_back($3);
 		countNodes++;
+		prodNum[$$]=4;
 	}
 ;
 
