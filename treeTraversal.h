@@ -35,13 +35,14 @@ void execMethodInvocation(int nodeNum){
 }
 
 void execVariableInitializer(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
     }
@@ -54,22 +55,24 @@ void execExpression(int nodeNum){
 }
 
 void execAssignmentExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
     }
 }
 
 void execConditionalExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -78,9 +81,10 @@ void execConditionalExpression(int nodeNum){
 }
 
 void execConditionalOrExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -89,9 +93,10 @@ void execConditionalOrExpression(int nodeNum){
 }
 
 void execConditionalAndExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -102,9 +107,10 @@ void execConditionalAndExpression(int nodeNum){
 }
 
 void execInclusiveOrExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -114,9 +120,10 @@ void execInclusiveOrExpression(int nodeNum){
 }
 
 void execExclusiveOrExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -125,9 +132,10 @@ void execExclusiveOrExpression(int nodeNum){
 }
 
 void execAndExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -136,9 +144,10 @@ void execAndExpression(int nodeNum){
 }
 
 void execEqualityExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -150,9 +159,10 @@ void execEqualityExpression(int nodeNum){
 }
 
 void execRelationalExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -170,9 +180,10 @@ void execRelationalExpression(int nodeNum){
 }
 
 void execShiftExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -185,9 +196,10 @@ void execShiftExpression(int nodeNum){
 }
 
 void execAdditiveExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -199,9 +211,10 @@ void execAdditiveExpression(int nodeNum){
 }
 
 void execMultiplicativeExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -215,6 +228,7 @@ void execMultiplicativeExpression(int nodeNum){
 }
 
 void execUnaryExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
             break;
@@ -225,7 +239,7 @@ void execUnaryExpression(int nodeNum){
         case 4:
             break;
         case 5:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
     }
@@ -233,9 +247,10 @@ void execUnaryExpression(int nodeNum){
 }
 
 void execUnaryExpressionNotPlusMinus(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
@@ -250,30 +265,32 @@ void execUnaryExpressionNotPlusMinus(int nodeNum){
 }
 
 void execPostfixExpression(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 2:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 3:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
         case 4:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
     }
 }
 
 void execName(int nodeNum){
+    int c;
     switch(prodNum[nodeNum]){
         case 1:
-            int c = adj[nodeNum][0];
+            c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             break;
     }
