@@ -14,7 +14,7 @@ int yyerror(char *s);
 
 typedef struct localtableparams{
 	string name;
-	string type;
+	int type;
 	pair<int,int> scope;
 	pair<int,int> parentScope;
 	int offset;
