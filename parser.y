@@ -10,9 +10,7 @@ extern int yylineno;
 int yylex();
 int yyerror(char *s);
 
-int countNodes=0;
-vector<string> nodeType;
-map<int, vector<int>> adj;
+
 
 typedef struct localtableparams{
 	string name;
@@ -2433,5 +2431,8 @@ int main(int argc, char* argv[])
 		cout << endl;
 	}
 	cout << "}" << endl;
+
+	initializeAttributeVectors();
+
     return 0;
 }
