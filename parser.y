@@ -1,6 +1,7 @@
 %{
 #include<bits/stdc++.h>
 #include "attr.h"
+#include "treeTraversal.h"
 
 #define YYDEBUG 1
 using namespace std;

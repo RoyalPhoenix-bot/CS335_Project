@@ -3,7 +3,5 @@
 
 using namespace std;
 
-void checkWork(){
-    cout << "yes this wroks" << endl;
-    return;
-}
+vector<attr> attrSymTab;
+vector<attr> attr3AC;
