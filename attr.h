@@ -18,6 +18,7 @@ class attr{
 public:
 	int nodeno;
 	string addrName;
+	varTypes type;
 	int addrConst;
 	vector<string> params;
 	vector<string> threeAC;
@@ -29,6 +30,9 @@ public:
 		if(params.size()!=(obj.params).size()) return false;
 		
 		for(int i=0;i<params.size();i++){
+			if(params[i]!=(obj.params)[i]) return false;
+		}
+		for(int i=0;i<threeAC.size();i++){
 			if(params[i]!=(obj.params)[i]) return false;
 		}
 		return true;
