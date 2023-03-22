@@ -51,8 +51,6 @@ public:
 	void operator=(attr const& other){
 
 		type = other.type;
-		addrName = other.addrName;
-		addrConst = other.addrConst;
 
 		params.clear();
 		
