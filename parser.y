@@ -10,29 +10,6 @@ extern int yylineno;
 int yylex();
 int yyerror(char *s);
 
-typedef struct localtableparams{
-	string name;
-	varTypes type;
-	pair<int,int> scope;
-	pair<int,int> parentScope;
-	int offset;
-	vector<localtableparams>* functionTablePointer;
-	vector<string> functionParams;
-	string functionReturnType;
-} localTableParams ;
-
-typedef struct globaltableparams{
-	string name;
-	string type;
-	vector<localTableParams>* localTablePointer; 
-} globalTableParams;
-
-vector<globalTableParams> globalTable;
-vector<localTableParams> currSymTab;
-
-vector<string> threeAC;
-
-
 %}
 
 %token <name> SUPER IF ELSE SWITCH CASE DEFAULT WHILE DO FOR BREAK THROW TRY FINALLY CATCH VOID THROWS EXTENDS IMPLEMENTS CLASS INTERFACE BOOLEAN SHORT INT LONG CHAR FLOAT DOUBLE INSTANCEOF THIS NEW 
@@ -118,7 +95,6 @@ IntegerLiteral: INTEGERLITERAL {
 	$$=countNodes;
 	countNodes++;
 	nodeType.push_back("IntegerLiteral");
-	adj[$$].push_back(countNodes-2);
 	adj[$$].push_back(countNodes-2);
 	prodNum[$$]=1;
 }
@@ -1363,7 +1339,7 @@ AdditiveExpression:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
-		countNodes++;	
+		countNodes++;
 		prodNum[$$]=3;
 	}
 ;
@@ -2003,7 +1979,7 @@ MethodBody:
 	Block{
 		$$ =countNodes;
 		countNodes++;
-		nodeType.push_back("Literal");
+		nodeType.push_back("MethodBody");
 		adj[$$].push_back($1);
 		prodNum[$$]=1;
 	}
@@ -2012,7 +1988,7 @@ MethodBody:
 		countNodes++;
 		$$=countNodes;
 		countNodes++;
-		nodeType.push_back("IntegerLiteral");
+		nodeType.push_back("MethodBody");
 		adj[$$].push_back(countNodes-2);
 		prodNum[$$]=2;
 	}

@@ -97,6 +97,18 @@ public:
 	
 };
 
+class attr2{
+	
+public:
+	int nodeno;
+	string type;
+	
+	attr2(){
+		nodeno=0;
+		type="int";
+	}
+};
+
 inline ostream& operator<<(ostream &os, const attr& other){
 		
 	for(int i=0;i<other.threeAC.size();i++){

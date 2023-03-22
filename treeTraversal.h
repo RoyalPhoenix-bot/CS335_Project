@@ -13,6 +13,7 @@ map<int,int> prodNum;
 
 vector<attr> attrSymTab;
 vector<attr> attr3AC;
+vector<attr2> attrType;
 
 string getNewLabel(){
     countL++;
@@ -24,8 +25,10 @@ string getNewLabel(){
 void initializeAttributeVectors(){
     for(int i=0;i<nodeType.size();i++){
         attr temp;
+        attr2 temp2;
         attrSymTab.push_back(temp);
         attr3AC.push_back(temp);
+        attrType.push_back(temp2);
     }
     return;
 }
@@ -534,5 +537,411 @@ void execIdentifier(int nodeNum){
     int c = adj[nodeNum][0];//Get child node number
     attr3AC[nodeNum].addrName = nodeType[c];//Add addrname of identifier 
 
+    return;
+}
+
+// void preOrder(int nodenum){
+//     if()
+// }
+
+void typeAdditiveExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            
+            break;
+        case 3:
+            break;
+
+    }
+    return;
+
+}
+
+void typeMultiplicativeExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+    }
+    return;
+
+}
+
+void typeUnaryExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+    }
+    return;
+}
+
+void typePreIncrementExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typePreDecrementExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typePostIncrementExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typePostDecrementExpression(int nodenum){
+
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typePostFixExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+    }
+    return;
+}
+
+void typeUnaryExpressionNotPlusMinus(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+    }
+    return;
+}
+
+void typeCastExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+    }
+    return;
+}
+
+void typeShiftExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+    }
+    return;
+}
+
+void typeArrayCreationExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+    }
+    return;
+}
+
+void typeExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typeClassInstanceCreationExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeArgumentList(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeDimExpr(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typeArrayAccess(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeRelationalExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+    }
+    return;
+}
+
+void typeEqualityExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+    }
+    return;
+}
+
+void typeAndExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeExclusiveOrExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeInclusiveOrExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeConditionalAndExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeConditionalOrExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeConditionalExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeAssignmentExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeConstantExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typeExpressionStatement(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+    }
+    return;
+}
+
+void typeStatementExpression(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            break;
+    }
+    return;
+}
+
+void typeForStatement(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            break;
+        case 8:
+            break;
+    }
+    return;
+}
+
+void typeForStatementNoShortIf(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            break;
+        case 8:
+            break;
+    }
+    return;
+}
+
+void typeForInit(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return;
+}
+
+void typeStatementExpressionList(int nodenum){
+    switch(prodNum[nodenum]){
+        case 1:
+            break;
+        case 2:
+            break;
+    }
     return;
 }
