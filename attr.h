@@ -17,10 +17,12 @@ class attr{
 	
 public:
 	int nodeno;
+	string nameAtNode;
 	string addrName;
 	varTypes type;
 	int addrConst;
 	vector<string> params;
+	vector<int> arrDims;
 	vector<string> threeAC;
 	
 	attr(){
@@ -53,6 +55,13 @@ public:
 		type = other.type;
 		addrName = other.addrName;
 		addrConst = other.addrConst;
+		nameAtNode = other.nameAtNode;
+		
+		arrDims.clear();
+		
+		for(int i=0;i<other.arrDims.size();i++){
+			arrDims.push_back((other.arrDims)[i]);
+		}
 
 		params.clear();
 		
@@ -75,6 +84,14 @@ public:
 		
 		res.addrName = other.addrName;//not useful for +
 		res.addrConst = other.addrConst;//not useful for +
+
+		for(int i=0;i<arrDims.size();i++){
+			res.arrDims.push_back(arrDims[i]);
+		}
+
+		for(int i=0;i<other.arrDims.size();i++){
+			res.arrDims.push_back((other.arrDims)[i]);
+		}
 
 		for(int i=0;i<params.size();i++){
 			res.params.push_back(params[i]);
