@@ -1293,6 +1293,7 @@ MultiplicativeExpression:
 		nodeType.push_back("MultiplicativeExpression");
 		adj[$$].push_back($1);
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| MultiplicativeExpression ASTERIX UnaryExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1303,6 +1304,7 @@ MultiplicativeExpression:
 		adj[countNodes].push_back($3);
 		countNodes++;
 		prodNum[$$]=2;	
+		lineNum[$$]=yylineno;
 	}
 	| MultiplicativeExpression FSLASH UnaryExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1313,6 +1315,7 @@ MultiplicativeExpression:
 		adj[countNodes].push_back($3);
 		countNodes++;
 		prodNum[$$]=3;	
+		lineNum[$$]=yylineno;
 	}
 	| MultiplicativeExpression MOD UnaryExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1323,6 +1326,7 @@ MultiplicativeExpression:
 		adj[countNodes].push_back($3);
 		countNodes++;	
 		prodNum[$$]=4;
+		lineNum[$$]=yylineno;
 	}
 ;
 

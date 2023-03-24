@@ -1190,6 +1190,22 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         }
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:
+        case 2:{
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
+            break;
+        }
+        case 3:
+        case 4:{
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][1]].leafNodeNum;
+            break;
+        }
+        default:
+            break;
+        }
         return;
     }
     else if (nodeType[nodeNum]=="PostfixExpression"){
@@ -1292,7 +1308,45 @@ void preOrderTraversal(int nodeNum){
         
         return;
     }
-    else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="UnaryExpressionNotPlusMinus" || nodeType[nodeNum]=="MultiplicativeExpression" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" || nodeType[nodeNum]=="AssignmentExpression"){
+    else if (nodeType[nodeNum]=="MultiplicativeExpression"){
+        for (auto child:adj[nodeNum])
+            preOrderTraversal(child);
+        
+        switch (prodNum[nodeNum])
+        {   
+            case 1:{
+                attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
+                break;
+            }
+            case 2:
+            case 3:
+            case 4:{
+                int c1=adj[nodeNum][0];
+                int c3=adj[nodeNum][2];
+
+                string t1=fillHelper(to_string(attrSymTab[c1].leafNodeNum));
+                string t3=fillHelper(to_string(attrSymTab[c3].leafNodeNum));
+                    
+                    // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
+                    
+                if (checkIfTypeOkay(t1,t3))
+                        attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
+                else{
+
+                    string var1=nodeType[attrSymTab[c1].leafNodeNum];
+                    string var2=nodeType[attrSymTab[c3].leafNodeNum];
+
+                    cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<"' of '"<<var1<<"' does not match type '"<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<"' of '"<<var2<<"'!\nAborting...\n";
+                    exit(0);
+                }
+
+                break;
+            }
+            default: 
+                break;
+        }
+    }
+    else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="UnaryExpressionNotPlusMinus" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" || nodeType[nodeNum]=="AssignmentExpression"){
         
         for (auto child:adj[nodeNum])
             preOrderTraversal(child);
