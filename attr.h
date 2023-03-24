@@ -12,15 +12,17 @@ enum varTypes{
 	nullType
 };
 
-
 class attr{
 	
 public:
+	
 	int nodeno;
+	string nameAtNode;
 	string addrName;
 	varTypes type;
 	int addrConst;
 	vector<string> params;
+	vector<int> arrDims;
 	vector<string> threeAC;
 	
 	attr(){
@@ -53,6 +55,13 @@ public:
 		type = other.type;
 		addrName = other.addrName;
 		addrConst = other.addrConst;
+		nameAtNode = other.nameAtNode;
+		
+		arrDims.clear();
+		
+		for(int i=0;i<other.arrDims.size();i++){
+			arrDims.push_back((other.arrDims)[i]);
+		}
 
 		params.clear();
 		
@@ -75,6 +84,14 @@ public:
 		
 		res.addrName = other.addrName;//not useful for +
 		res.addrConst = other.addrConst;//not useful for +
+
+		for(int i=0;i<arrDims.size();i++){
+			res.arrDims.push_back(arrDims[i]);
+		}
+
+		for(int i=0;i<other.arrDims.size();i++){
+			res.arrDims.push_back((other.arrDims)[i]);
+		}
 
 		for(int i=0;i<params.size();i++){
 			res.params.push_back(params[i]);
@@ -127,5 +144,13 @@ inline ostream& operator<<(ostream &os, const attr& other){
 
 	return os;
 }
+
+typedef struct Attributes{
+	string type;
+	string name;
+	vector<string> otherParams;
+	vector<int> intParams;
+	int num; // to store a numbered attribute (Ex.to get size of array, to store how many vars declared at once i.e int a,b,c)
+} attr1;
 
 #endif
