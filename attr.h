@@ -15,6 +15,7 @@ enum varTypes{
 class attr{
 	
 public:
+	
 	int nodeno;
 	string nameAtNode;
 	string addrName;
@@ -125,5 +126,13 @@ inline ostream& operator<<(ostream &os, const attr& other){
 
 	return os;
 }
+
+typedef struct Attributes{
+	string type;
+	string name;
+	vector<string> otherParams;
+	vector<int> intParams;
+	int num; // to store a numbered attribute (Ex.to get size of array, to store how many vars declared at once i.e int a,b,c)
+} attr1;
 
 #endif

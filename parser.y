@@ -10,18 +10,9 @@ extern int yylineno;
 int yylex();
 int yyerror(char *s);
 
-typedef struct globaltableparams{
-	string name;
-	string type;
-	vector<localTableParams>* localTablePointer; 
-} globalTableParams;
-
-vector<globalTableParams> globalTable;
-vector<localTableParams> currSymTab;
-
 vector<string> threeAC;
 
-int startTraversal = -1;
+int rootNodenum=0;
 
 %}
 
@@ -35,7 +26,7 @@ int startTraversal = -1;
 %token<name> FLOATINGPOINTLITERAL
 %token<name> DOUBLEPOINTLITERAL
 %token<name> BOOLEANLITERAL
-%type<intval> IfThenElseStatementNoShortIf VariableDeclaratorId ExtendsInterfaces Modifiers Throws PrimaryNoNewArray Identifier SingleTypeImportDeclaration SwitchBlock StatementExpressionList Block ForStatement FieldAccess ArrayType Expression ClassOrInterfaceType LabeledStatementNoShortIf Name NullLiteral LabeledStatement InterfaceTypeList AssignmentExpression IfThenStatement VariableDeclarator Literal QualifiedName PreIncrementExpression ReturnStatement EqualityExpression VariableDeclarators PrimitiveType ConditionalOrExpression LeftHandSide Primary Type UnaryExpressionNotPlusMinus PostfixExpression BlockStatements ConstantDeclaration ExpressionStatement TypeImportOnDemandDeclaration ClassDeclaration InclusiveOrExpression ForStatementNoShortIf NumericType StatementNoShortIf Super PostIncrementExpression ContinueStatement InterfaceMemberDeclaration StaticInitializer ShiftExpression ClassInstanceCreationExpression FloatingPointType ArgumentList PostDecrementExpression ClassBodyDeclaration SimpleName IntegralType VariableInitializer UnaryExpression FormalParameterList MethodBody InterfaceBody Finally AssignmentOperator RelationalExpression WhileStatement ClassTypeList ConstructorDeclarator StatementExpression IfThenElseStatement BreakStatement TypeDeclaration FloatingPointLiteral DoublePointLiteral SwitchBlockStatementGroups ClassType LocalVariableDeclaration MethodInvocation ConditionalAndExpression ClassBody FieldDeclaration AdditiveExpression DoStatement Catches Assignment AndExpression SwitchLabel MultiplicativeExpression ForInit ForUpdate FormalParameter ConstructorBody BooleanLiteral Dims Statement SwitchBlockStatementGroup WhileStatementNoShortIf TypeDeclarations ImportDeclaration BlockStatement StatementWithoutTrailingSubstatement ArrayCreationExpression ExplicitConstructorInvocation CastExpression ThrowStatement InterfaceMemberDeclarations ClassBodyDeclarations VariableInitializers SynchronizedStatement DimExprs ConditionalExpression ArrayAccess Interfaces SwitchLabels MethodHeader ReferenceType DimExpr CatchClause CharacterLiteral ConstantExpression Modifier ArrayInitializer MethodDeclaration SwitchStatement ConstructorDeclaration StringLiteral CompilationUnit ImportDeclarations ClassMemberDeclaration EmptyStatement IntegerLiteral AbstractMethodDeclaration TryStatement InterfaceType PackageDeclaration ExclusiveOrExpression InterfaceDeclaration MethodDeclarator LocalVariableDeclarationStatement PreDecrementExpression 
+%type<intval> MethodHeader_ IfThenElseStatementNoShortIf VariableDeclaratorId ExtendsInterfaces Modifiers Throws PrimaryNoNewArray Identifier SingleTypeImportDeclaration SwitchBlock StatementExpressionList Block ForStatement FieldAccess ArrayType Expression ClassOrInterfaceType LabeledStatementNoShortIf Name NullLiteral LabeledStatement InterfaceTypeList AssignmentExpression IfThenStatement VariableDeclarator Literal QualifiedName PreIncrementExpression ReturnStatement EqualityExpression VariableDeclarators PrimitiveType ConditionalOrExpression LeftHandSide Primary Type UnaryExpressionNotPlusMinus PostfixExpression BlockStatements ConstantDeclaration ExpressionStatement TypeImportOnDemandDeclaration ClassDeclaration InclusiveOrExpression ForStatementNoShortIf NumericType StatementNoShortIf Super PostIncrementExpression ContinueStatement InterfaceMemberDeclaration StaticInitializer ShiftExpression ClassInstanceCreationExpression FloatingPointType ArgumentList PostDecrementExpression ClassBodyDeclaration SimpleName IntegralType VariableInitializer UnaryExpression FormalParameterList MethodBody InterfaceBody Finally AssignmentOperator RelationalExpression WhileStatement ClassTypeList ConstructorDeclarator StatementExpression IfThenElseStatement BreakStatement TypeDeclaration FloatingPointLiteral DoublePointLiteral SwitchBlockStatementGroups ClassType LocalVariableDeclaration MethodInvocation ConditionalAndExpression ClassBody FieldDeclaration AdditiveExpression DoStatement Catches Assignment AndExpression SwitchLabel MultiplicativeExpression ForInit ForUpdate FormalParameter ConstructorBody BooleanLiteral Dims Statement SwitchBlockStatementGroup WhileStatementNoShortIf TypeDeclarations ImportDeclaration BlockStatement StatementWithoutTrailingSubstatement ArrayCreationExpression ExplicitConstructorInvocation CastExpression ThrowStatement InterfaceMemberDeclarations ClassBodyDeclarations VariableInitializers SynchronizedStatement DimExprs ConditionalExpression ArrayAccess Interfaces SwitchLabels MethodHeader ReferenceType DimExpr CatchClause CharacterLiteral ConstantExpression Modifier ArrayInitializer MethodDeclaration SwitchStatement ConstructorDeclaration StringLiteral CompilationUnit ImportDeclarations ClassMemberDeclaration EmptyStatement IntegerLiteral AbstractMethodDeclaration TryStatement InterfaceType PackageDeclaration ExclusiveOrExpression InterfaceDeclaration MethodDeclarator LocalVariableDeclarationStatement PreDecrementExpression 
 
 %union{
 	char* name;
@@ -47,7 +38,7 @@ int startTraversal = -1;
 %%
 
 Goal:
-	CompilationUnit
+	CompilationUnit {rootNodenum=$1;}
 ;
 
 Literal:
@@ -1819,8 +1810,18 @@ MethodDeclaration:
 	adj[countNodes].push_back($2);
 	countNodes++;	
 	prodNum[$$]=1;
+	lineNum[$$]=lineNum[$1];
 }
 ;
+
+MethodHeader_: MethodHeader {
+	$$ =countNodes;
+	countNodes++;
+	nodeType.push_back("MethodHeader_");
+	adj[$$].push_back($1);
+	prodNum[$$]=1;
+	lineNum[$$]=yylineno;
+}
 
 MethodHeader: 
 	Modifiers Type MethodDeclarator Throws{
@@ -1925,17 +1926,7 @@ MethodDeclarator:
 		countNodes++;	
 		prodNum[$$]=2;
 	}
-	| MethodDeclarator OPSQR CLSQR{
-		nodeType.push_back($2); int n2 = countNodes; countNodes++;
-		nodeType.push_back($3); int n3 = countNodes; countNodes++;
-		$$ = countNodes;
-		nodeType.push_back("MethodDeclarator");
-		adj[countNodes].push_back($1);
-		adj[countNodes].push_back(n2);
-		adj[countNodes].push_back(n3);
-		countNodes++;	
-		prodNum[$$]=3;
-	}
+
 ;
 
 FormalParameterList: 
@@ -2471,6 +2462,7 @@ BlockStatement:
 		adj[countNodes].push_back($1);
 		countNodes++; 
 		prodNum[$$]=1; 
+		lineNum[$$]=yylineno;
 	}
 	| Statement {		
 		$$ = countNodes;
@@ -3313,6 +3305,7 @@ ForInit:
 		adj[countNodes].push_back($1);
 		countNodes++; 
 		prodNum[$$]=1; 
+		lineNum[$$]=yylineno;
 	}
 	| LocalVariableDeclaration {
 		$$ = countNodes;
@@ -3320,6 +3313,7 @@ ForInit:
 		adj[countNodes].push_back($1);
 		countNodes++; 
 		prodNum[$$]=2; 
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -3579,7 +3573,13 @@ int main(int argc, char* argv[])
 
     yyparse(); 
 
-	if(!flag)fp = freopen("output.dot","w",stdout);
+	initializeAttributeVectors();
+	
+	preOrderTraversal(rootNodenum);
+
+	printTables();
+
+	if(!flag)freopen("output.dot","w",stdout);
 	cout << "// dot -Tps output.dot -o out.ps\n\n"
 		<< "graph \"Tree\"\n"
 		<< "{\n"
