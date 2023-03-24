@@ -12,21 +12,22 @@ enum varTypes{
 	nullType
 };
 
-
 class attr{
 	
 public:
 	int nodeno;
 	string nameAtNode;
 	string addrName;
-	varTypes type;
+	string type;
 	int addrConst;
 	vector<string> params;
 	vector<int> arrDims;
+	int dimsDone;
 	vector<string> threeAC;
 	
 	attr(){
-		nodeno=0;
+		nodeno=-1;
+		dimsDone=0;
 		addrName="";
 		type=intType;
 		addrConst=0;
@@ -51,12 +52,14 @@ public:
 	} 
 
 	void operator=(attr const& other){
-
+		nodeno = other.nodeno;
 		type = other.type;
 		addrName = other.addrName;
 		addrConst = other.addrConst;
 		nameAtNode = other.nameAtNode;
-		
+
+		// if(trueLabel.find())
+
 		arrDims.clear();
 		
 		for(int i=0;i<other.arrDims.size();i++){
@@ -80,10 +83,10 @@ public:
 	attr operator+(attr const& other){
 		attr res;
 
-		res.type = other.type;//should be ensured by type checking
+		// res.type = other.type;//should be ensured by type checking
 		
-		res.addrName = other.addrName;//not useful for +
-		res.addrConst = other.addrConst;//not useful for +
+		// res.addrName = other.addrName;//not useful for +
+		// res.addrConst = other.addrConst;//not useful for +
 
 		for(int i=0;i<arrDims.size();i++){
 			res.arrDims.push_back(arrDims[i]);

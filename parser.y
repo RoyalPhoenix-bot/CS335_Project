@@ -1,6 +1,6 @@
 %{
 #include<bits/stdc++.h>
-#include "attr.h"
+// #include "attr.h"
 #include "treeTraversal.h"
 
 #define YYDEBUG 1
@@ -9,17 +9,6 @@ using namespace std;
 extern int yylineno;
 int yylex();
 int yyerror(char *s);
-
-typedef struct localtableparams{
-	string name;
-	varTypes type;
-	pair<int,int> scope;
-	pair<int,int> parentScope;
-	int offset;
-	vector<localtableparams>* functionTablePointer;
-	vector<string> functionParams;
-	string functionReturnType;
-} localTableParams ;
 
 typedef struct globaltableparams{
 	string name;
@@ -32,6 +21,7 @@ vector<localTableParams> currSymTab;
 
 vector<string> threeAC;
 
+int startTraversal = -1;
 
 %}
 
@@ -414,18 +404,25 @@ QualifiedName: Name DOT Identifier {nodeType.push_back($2); nodeType.push_back("
 }
 ;
 
-CompilationUnit: PackageDeclaration ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);countNodes++;}
+CompilationUnit: 
+	PackageDeclaration ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);countNodes++;
+		prodNum[$$]=7;
+		startTraversal=$$;
+	}
 	| ImportDeclarations TypeDeclarations {
 			nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;
 			prodNum[$$]=1;
+			startTraversal=$$;
 		}
 	| PackageDeclaration TypeDeclarations {
 			nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;
 			prodNum[$$]=2;
+			startTraversal=$$;
 		}
 	| PackageDeclaration ImportDeclarations {
 			nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;
 			prodNum[$$]=3;
+			startTraversal=$$;
 		}
 	| PackageDeclaration {
 		$$ =countNodes;
@@ -433,6 +430,7 @@ CompilationUnit: PackageDeclaration ImportDeclarations TypeDeclarations {nodeTyp
 		nodeType.push_back("CompilationUnit");
 		adj[$$].push_back($1);
 		prodNum[$$]=4;
+		startTraversal=$$;
 	}
 	| ImportDeclarations {
 		$$ =countNodes;
@@ -440,6 +438,7 @@ CompilationUnit: PackageDeclaration ImportDeclarations TypeDeclarations {nodeTyp
 		nodeType.push_back("CompilationUnit");
 		adj[$$].push_back($1);
 		prodNum[$$]=5;
+		startTraversal=$$;
 	}
 	| TypeDeclarations {
 		$$ =countNodes;
@@ -447,6 +446,7 @@ CompilationUnit: PackageDeclaration ImportDeclarations TypeDeclarations {nodeTyp
 		nodeType.push_back("CompilationUnit");
 		adj[$$].push_back($1);
 		prodNum[$$]=6;
+		startTraversal=$$;
 	}
 ;
 
@@ -762,13 +762,13 @@ ClassMemberDeclaration:
 
 FieldDeclaration: 
 	Modifiers Type VariableDeclarators SEMICOLON { 
-												   nodeType.push_back($4); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back(countNodes); countNodes+=2;
-													prodNum[$$]=1;
-												}
+		nodeType.push_back($4); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back(countNodes); countNodes+=2;
+		prodNum[$$]=1;
+	}
 	| Type VariableDeclarators SEMICOLON {
-											nodeType.push_back($3); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back(countNodes); countNodes+=2;
-										 	prodNum[$$]=2;
-										 }
+		nodeType.push_back($3); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back(countNodes); countNodes+=2;
+	 	prodNum[$$]=2;
+	}
 ;
 
 VariableDeclarators: 
@@ -1778,7 +1778,7 @@ Expression:
 	AssignmentExpression{
 		$$ =countNodes;
 		countNodes++;
-		nodeType.push_back("Literal");
+		nodeType.push_back("Expression");
 		adj[$$].push_back($1);
 		prodNum[$$]=1;
 	}
@@ -1788,7 +1788,7 @@ ConstantExpression:
 	Expression {
 		$$ =countNodes;
 		countNodes++;
-		nodeType.push_back("Literal");
+		nodeType.push_back("ConstantExpression");
 		adj[$$].push_back($1);
 		prodNum[$$]=1;
 	}
@@ -1811,7 +1811,8 @@ VariableInitializer:
 	}
 ;
 
-MethodDeclaration: MethodHeader MethodBody{
+MethodDeclaration: 
+	MethodHeader MethodBody{
 	$$ = countNodes;
 	nodeType.push_back("MethodDeclaration");
 	adj[countNodes].push_back($1);
@@ -2002,7 +2003,7 @@ MethodBody:
 	Block{
 		$$ =countNodes;
 		countNodes++;
-		nodeType.push_back("Literal");
+		nodeType.push_back("MethodBody");
 		adj[$$].push_back($1);
 		prodNum[$$]=1;
 	}
@@ -2011,7 +2012,7 @@ MethodBody:
 		countNodes++;
 		$$=countNodes;
 		countNodes++;
-		nodeType.push_back("IntegerLiteral");
+		nodeType.push_back("MethodBody");
 		adj[$$].push_back(countNodes-2);
 		prodNum[$$]=2;
 	}
@@ -2349,33 +2350,34 @@ AbstractMethodDeclaration: MethodHeader SEMICOLON {
 
 ArrayInitializer: 
 	OPCURLY VariableInitializers COMMA CLCURLY {
-													nodeType.push_back($1);
-													int opcurl = countNodes;
-													countNodes++;
-													nodeType.push_back($3);
-													int comma = countNodes;
-													countNodes++;
-													nodeType.push_back($4);
-													int clcurl = countNodes;
-													countNodes++;
-													$$ = countNodes;
-													nodeType.push_back("ArrayInitializer");
-													adj[countNodes].push_back(opcurl);
-													adj[countNodes].push_back($2);
-													adj[countNodes].push_back(comma);
-													adj[countNodes].push_back(clcurl);
-													countNodes++;
-													prodNum[$$]=1;
-												}
-	| OPCURLY COMMA CLCURLY {nodeType.push_back($1); int opcurl = countNodes; countNodes++; nodeType.push_back($2); int comma = countNodes; countNodes++; nodeType.push_back($3); int clcurl = countNodes; countNodes++;
-								$$ = countNodes;
-								nodeType.push_back("ArrayInitializer");
-								adj[countNodes].push_back(opcurl);
-								adj[countNodes].push_back(comma);
-								adj[countNodes].push_back(clcurl);
-								countNodes++;
-								prodNum[$$]=2;
-							}
+		nodeType.push_back($1);
+		int opcurl = countNodes;
+		countNodes++;
+		nodeType.push_back($3);
+		int comma = countNodes;
+		countNodes++;
+		nodeType.push_back($4);
+		int clcurl = countNodes;
+		countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ArrayInitializer");
+		adj[countNodes].push_back(opcurl);
+		adj[countNodes].push_back($2);
+		adj[countNodes].push_back(comma);
+		adj[countNodes].push_back(clcurl);
+		countNodes++;
+		prodNum[$$]=1;
+	}
+	| OPCURLY COMMA CLCURLY {
+		nodeType.push_back($1); int opcurl = countNodes; countNodes++; nodeType.push_back($2); int comma = countNodes; countNodes++; nodeType.push_back($3); int clcurl = countNodes; countNodes++;
+		$$ = countNodes;
+		nodeType.push_back("ArrayInitializer");
+		adj[countNodes].push_back(opcurl);
+		adj[countNodes].push_back(comma);
+		adj[countNodes].push_back(clcurl);
+		countNodes++;
+		prodNum[$$]=2;
+	}
 	| OPCURLY VariableInitializers CLCURLY{
 		nodeType.push_back($1); int opcurl = countNodes; countNodes++;
 		nodeType.push_back($3); int clcurl = countNodes; countNodes++;
@@ -3545,6 +3547,7 @@ int yyerror(char* s){
 int main(int argc, char* argv[])
 {
 	int flag=0;
+	FILE *fp;
 	for(int i=0;i<argc;i++){
 		string s = argv[i];
 		if(s.substr(0, 7) == "--input"){
@@ -3552,14 +3555,14 @@ int main(int argc, char* argv[])
 			for(int i=8;i<s.size();i++){
 				filename+=s[i];
 			}
-			freopen(filename.c_str(),"r",stdin);
+			fp = freopen(filename.c_str(),"r",stdin);
 		}
 		if(s.substr(0, 8) == "--output"){
 			string filename="";
 			for(int i=9;i<s.size();i++){
 				filename+=s[i];
 			}
-			freopen(filename.c_str(),"w",stdout);
+			fp = freopen(filename.c_str(),"w",stdout);
 			flag=1;
 		}
 		if(s.substr(0, 9) == "--verbose"){
@@ -3576,7 +3579,7 @@ int main(int argc, char* argv[])
 
     yyparse(); 
 
-	if(!flag)freopen("output.dot","w",stdout);
+	if(!flag)fp = freopen("output.dot","w",stdout);
 	cout << "// dot -Tps output.dot -o out.ps\n\n"
 		<< "graph \"Tree\"\n"
 		<< "{\n"
@@ -3608,8 +3611,10 @@ int main(int argc, char* argv[])
 		cout << endl;
 	}
 	cout << "}" << endl;
-
 	initializeAttributeVectors();
-
+	// fp = freopen("hojayaar.txt","w",stdout);
+	generateLabels(startTraversal);
+	postOrderTraversal3AC(startTraversal);
+	print3AC(startTraversal);
     return 0;
 }
