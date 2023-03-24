@@ -1346,7 +1346,7 @@ AdditiveExpression:
 		adj[countNodes].push_back($1);
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back($3);
-		countNodes++;	
+		countNodes++;
 		prodNum[$$]=3;
 	}
 ;
@@ -2872,7 +2872,13 @@ SwitchBlock:
 ;
 
 SwitchBlockStatementGroups:
-	SwitchBlockStatementGroup {$$ = $1;}
+	SwitchBlockStatementGroup {
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlockStatementGroups");
+		adj[countNodes].push_back($1);
+		countNodes++;
+		prodNum[$$]=1;
+	}
 	| SwitchBlockStatementGroups SwitchBlockStatementGroup{
 		$$ = countNodes;
 		nodeType.push_back("SwitchBlockStatementGroups");

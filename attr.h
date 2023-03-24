@@ -118,6 +118,28 @@ public:
 	
 };
 
+class attr2{
+	
+public:
+	int nodeno;
+	string type;
+	string funcname;
+	string classname;
+	string nameId;//name of identifier
+	vector<string> funcParams;
+	vector<string> Idused;
+	vector<int> dimFuncParams;
+	int nDims;
+
+	attr2(){
+		nodeno=0;
+		type="";
+		classname="";
+		funcname="";
+		nDims=0;
+	}
+};
+
 inline ostream& operator<<(ostream &os, const attr& other){
 		
 	for(int i=0;i<other.threeAC.size();i++){
