@@ -100,7 +100,6 @@ IntegerLiteral: INTEGERLITERAL {
 	countNodes++;
 	nodeType.push_back("IntegerLiteral");
 	adj[$$].push_back(countNodes-2);
-	adj[$$].push_back(countNodes-2);
 	prodNum[$$]=1;
 }
 ;
