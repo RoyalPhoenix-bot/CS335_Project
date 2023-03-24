@@ -50,6 +50,13 @@ vector<localTableParams>* currSymTab;
 
 vector<attr1> attrSymTab;
 vector<attr> attr3AC;
+
+stack<pair<int,int>> currScope;
+stack<pair<int,int>> parentScope;
+
+map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
+
+
 string getLabel(int nodeNum, int type){
     switch(type){
         case 1: //True label
@@ -100,17 +107,17 @@ string getLabel(int nodeNum, int type){
     }
 }
 
+int getLabelNumber(string s){
+    string r = "";
+    for(int i=1;i<s.length();i++)r+=s[i];
+    return stoi(r);
+}
+
 void pushLabelUp(int par,int chld){
     if(trueLabel.find(par)!=trueLabel.end() && trueLabel.find(chld)!=trueLabel.end())trueLabel[par]=trueLabel[chld];
     if(falseLabel.find(par)!=falseLabel.end() && falseLabel.find(chld)!=falseLabel.end())falseLabel[par]=falseLabel[chld];
     if(nextLabel.find(par)!=nextLabel.end() && nextLabel.find(chld)!=nextLabel.end())nextLabel[par]=nextLabel[chld];
     return;
-}
-
-int getLabelNumber(string label){
-    string r="";
-    for(int i=1;i<label.size();i++)r+=label[i];
-    return stoi(r);
 }
 
 void initializeAttributeVectors(){
@@ -130,11 +137,6 @@ void initializeAttributeVectors(){
     typeSize["short"]=2;
     return;
 }
-
-stack<pair<int,int>> currScope;
-stack<pair<int,int>> parentScope;
-
-map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
 
 // map<int,pair<string,vector<int>>> arrayInfo;
 // nodeNum -> {type,sizes[]}
@@ -1133,6 +1135,7 @@ void printTables(){
 
     return;
 }
+
 void execWhileStatementNoShortIf(int nodeNum){
     string beg = getLabel(-1,0);
     int c3 = adj[nodeNum][2];

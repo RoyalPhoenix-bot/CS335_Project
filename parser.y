@@ -12,7 +12,7 @@ int yyerror(char *s);
 
 vector<string> threeAC;
 
-int rootNodenum=0;
+int rootNodenum=-1;
 
 %}
 
@@ -398,22 +398,18 @@ QualifiedName: Name DOT Identifier {nodeType.push_back($2); nodeType.push_back("
 CompilationUnit: 
 	PackageDeclaration ImportDeclarations TypeDeclarations {nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);countNodes++;
 		prodNum[$$]=7;
-		startTraversal=$$;
 	}
 	| ImportDeclarations TypeDeclarations {
 			nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;
 			prodNum[$$]=1;
-			startTraversal=$$;
 		}
 	| PackageDeclaration TypeDeclarations {
 			nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;
 			prodNum[$$]=2;
-			startTraversal=$$;
 		}
 	| PackageDeclaration ImportDeclarations {
 			nodeType.push_back("CompilationUnit");$$=countNodes; adj[$$].push_back($1); adj[$$].push_back($2);countNodes++;
 			prodNum[$$]=3;
-			startTraversal=$$;
 		}
 	| PackageDeclaration {
 		$$ =countNodes;
@@ -421,7 +417,6 @@ CompilationUnit:
 		nodeType.push_back("CompilationUnit");
 		adj[$$].push_back($1);
 		prodNum[$$]=4;
-		startTraversal=$$;
 	}
 	| ImportDeclarations {
 		$$ =countNodes;
@@ -429,7 +424,6 @@ CompilationUnit:
 		nodeType.push_back("CompilationUnit");
 		adj[$$].push_back($1);
 		prodNum[$$]=5;
-		startTraversal=$$;
 	}
 	| TypeDeclarations {
 		$$ =countNodes;
@@ -437,7 +431,6 @@ CompilationUnit:
 		nodeType.push_back("CompilationUnit");
 		adj[$$].push_back($1);
 		prodNum[$$]=6;
-		startTraversal=$$;
 	}
 ;
 
@@ -1803,7 +1796,7 @@ VariableInitializer:
 ;
 
 MethodDeclaration: 
-	MethodHeader MethodBody{
+	MethodHeader_ MethodBody{
 	$$ = countNodes;
 	nodeType.push_back("MethodDeclaration");
 	adj[countNodes].push_back($1);
@@ -3611,10 +3604,10 @@ int main(int argc, char* argv[])
 		cout << endl;
 	}
 	cout << "}" << endl;
-	initializeAttributeVectors();
+	// initializeAttributeVectors();
 	// fp = freopen("hojayaar.txt","w",stdout);
-	generateLabels(startTraversal);
-	postOrderTraversal3AC(startTraversal);
-	print3AC(startTraversal);
+	generateLabels(rootNodenum);
+	postOrderTraversal3AC(rootNodenum);
+	print3AC(rootNodenum);
     return 0;
 }
