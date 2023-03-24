@@ -2,9 +2,8 @@
 #include "attr.h"
 
 using namespace std;
-
-
-map<int, pair<string,vector<int>>> arrayInfo;
+map<string,string> typeOfNode; // to_string(nodeNum) -> Type of that node
+// map<int, pair<string,vector<int>>> arrayInfo;
 map<int,int> trueLabel;
 map<int,int> falseLabel;
 map<int,int> nextLabel;
@@ -21,8 +20,11 @@ vector<int> helpScope;
 stack<pair<int,int>> scopeCurr;
 stack<pair<int,int>> scopeParent;
 
+map<pair<int,int>, pair<int,int>> mapParentScope;
 map<string, int> typeWiden = {{"double",0}, {"float",1}, {"long",2}, {"int",3}, {"byte",4}, {"short",4}, {"char",4}};//minimum value->widest
 vector<string> indexType = {"double", "float", "long", "int", "byte"};
+
+vector<string> integerTypes = {"double", "float", "long", "int", "byte", "short"};
 
 typedef struct localtableparams{
 	string name="";
@@ -43,12 +45,13 @@ typedef struct globaltableparams{
 	string type="";
     int classNum;
     int parentClassNum=0;
+    int line;
 	vector<localTableParams>* localTablePointer; 
 } globalTableParams;
 
 vector<globalTableParams> globalTable;
 vector<localTableParams>* currSymTab;
-
+map< int, pair< pair<int,int>,vector<localTableParams>* > > scopeAndTable;
 
 vector<localtableparams>* funcScope = nullptr; //to maintain function scope if any
 vector<localtableparams>* classScope = nullptr; //to maintain class scope if any
@@ -70,6 +73,155 @@ stack<pair<int,int>> parentScope;
 
 map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
 
+string getArrayType(string _type){
+    
+    string lType_rev;
+    for (int i=_type.length()-1; ;i--){
+
+        if (_type[i]!=')'){
+            lType_rev="";
+            while(_type[i]!='('){
+                lType_rev+=_type[i];
+                i--;
+            }
+            break;
+        }
+
+    }
+
+    string lType="";
+
+    for (int i=lType_rev.length()-1;i>=0;i--)
+        lType+=lType_rev[i];
+    
+    return lType;
+}
+
+
+localTableParams* checkInScope(string _varName, pair<int,int> _scope, vector<localTableParams>* _tablePointer){
+    // cout<<"Hi\n";
+    for (auto &locRow:*(_tablePointer)){
+        // cout<<locRow.name<<_varName<<" "<<locRow.scope.first<<_scope.first<<" "<<locRow.scope.second<<_scope.second<<endl;
+        if (locRow.name==_varName && locRow.scope.first==_scope.first && locRow.scope.second==_scope.second)
+            return &locRow;
+    }
+
+    return NULL;
+}
+
+string getType(string _varName, int _nodeNum){
+
+    //return type
+
+    vector<localTableParams>* primaryTable=scopeAndTable[_nodeNum].second;
+    // cout<<_nodeNum<<" "<<scopeAndTable[_nodeNum].first.first<<" "<<scopeAndTable[_nodeNum].first.second<<endl;
+
+    pair<int,int> startScope=scopeAndTable[_nodeNum].first;
+
+    // cout<<startScope.first<<" "<<startScope.second<<endl;
+
+    // check in current table and it's parent table (class table's parent is mapped to itself so no worries)
+    
+    while(startScope.first>1){
+
+        auto rowPtr=checkInScope(_varName,startScope,primaryTable);
+
+        if (rowPtr!=NULL){
+
+            // got the row
+
+            return rowPtr->type;
+
+        }
+
+        startScope=mapParentScope[startScope];
+    }
+
+    startScope=scopeAndTable[_nodeNum].first;
+
+    while(startScope.first>1){
+
+        auto rowPtr=checkInScope(_varName,startScope,(parentTable[primaryTable]));
+
+        if (rowPtr!=NULL){
+
+            // got the row
+
+            return rowPtr->type;
+        }
+
+        startScope=mapParentScope[startScope];
+    }
+
+    return "notfound";   
+
+}
+
+string fillHelper(string _nodeNum){
+        
+        string ret;
+        int node_number=atoi(_nodeNum.c_str());
+        ret=getType(nodeType[node_number],node_number);
+        
+        if (ret[ret.size()-1]==')')
+            ret=getArrayType(ret);
+        
+        typeOfNode[_nodeNum]=ret;
+        return ret;
+}
+
+void filltypeOfNode(){
+
+    for (auto &elem:typeOfNode){
+
+        if (elem.second=="fillMe"){
+
+            elem.second=fillHelper(elem.first);
+        }
+    }
+}
+
+void printfilltypeOfNode(){
+    for (auto elem:typeOfNode)
+        cout<<nodeType[stoi(elem.first)]<<" "<<elem.first<<"->"<<elem.second<<endl;
+}
+
+void storeParseTree(int flag){
+
+    if(!flag)freopen("output.dot","w",stdout);
+	cout << "// dot -Tps output.dot -o out.ps\n\n"
+		<< "graph \"Tree\"\n"
+		<< "{\n"
+		<< "\tfontname=\"Helvetica,Arial,sans-serif\"\n"
+    	 << "\tnode [fontsize=10, width=\".2\", height=\".2\", margin=0]\n"
+		 << "\tedge [fontsize=6]\n"
+    	 << "\tgraph[fontsize=8];\n\n"
+    	 << "\tlabel=\"Abstract Syntax Tree\"\n\n";
+
+	for(int i=0;i<nodeType.size();i++){
+		cout << "\tn" << i << ";\n";
+		cout << "\tn" << i << "[label=\"" ;
+		for(int t=0;t<nodeType[i].length();t++){
+			if(nodeType[i][t]=='"'){
+				if(t>0){
+					if(nodeType[i][t]!='\\'){
+						cout << "\\" << nodeType[i][t];
+					}else cout << nodeType[i][t];
+				}else{
+					cout << "\\" << nodeType[i][t];
+				}
+			}else cout << nodeType[i][t];
+		}
+		cout <<"\"];\n";
+		auto child = adj[i];
+		for(int j=0;j<child.size();j++){
+			cout << "\tn" << i << "--" << 'n' << child[j] << ";\n";
+		}
+		cout << endl;
+	}
+	cout << "}" << endl;
+	
+}
 
 string getLabel(int nodeNum, int type){
     switch(type){
@@ -162,62 +314,55 @@ void initializeAttributeVectors(){
 //    3. Check for array_name in *tablePointer and it's parent scope tables to send out {type,sizes[]} stored in the table
 
 // map nodeNum -> {Scope,tablePointer}
-map< int, pair< pair<int,int>,vector<localTableParams>* > > scopeAndTable;
-
-string getArrayType(string _type){
-    
-    string lType_rev;
-    for (int i=_type.length()-1; ;i--){
-
-        if (_type[i]!=')'){
-            lType_rev="";
-            while(_type[i]!='('){
-                lType_rev+=_type[i];
-                i--;
-            }
-            break;
-        }
-
-    }
-
-    string lType="";
-
-    for (int i=lType_rev.length()-1;i>=0;i--)
-        lType+=lType_rev[i];
-    
-    return lType;
-}
 
 pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
     
     //return {type,arraySizes}
+
     vector<localTableParams>* primaryTable=scopeAndTable[_nodeNum].second;
-    pair<int,int> arrayScope=scopeAndTable[_nodeNum].first;
+    pair<int,int> startScope=scopeAndTable[_nodeNum].first;
 
     // check in current table and it's parent table (class table's parent is mapped to itself so no worries)
     pair<string,vector<int>> retObj;
     
-    for (auto locRow:*primaryTable){
-        if (locRow.arraySize.size()!=0 && locRow.name == _arrayName && locRow.scope.first==arrayScope.first && locRow.scope.second==arrayScope.second ){
-            
-            retObj.first=getArrayType(locRow.type);
-            retObj.second=locRow.arraySize;
+    while(startScope.first>1){
 
+        auto rowPtr=checkInScope(_arrayName,startScope,primaryTable);
+
+        if (rowPtr!=NULL){
+
+            // got the row
+
+            retObj.first=getArrayType(rowPtr->type);
+            retObj.second=rowPtr->arraySize;
+            // cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
             return retObj;
         }
 
+        startScope=mapParentScope[startScope];
     }
 
-    for (auto locRow:*(parentTable[primaryTable])){
-        if (locRow.arraySize.size()!=0 && locRow.name == _arrayName && locRow.scope.first==arrayScope.first && locRow.scope.second==arrayScope.second ){
-            
-            retObj.first=getArrayType(locRow.type);
-            retObj.second=locRow.arraySize;
+    startScope=scopeAndTable[_nodeNum].first;
 
+    while(startScope.first>1){
+
+        auto rowPtr=checkInScope(_arrayName,startScope,(parentTable[primaryTable]));
+
+        if (rowPtr!=NULL){
+
+            // got the row
+
+            retObj.first=getArrayType(rowPtr->type);
+            retObj.second=rowPtr->arraySize;
+
+            // cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
             return retObj;
         }
+
+        startScope=mapParentScope[startScope];
     }
 
+    // cout<<"DIDN'T GET\n";
     return retObj;   
 }
 
@@ -276,9 +421,24 @@ bool checkIfValidArrayDeclaration(string _typeLHS, string _typeRHS, int _rDims, 
     return false;
 }
 
-void preOrderTraversal(int nodeNum){
+bool checkIfTypeOkay(string _t1, string _t2){
 
-    // cout<<"visiting: "<<nodeType[nodeNum]<<"\n";
+    bool t1isInt=find(integerTypes.begin(),integerTypes.end(),_t1)!=integerTypes.end();
+    bool t2isInt=find(integerTypes.begin(),integerTypes.end(),_t2)!=integerTypes.end();
+
+    if (t1isInt && t2isInt){
+        return true;
+    }
+    else if (!t1isInt && !t2isInt){
+        return _t1==_t2;
+    }
+    else{
+        return false;
+    }
+
+}
+
+void preOrderTraversal(int nodeNum){
 
     if (nodeType[nodeNum]=="ClassDeclaration"){ 
         
@@ -294,6 +454,7 @@ void preOrderTraversal(int nodeNum){
         // update scopes before going inside the class 
         parentScope.push(currScope.top());
         currScope.push(make_pair(2,classCount));
+        mapParentScope[currScope.top()]=parentScope.top();
         globRow.classNum=classCount;
         // cout<<currSymTab<<" From ClassDeclaration\n";
 
@@ -311,10 +472,12 @@ void preOrderTraversal(int nodeNum){
             case 8:
                 preOrderTraversal(adj[nodeNum][2]);
                 globRow.name=attrSymTab[adj[nodeNum][2]].name;
+                globRow.line=lineNum[adj[nodeNum][2]];
                 break;
             default:
                 preOrderTraversal(adj[nodeNum][1]);
                 globRow.name=attrSymTab[adj[nodeNum][1]].name;
+                globRow.line=lineNum[adj[nodeNum][1]];
                 
         }
 
@@ -323,18 +486,20 @@ void preOrderTraversal(int nodeNum){
         {   
             case 1:
             case 7:{ //Super at 4th
+                int c3=adj[nodeNum][2];
                 int c4=adj[nodeNum][3];
                 preOrderTraversal(c4);
-                globRow.parentClassNum=checkIfValidSuperClass(attrSymTab[c4].name,lineNum[nodeNum]);
+                globRow.parentClassNum=checkIfValidSuperClass(attrSymTab[c4].name,lineNum[c3]);
                 // valid inheritence
                 break;
 
             }
             case 2:
             case 4:{ //Super at 3rd
+                int c2=adj[nodeNum][1];
                 int c3=adj[nodeNum][2];
                 preOrderTraversal(c3);
-                globRow.parentClassNum=checkIfValidSuperClass(attrSymTab[c3].name,lineNum[nodeNum]);
+                globRow.parentClassNum=checkIfValidSuperClass(attrSymTab[c3].name,lineNum[c2]);
                 // valid inheritence
                 break;
             }
@@ -362,8 +527,14 @@ void preOrderTraversal(int nodeNum){
         attrSymTab[nodeNum].name=(nodeType[adj[nodeNum][0]]);
         // cout<<(nodeType[adj[nodeNum][0]])<<"\n";
         attrSymTab[nodeNum].type=(nodeType[adj[nodeNum][0]]);
-        scopeAndTable[nodeNum].first=currScope.top();
-        scopeAndTable[nodeNum].second=currSymTab;
+        // attrSymTab[nodeNum].decLine=lineNum[nodeNum];
+        int c1=adj[nodeNum][0];
+        scopeAndTable[c1].first=currScope.top();
+        // cout<<c1<<" "<<scopeAndTable[c1].first.first<<" "<<scopeAndTable[c1].first.second<<endl;
+        scopeAndTable[c1].second=currSymTab;
+        attrSymTab[nodeNum].leafNodeNum=c1;
+        typeOfNode[to_string(c1)]="fillMe";
+
         return;
     }
     else if (nodeType[nodeNum]=="Super"){
@@ -409,7 +580,7 @@ void preOrderTraversal(int nodeNum){
 
         //check if array is being declared
         if (attrSymTab[cb2].intParams.size()!=0){
-            // cout<<"Hi bhai yaha hu\n";
+            // cout<<"Hi bhai array declare hua\n";
             //array it is
 
             // check if initialized with correct type
@@ -424,6 +595,7 @@ void preOrderTraversal(int nodeNum){
             locRow.scope=currScope.top();
             locRow.parentScope=parentScope.top();
             locRow.arraySize=attrSymTab[cb2].intParams;
+            // cout<<attrSymTab[cb2].intParams.size()<<endl;
 
             // cout<<"From FieldDeclaration:"<<locRow.arraySize.size()<<endl;
             (*currSymTab).push_back(locRow);
@@ -473,6 +645,7 @@ void preOrderTraversal(int nodeNum){
         preOrderTraversal(adj[nodeNum][0]);
         attrSymTab[nodeNum].type=attrSymTab[adj[nodeNum][0]].type;
         attrSymTab[nodeNum].name=attrSymTab[adj[nodeNum][0]].name;
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         return;
     }
     else if (nodeType[nodeNum]=="IntegralType" || nodeType[nodeNum]=="FloatingPointType"){
@@ -568,6 +741,7 @@ void preOrderTraversal(int nodeNum){
         globalTableParams globRow ;
         globRow.type="package";
         globRow.name=attrSymTab[c2].name;
+        globRow.line=lineNum[nodeNum];
         globalTable.push_back(globRow);
         return;
 
@@ -579,6 +753,7 @@ void preOrderTraversal(int nodeNum){
         globalTableParams globRow;
         globRow.name=attrSymTab[c2].name;
         globRow.type="import_on_demand";
+        globRow.line=lineNum[nodeNum];
         globalTable.push_back(globRow);
         return;
     }
@@ -589,6 +764,7 @@ void preOrderTraversal(int nodeNum){
         globalTableParams globRow;
         globRow.name=attrSymTab[c2].name;
         globRow.type="import";
+        globRow.line=lineNum[nodeNum];
         globalTable.push_back(globRow);
         return;
     }
@@ -602,6 +778,7 @@ void preOrderTraversal(int nodeNum){
             
             parentScope.push(currScope.top());
             currScope.push(make_pair(3,funcInClass));
+            mapParentScope[currScope.top()]=parentScope.top();
             
             locRow.functionTablePointer=new vector<localTableParams>();
             locRow.type="method";
@@ -769,32 +946,33 @@ void preOrderTraversal(int nodeNum){
     }
     else if (nodeType[nodeNum]=="BlockStatement"){
 
-        if (prodNum[nodeNum]==1){
+        // if (prodNum[nodeNum]==1){
 
-            int c1=adj[nodeNum][0];
-            preOrderTraversal(c1);
-            // attrSymTab[nodeNum].type=attrSymTab[c1].type;
-            // attrSymTab[nodeNum].otherParams=attrSymTab[c1].otherParams;
+        //     int c1=adj[nodeNum][0];
+        //     preOrderTraversal(c1);
+        //     // attrSymTab[nodeNum].type=attrSymTab[c1].type;
+        //     // attrSymTab[nodeNum].otherParams=attrSymTab[c1].otherParams;
 
-            for (auto varName:attrSymTab[c1].otherParams){
+        //     for (auto varName:attrSymTab[c1].otherParams){
 
-                localTableParams locRow ;
-                locRow.type=attrSymTab[c1].type;
-                // cout<<locRow.type<<" From BlockStatement\n";
-                locRow.name=varName;
-                locRow.line=lineNum[nodeNum];
-                locRow.scope=currScope.top();
-                locRow.parentScope=parentScope.top();
-                // cout<<"From BlockStatement: "<<varName<<endl; //works
-                // cout<<locRow.type<<" "<<locRow.name<<endl; //works
-                (*currSymTab).push_back(locRow);
-                // cout<<currSymTab<<" From BlockStatement\n";
-            }
-        }
-        else{
-             int c1=adj[nodeNum][0];
-            preOrderTraversal(c1);
-        }
+        //         localTableParams locRow ;
+        //         locRow.type=attrSymTab[c1].type;
+        //         // cout<<locRow.type<<" From BlockStatement\n";
+        //         locRow.name=varName;
+        //         locRow.line=lineNum[nodeNum];
+        //         locRow.scope=currScope.top();
+        //         locRow.parentScope=parentScope.top();
+        //         // cout<<"From BlockStatement: "<<varName<<endl; //works
+        //         // cout<<locRow.type<<" "<<locRow.name<<endl; //works
+        //         (*currSymTab).push_back(locRow);
+        //         cout<<currSymTab<<" in blockstat "<<(*currSymTab).size()<<"\n";
+        //         // cout<<currSymTab<<" From BlockStatement\n";
+        //     }
+        // }
+        
+        int c1=adj[nodeNum][0];
+        preOrderTraversal(c1);
+        
 
         return;
     }
@@ -815,6 +993,58 @@ void preOrderTraversal(int nodeNum){
 
         attrSymTab[nodeNum].type=attrSymTab[c1].type;
         attrSymTab[nodeNum].otherParams=attrSymTab[c2].otherParams;
+
+        //check if array is being declared
+        if (attrSymTab[c2].intParams.size()!=0){
+            // cout<<"Hi bhai array declare hua\n";
+            //array it is
+
+            // check if initialized with correct type
+            bool flag=checkIfValidArrayDeclaration(attrSymTab[c1].type,attrSymTab[c2].type,attrSymTab[c2].intParams.size(),lineNum[nodeNum]);
+            localTableParams locRow ;
+            
+            locRow.type=attrSymTab[c1].type;
+
+            locRow.name=attrSymTab[c2].otherParams[0];
+            locRow.line=lineNum[nodeNum];
+            locRow.scope=currScope.top();
+            locRow.parentScope=parentScope.top();
+            locRow.arraySize=attrSymTab[c2].intParams;
+
+            // cout<<"From FieldDeclaration:"<<locRow.arraySize.size()<<endl;
+            (*currSymTab).push_back(locRow);
+            // cout<<currSymTab<<" in locvaldec "<<(*currSymTab).size()<<"\n";
+            
+            // for (auto ro:*(currSymTab))
+            //     cout<<ro.name<<" "<<ro.arraySize.size()<<endl;
+            return;
+
+        }
+        else{
+
+            int c1=adj[nodeNum][0];
+            int c2=adj[nodeNum][1];
+            preOrderTraversal(c1);
+            preOrderTraversal(c2);
+            // attrSymTab[nodeNum].type=attrSymTab[c1].type;
+            // attrSymTab[nodeNum].otherParams=attrSymTab[c1].otherParams;
+
+            for (auto varName:attrSymTab[c2].otherParams){
+
+                localTableParams locRow ;
+                locRow.type=attrSymTab[c1].type;
+                // cout<<locRow.type<<" From BlockStatement\n";
+                locRow.name=varName;
+                locRow.line=lineNum[nodeNum];
+                locRow.scope=currScope.top();
+                locRow.parentScope=parentScope.top();
+                // cout<<"From BlockStatement: "<<varName<<endl; //works
+                // cout<<locRow.type<<" "<<locRow.name<<endl; //works
+                (*currSymTab).push_back(locRow);
+                // cout<<currSymTab<<" in locvardec "<<(*currSymTab).size()<<"\n";
+                // cout<<currSymTab<<" From BlockStatement\n";
+            }
+        }
         return;
     }
     else if (nodeType[nodeNum]=="ForStatement" || nodeType[nodeNum]=="IfThenStatement" || nodeType[nodeNum]=="WhileStatement"){
@@ -827,7 +1057,7 @@ void preOrderTraversal(int nodeNum){
         scopeHelper[currScope.top().first-3]++;
         parentScope.push(currScope.top());
         currScope.push(make_pair(currScope.top().first+1,scopeHelper[currScope.top().first-3]));
-        
+        mapParentScope[currScope.top()]=parentScope.top();
         for (auto child:adj[nodeNum]){
             preOrderTraversal(child);
         }
@@ -850,7 +1080,7 @@ void preOrderTraversal(int nodeNum){
         scopeHelper[currScope.top().first-3]++;
         parentScope.push(currScope.top());
         currScope.push(make_pair(currScope.top().first+1,scopeHelper[currScope.top().first-3]));
-        
+        mapParentScope[currScope.top()]=parentScope.top();
         preOrderTraversal(c3);
         preOrderTraversal(c5);
 
@@ -866,7 +1096,7 @@ void preOrderTraversal(int nodeNum){
         scopeHelper[currScope.top().first-3]++;
         parentScope.push(currScope.top());
         currScope.push(make_pair(currScope.top().first+1,scopeHelper[currScope.top().first-3]));
-        
+        mapParentScope[currScope.top()]=parentScope.top();
         preOrderTraversal(c7);
 
         parentScope.pop();
@@ -902,6 +1132,7 @@ void preOrderTraversal(int nodeNum){
 
         attrSymTab[nodeNum].type=attrSymTab[c2].type;
         attrSymTab[nodeNum].intParams=attrSymTab[c3].intParams;
+        // cout<<"[PreOrderTraversal] From ArrayCreationExpression: "<<attrSymTab[nodeNum].intParams.size()<<endl;
         return;
     }
     else if (nodeType[nodeNum]=="DimExprs"){
@@ -957,6 +1188,7 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].num=attrSymTab[c1].num;  
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         }
         return;
     }
@@ -970,6 +1202,7 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
         }
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         return;
     }
     else if (nodeType[nodeNum]=="Primary"){
@@ -988,7 +1221,7 @@ void preOrderTraversal(int nodeNum){
         }
         return;
     }
-    else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="UnaryExpressionNotPlusMinus" || nodeType[nodeNum]=="MultiplicativeExpression" || nodeType[nodeNum]=="AdditiveExpression" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" || nodeType[nodeNum]=="AssignmentExpression"){
+    else if (nodeType[nodeNum]=="AdditiveExpression"){
         
         for (auto child:adj[nodeNum])
             preOrderTraversal(child);
@@ -998,7 +1231,79 @@ void preOrderTraversal(int nodeNum){
             int c1=adj[nodeNum][0];
             attrSymTab[nodeNum].num=attrSymTab[c1].num; 
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
-            attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;   
+            attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
+        }
+        else {
+
+            int c1=adj[nodeNum][0];
+            int c3=adj[nodeNum][2];
+            // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
+            string t1=fillHelper(to_string(attrSymTab[c1].leafNodeNum));
+            string t3=fillHelper(to_string(attrSymTab[c3].leafNodeNum));
+            
+            // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
+            
+            if (checkIfTypeOkay(t1,t3))
+                attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
+            else{
+
+                string var1=nodeType[attrSymTab[c1].leafNodeNum];
+                string var2=nodeType[attrSymTab[c3].leafNodeNum];
+
+                cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<"' of '"<<var1<<"' does not match type '"<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<"' of '"<<var2<<"'!\nAborting...\n";
+                exit(0);
+            }
+        }
+        return;
+
+
+    }
+    else if (nodeType[nodeNum]=="Assignment"){
+        
+        for (auto child: adj[nodeNum])
+            preOrderTraversal(child);
+        
+        int c1=adj[nodeNum][0];
+        int c3=adj[nodeNum][2];
+        // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
+        string t1=fillHelper(to_string(attrSymTab[c1].leafNodeNum));
+        string t3=fillHelper(to_string(attrSymTab[c3].leafNodeNum));
+            
+            // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
+            
+        if (checkIfTypeOkay(t1,t3))
+                attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
+        else{
+
+            string var1=nodeType[attrSymTab[c1].leafNodeNum];
+            string var2=nodeType[attrSymTab[c3].leafNodeNum];
+
+            cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<"' of '"<<var1<<"' does not match type '"<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<"' of '"<<var2<<"'!\nAborting...\n";
+            exit(0);
+        }
+
+    }
+    else if (nodeType[nodeNum]=="LeftHandSide"){
+
+        preOrderTraversal(adj[nodeNum][0]);
+
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
+        
+        return;
+    }
+    else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="UnaryExpressionNotPlusMinus" || nodeType[nodeNum]=="MultiplicativeExpression" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" || nodeType[nodeNum]=="AssignmentExpression"){
+        
+        for (auto child:adj[nodeNum])
+            preOrderTraversal(child);
+
+        if (prodNum[nodeNum]==1){
+            
+            int c1=adj[nodeNum][0];
+            attrSymTab[nodeNum].num=attrSymTab[c1].num; 
+            attrSymTab[nodeNum].type=attrSymTab[c1].type;
+            attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         }
         return;
     }
@@ -1021,6 +1326,8 @@ void preOrderTraversal(int nodeNum){
         if (prodNum[nodeNum]==1){
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
+            // cout<<"[PreOrderTraversal] From VariableInitializer: "<<attrSymTab[nodeNum].intParams.size()<<endl;
+
         }
 
     }
@@ -1043,17 +1350,18 @@ void printTables(){
     freopen("global_symbol_table.csv","w",stdout);
 
     // print global table
-    cout<<"Name,Type,Class Number,Parent Class Number,Local Table Pointer\n";
+    cout<<"Name,Type,Class Number,Parent Class Number,Line Number,Local Table Pointer\n";
     for (auto row: globalTable){
 
         if (row.type!="class"){
-            cout<<row.name<<","<<row.type<<",-,-,null\n";
+            cout<<row.name<<","<<row.type<<",-,-,"<<row.line<<",null\n";
         }
         else{
-            cout<<row.name<<","<<row.type<<","<<row.classNum<<","<<row.parentClassNum<<","<<row.localTablePointer<<"\n";
+            cout<<row.name<<","<<row.type<<","<<row.classNum<<","<<row.parentClassNum<<","<<row.line<<","<<row.localTablePointer<<"\n";
         }
  
     }
+    std::fclose(stdout);
 
     //print class tables
     int cc=0;
@@ -1101,6 +1409,8 @@ void printTables(){
 
 		    }
 
+            std::fclose(stdout);
+
         }
     }
 
@@ -1127,9 +1437,9 @@ void printTables(){
                         for (auto fRow:funcTable){
                             cout<<fRow.name<<",";
                             cout<<fRow.type<<",";
-                            if ((*(row.localTablePointer))[j].arraySize.size()!=0){
+                            if (fRow.arraySize.size()!=0){
                     
-                                for (auto siz:(*(row.localTablePointer))[j].arraySize)
+                                for (auto siz:(fRow.arraySize))
                                     cout<<siz<<" ";
                                 cout<<",";
                             }
@@ -1141,11 +1451,15 @@ void printTables(){
                             cout<<fRow.line<<"\n";
                         }
 
+                        std::fclose(stdout);
+
                     }
 		    }
 
         }
     }
+
+    freopen("log.log","w",stdout);
 
     return;
 }
@@ -2326,7 +2640,7 @@ void execStatement(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "statement " << attr3AC[nodeNum].threeAC.size() << endl;
+            // cout << "statement " << attr3AC[nodeNum].threeAC.size() << endl;
         }
         break;
         case 2:{
@@ -2702,7 +3016,7 @@ void execStatementExpression(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "statementexpression " << attr3AC[nodeNum].threeAC.size() << endl;;
+            // cout << "statementexpression " << attr3AC[nodeNum].threeAC.size() << endl;;
         }
         break;
         case 2:{
@@ -2808,11 +3122,14 @@ void execArrayAccess(int nodeNum){
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             
-            auto mdata = arrayInfo[attr3AC[c].nodeno];// lowestnode
-            cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << " " << nodeType[attr3AC[c].nodeno] << endl;
+            // auto mdata = arrayInfo[attr3AC[c].nodeno];// lowestnode
+            // cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << "? " << nodeType[attr3AC[c].nodeno] << endl;
+            auto mdata=getArrayInfo(attr3AC[c].addrName,attr3AC[c].nodeno);
+            // cout << "after calling  getArrayInfo" << nodeNum << " " << attr3AC[c].nodeno << " " << attr3AC[c].addrName << endl;
             string t = mdata.first;
             vector<int> d = mdata.second;
-            cout << "idhar " << t << " " << d.size() << endl;
+            // for(auto i : d)cout << i << endl;
+            // cout << "idhar " << t << " " << d.size() << endl;
             int mult=typeSize[t];
             for(int i=0;i<d.size();i++){
                 if(i)mult*=d[i];
@@ -2824,7 +3141,7 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             attr3AC[nodeNum].dimsDone++;
             attr3AC[nodeNum].nameAtNode = nodeType[attr3AC[c].nodeno];
-            cout << "yaha pe hu aray1 " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            // cout << "yaha pe hu aray1 " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -2835,7 +3152,7 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c];
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             int mult = typeSize[attr3AC[c].type];
-            for(int i=attr3AC[c].dimsDone+1;i<attr3AC[c].arrDims.size();i++){
+            for(int i=attr3AC[c].dimsDone;i<attr3AC[c].arrDims.size();i++){
                 mult*=(attr3AC[c].arrDims)[i];
             }
             tempNum++;
@@ -2843,9 +3160,10 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            attr3AC[nodeNum].dimsDone++;
+            // attr3AC[nodeNum].dimsDone++;
+            attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone+1;
             attr3AC[nodeNum].nameAtNode = attr3AC[c].nameAtNode;
-            cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            // cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + t" + to_string(tempNum-1) ;
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -2928,7 +3246,7 @@ void execPrimaryNoNewArray(int nodeNum){
         case 6:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
-            cout << "idahr dekhra hu " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            // cout << "idahr dekhra hu " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
@@ -3032,7 +3350,7 @@ void execAssignment(int nodeNum){
 
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            cout << "assignment " << temp << endl;
+            // cout << "assignment " << temp << endl;
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
         break;
@@ -3598,7 +3916,7 @@ void execLeftHandSide(int nodeNum){
             int c = adj[nodeNum][0];//Get child node number
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
+            // cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
 
         }
         break;
@@ -3634,7 +3952,7 @@ void execSimpleName(int nodeNum){
     int c = adj[nodeNum][0];//Get child node number
     attr3AC[nodeNum] = attr3AC[c];
     pushLabelUp(nodeNum,c);
-    cout << "Simplename " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
+    // cout << "Simplename " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
     return;
 }
 

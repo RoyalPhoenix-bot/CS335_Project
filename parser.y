@@ -178,6 +178,7 @@ Identifier: IDENTIFIER {
 	nodeType.push_back("Identifier");
 	adj[$$].push_back(countNodes-2);
 	prodNum[$$]=1;
+	lineNum[$$]=yylineno;
 }
 ;
 
@@ -461,7 +462,7 @@ TypeDeclarations:
 ;
 
 PackageDeclaration:
-	PACKAGE Name SEMICOLON {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("PackageDeclaration"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;prodNum[$$]=1;}
+	PACKAGE Name SEMICOLON {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("PackageDeclaration"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;prodNum[$$]=1; lineNum[$$]=yylineno;}
 ;
 
 ImportDeclaration:
@@ -484,12 +485,14 @@ ImportDeclaration:
 SingleTypeImportDeclaration:
 	IMPORT Name SEMICOLON {nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("SingleTypeImportDeclaration"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 ;
 
 TypeImportOnDemandDeclaration:
 	IMPORT Name DOT ASTERIX SEMICOLON {nodeType.push_back($1); nodeType.push_back($3);nodeType.push_back($4); nodeType.push_back($5); nodeType.push_back("TypeImportOnDemandDeclaration"); $$=countNodes+4; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);adj[$$].push_back(countNodes+2); adj[$$].push_back(countNodes+3);countNodes+=5;
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -748,10 +751,12 @@ FieldDeclaration:
 	Modifiers Type VariableDeclarators SEMICOLON { 
 		nodeType.push_back($4); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back($3);adj[$$].push_back(countNodes); countNodes+=2;
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| Type VariableDeclarators SEMICOLON {
 		nodeType.push_back($3); nodeType.push_back("FieldDeclaration"); $$=countNodes+1; adj[$$].push_back($1); adj[$$].push_back($2);adj[$$].push_back(countNodes); countNodes+=2;
 	 	prodNum[$$]=2;
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -1328,6 +1333,7 @@ AdditiveExpression:
 		nodeType.push_back("AdditiveExpression");
 		adj[$$].push_back($1);
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| AdditiveExpression PLUS MultiplicativeExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1338,6 +1344,7 @@ AdditiveExpression:
 		adj[countNodes].push_back($3);
 		countNodes++;	
 		prodNum[$$]=2;
+		lineNum[$$]=yylineno;
 	}
 	| AdditiveExpression MINUS MultiplicativeExpression{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1348,6 +1355,7 @@ AdditiveExpression:
 		adj[countNodes].push_back($3);
 		countNodes++;
 		prodNum[$$]=3;
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -1630,6 +1638,7 @@ Assignment:
 		adj[countNodes].push_back($3);
 		countNodes++;
 		prodNum[$$]=1;	
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -2486,6 +2495,7 @@ LocalVariableDeclaration:
 		adj[countNodes].push_back($2);
 		countNodes++;
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -3575,45 +3585,14 @@ int main(int argc, char* argv[])
 	initializeAttributeVectors();
 	
 	preOrderTraversal(rootNodenum);
-
 	printTables();
-
-	if(!flag)freopen("output.dot","w",stdout);
-	cout << "// dot -Tps output.dot -o out.ps\n\n"
-		<< "graph \"Tree\"\n"
-		<< "{\n"
-		<< "\tfontname=\"Helvetica,Arial,sans-serif\"\n"
-    	 << "\tnode [fontsize=10, width=\".2\", height=\".2\", margin=0]\n"
-		 << "\tedge [fontsize=6]\n"
-    	 << "\tgraph[fontsize=8];\n\n"
-    	 << "\tlabel=\"Abstract Syntax Tree\"\n\n";
-
-	for(int i=0;i<nodeType.size();i++){
-		cout << "\tn" << i << ";\n";
-		cout << "\tn" << i << "[label=\"" ;
-		for(int t=0;t<nodeType[i].length();t++){
-			if(nodeType[i][t]=='"'){
-				if(t>0){
-					if(nodeType[i][t]!='\\'){
-						cout << "\\" << nodeType[i][t];
-					}else cout << nodeType[i][t];
-				}else{
-					cout << "\\" << nodeType[i][t];
-				}
-			}else cout << nodeType[i][t];
-		}
-		cout <<"\"];\n";
-		auto child = adj[i];
-		for(int j=0;j<child.size();j++){
-			cout << "\tn" << i << "--" << 'n' << child[j] << ";\n";
-		}
-		cout << endl;
-	}
-	cout << "}" << endl;
-	// initializeAttributeVectors();
-	// fp = freopen("hojayaar.txt","w",stdout);
+	filltypeOfNode();
+	// printfilltypeOfNode();
 	generateLabels(rootNodenum);
 	postOrderTraversal3AC(rootNodenum);
 	print3AC(rootNodenum);
+
+	storeParseTree(flag);
+
     return 0;
 }
