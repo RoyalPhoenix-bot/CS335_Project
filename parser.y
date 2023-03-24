@@ -2862,7 +2862,13 @@ SwitchBlock:
 ;
 
 SwitchBlockStatementGroups:
-	SwitchBlockStatementGroup {$$ = $1;}
+	SwitchBlockStatementGroup {
+		$$ = countNodes;
+		nodeType.push_back("SwitchBlockStatementGroups");
+		adj[countNodes].push_back($1);
+		countNodes++;
+		prodNum[$$]=1;
+	}
 	| SwitchBlockStatementGroups SwitchBlockStatementGroup{
 		$$ = countNodes;
 		nodeType.push_back("SwitchBlockStatementGroups");
