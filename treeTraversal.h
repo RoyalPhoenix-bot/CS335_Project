@@ -188,7 +188,7 @@ string getArrayType(string _type){
     return lType;
 }
 
-pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum, vector<localTableParams>* _startTablePointer){
+pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
     
     //return {type,arraySizes}
     vector<localTableParams>* primaryTable=scopeAndTable[_nodeNum].second;
@@ -198,7 +198,7 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum, vector<lo
     pair<string,vector<int>> retObj;
     
     for (auto locRow:*primaryTable){
-        if (locRow.arraySize.size()!=0 && locRow.scope.first==arrayScope.first && locRow.scope.second==arrayScope.second ){
+        if (locRow.arraySize.size()!=0 && locRow.name == _arrayName && locRow.scope.first==arrayScope.first && locRow.scope.second==arrayScope.second ){
             
             retObj.first=getArrayType(locRow.type);
             retObj.second=locRow.arraySize;
@@ -209,7 +209,7 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum, vector<lo
     }
 
     for (auto locRow:*(parentTable[primaryTable])){
-        if (locRow.arraySize.size()!=0 && locRow.scope.first==arrayScope.first && locRow.scope.second==arrayScope.second ){
+        if (locRow.arraySize.size()!=0 && locRow.name == _arrayName && locRow.scope.first==arrayScope.first && locRow.scope.second==arrayScope.second ){
             
             retObj.first=getArrayType(locRow.type);
             retObj.second=locRow.arraySize;
@@ -1422,6 +1422,10 @@ void execModifiers(int nodeNum){
 }
 
 void execModifier(int nodeNum){
+    return;
+}
+
+void execMethodHeader_(int nodeNum){
     return;
 }
 
@@ -2803,9 +2807,12 @@ void execArrayAccess(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
+            
             auto mdata = arrayInfo[attr3AC[c].nodeno];// lowestnode
+            cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << " " << nodeType[attr3AC[c].nodeno] << endl;
             string t = mdata.first;
             vector<int> d = mdata.second;
+            cout << "idhar " << t << " " << d.size() << endl;
             int mult=typeSize[t];
             for(int i=0;i<d.size();i++){
                 if(i)mult*=d[i];
@@ -2816,7 +2823,8 @@ void execArrayAccess(int nodeNum){
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             attr3AC[nodeNum].dimsDone++;
-            attr3AC[nodeNum].nameAtNode = attr3AC[c].nameAtNode;
+            attr3AC[nodeNum].nameAtNode = nodeType[attr3AC[c].nodeno];
+            cout << "yaha pe hu aray1 " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -2831,11 +2839,14 @@ void execArrayAccess(int nodeNum){
                 mult*=(attr3AC[c].arrDims)[i];
             }
             tempNum++;
-            string temp = to_string(tempNum) + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
             attr3AC[nodeNum].threeAC.push_back(temp);
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + to_string(tempNum-1) ;
+            attr3AC[nodeNum].dimsDone++;
+            attr3AC[nodeNum].nameAtNode = attr3AC[c].nameAtNode;
+            cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + t" + to_string(tempNum-1) ;
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
         break;
@@ -2863,7 +2874,8 @@ void execDimExprs(int nodeNum){
 void execDimExpr(int nodeNum){
     int c = adj[nodeNum][1];
     attr3AC[nodeNum]=attr3AC[c];
-    attr3AC[nodeNum].arrDims.push_back(stoi(attr3AC[c].nameAtNode));
+    // cout << "Dimexpr " << attr3AC[c].nameAtNode << endl;
+    if(attr3AC[c].nameAtNode.size()!=0)attr3AC[nodeNum].arrDims.push_back(stoi(attr3AC[c].nameAtNode));
     return;
 }
 
@@ -2916,6 +2928,7 @@ void execPrimaryNoNewArray(int nodeNum){
         case 6:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            cout << "idahr dekhra hu " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
@@ -3992,6 +4005,8 @@ void postOrderTraversal3AC(int nodeNum){
         execVariableInitializers(nodeNum);
     }else if("WhileStatementNoShortIf"==s){
         execWhileStatementNoShortIf(nodeNum);
+    }else if("MethodHeader_"==s){
+        execMethodHeader_(nodeNum);
     }
     else{
         cout << "function not written " << s << endl;
