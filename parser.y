@@ -179,6 +179,7 @@ Identifier: IDENTIFIER {
 	adj[$$].push_back(countNodes-2);
 	prodNum[$$]=1;
 	lineNum[$$]=yylineno;
+	lineNum[countNodes-2]=yylineno;
 }
 ;
 
