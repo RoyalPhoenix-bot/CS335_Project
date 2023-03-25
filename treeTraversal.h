@@ -575,6 +575,7 @@ bool checkIfTypeOkay(string _t1, string _t2){
 
 void preOrderTraversal(int nodeNum){
 
+    // cout<<nodeType[nodeNum]<<endl;
     if (nodeType[nodeNum]=="ClassDeclaration"){ 
         
         
@@ -825,7 +826,9 @@ void preOrderTraversal(int nodeNum){
         int c1=adj[nodeNum][0];
         
         if (prodNum[nodeNum]==1){
+            cout<<"From vardecls "<<attrSymTab[nodeNum].otherParams.size()<<endl;
             attrSymTab[nodeNum].otherParams.push_back(attrSymTab[c1].name);
+            cout<<"From vardecls "<<attrSymTab[nodeNum].otherParams.size()<<endl;
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
 
@@ -1137,7 +1140,7 @@ void preOrderTraversal(int nodeNum){
     else if (nodeType[nodeNum]=="LocalVariableDeclaration"){
         int c1=adj[nodeNum][0];
         int c2=adj[nodeNum][1];
-        
+        // cout<<"In LocalVariableDeclaration\n";
         preOrderTraversal(c1);
         preOrderTraversal(c2);
 
@@ -1172,13 +1175,9 @@ void preOrderTraversal(int nodeNum){
         }
         else{
 
-            int c1=adj[nodeNum][0];
-            int c2=adj[nodeNum][1];
-            preOrderTraversal(c1);
-            preOrderTraversal(c2);
             // attrSymTab[nodeNum].type=attrSymTab[c1].type;
             // attrSymTab[nodeNum].otherParams=attrSymTab[c1].otherParams;
-
+            // cout<<attrSymTab[c2].otherParams.size()<<endl;
             for (auto varName:attrSymTab[c2].otherParams){
 
                 localTableParams locRow ;
