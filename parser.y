@@ -1183,6 +1183,7 @@ PreIncrementExpression:
 		adj[countNodes].push_back($2);
 		countNodes++;	
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -1195,6 +1196,7 @@ PreDecrementExpression:
 		adj[countNodes].push_back($2);
 		countNodes++;	
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 ;
 

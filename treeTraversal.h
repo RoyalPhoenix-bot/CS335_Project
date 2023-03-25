@@ -114,7 +114,6 @@ string getType(string _varName, int _nodeNum){
     //return type
 
     vector<localTableParams>* primaryTable=scopeAndTable[_nodeNum].second;
-    // cout<<_nodeNum<<" "<<scopeAndTable[_nodeNum].first.first<<" "<<scopeAndTable[_nodeNum].first.second<<endl;
 
     pair<int,int> startScope=scopeAndTable[_nodeNum].first;
 
@@ -158,6 +157,9 @@ string getType(string _varName, int _nodeNum){
 }
 
 string fillHelper(string _nodeNum){
+        
+        if (find(integerTypes.begin(),integerTypes.end(),typeOfNode[_nodeNum])!=integerTypes.end() || typeOfNode[_nodeNum]=="char" || typeOfNode[_nodeNum]=="String")
+            return typeOfNode[_nodeNum];
         
         string ret;
         int node_number=atoi(_nodeNum.c_str());
@@ -1208,7 +1210,13 @@ void preOrderTraversal(int nodeNum){
         }
         return;
     }
-    else if (nodeType[nodeNum]=="PostfixExpression"){
+    else if (nodeType[nodeNum]=="PostIncrementExpression"|| nodeType[nodeNum]=="PostDecrementExpression"){
+        int c1=adj[nodeNum][0];
+        preOrderTraversal(c1);
+
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
+    }
+    else if (nodeType[nodeNum]=="PostfixExpression" ){
         
         int c1=adj[nodeNum][0];
         preOrderTraversal(c1);
@@ -1216,6 +1224,7 @@ void preOrderTraversal(int nodeNum){
             
             attrSymTab[nodeNum].num=attrSymTab[c1].num;   
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
         }
         attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
@@ -1228,12 +1237,17 @@ void preOrderTraversal(int nodeNum){
 
         if (prodNum[nodeNum]==1){
             attrSymTab[nodeNum].num=attrSymTab[c1].num;    
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
+            typeOfNode[to_string(attrSymTab[nodeNum].leafNodeNum)]=fillHelper(to_string(attrSymTab[nodeNum].leafNodeNum));
+            // cout<<"From Primary: "<<nodeType[attrSymTab[nodeNum].leafNodeNum]<<" "<<attrSymTab[nodeNum].leafNodeNum<<endl;
+            // cout<<typeOfNode[to_string(attrSymTab[nodeNum].leafNodeNum)]<<endl;
+
         }
         else{
 
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
-
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
         }
         return;
     }
@@ -1346,7 +1360,37 @@ void preOrderTraversal(int nodeNum){
                 break;
         }
     }
-    else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="UnaryExpressionNotPlusMinus" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" || nodeType[nodeNum]=="AssignmentExpression"){
+    else if (nodeType[nodeNum]=="CastExpression"){
+
+        for (auto child:adj[nodeNum])
+            preOrderTraversal(child);
+        
+        switch (prodNum[nodeNum])
+        {
+        case 1:{
+            int c2=adj[nodeNum][1];
+            typeOfNode[to_string(nodeNum)]=attrSymTab[c2].type;
+            attrSymTab[nodeNum].leafNodeNum=nodeNum;
+            break;
+        }
+        case 2:{
+            int c4=adj[nodeNum][3];
+            typeOfNode[to_string(nodeNum)]=attrSymTab[c4].type;
+            attrSymTab[nodeNum].leafNodeNum=nodeNum;
+            break;
+        }
+        case 3:{
+            int c2=adj[nodeNum][1];
+            typeOfNode[to_string(nodeNum)]=attrSymTab[c2].type;
+            attrSymTab[nodeNum].leafNodeNum=nodeNum;
+            break;
+        }
+        default:
+            break;
+        }
+
+    }
+    else if (nodeType[nodeNum]=="UnaryExpressionNotPlusMinus"){
         
         for (auto child:adj[nodeNum])
             preOrderTraversal(child);
@@ -1359,12 +1403,106 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         }
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:{
+            int c1=adj[nodeNum][0];
+            attrSymTab[nodeNum].num=attrSymTab[c1].num; 
+            attrSymTab[nodeNum].type=attrSymTab[c1].type;
+            attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
+            break;
+        }
+        case 2:
+        case 3:{
+            int c2=adj[nodeNum][1];
+            // attrSymTab[nodeNum].num=attrSymTab[c2].num; 
+            attrSymTab[nodeNum].type=attrSymTab[c2].type;
+            // attrSymTab[nodeNum].intParams=attrSymTab[c2].intParams;  
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[c2].leafNodeNum;
+            break;
+        }
+        case 4:{
+            int c1=adj[nodeNum][0];
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
+
+        }
+        default:
+            break;
+        }
+
+    }
+    else if (nodeType[nodeNum]=="ArrayAccess"){
+        
+        int c1=adj[nodeNum][0];
+        preOrderTraversal(c1);
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
+    }
+    else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" || nodeType[nodeNum]=="AssignmentExpression"){
+        
+        for (auto child:adj[nodeNum])
+            preOrderTraversal(child);
+
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:{
+            int c1=adj[nodeNum][0];
+            attrSymTab[nodeNum].num=attrSymTab[c1].num; 
+            attrSymTab[nodeNum].type=attrSymTab[c1].type;
+            attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum; 
+            break;
+        }
+        case 6:{
+            attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum; 
+    
+            // cout<<attrSymTab[nodeNum].leafNodeNum<<endl;
+            break;
+        }
+        default:
+            break;
+        }
         return;
     }
     else if (nodeType[nodeNum]=="Literal"){
         int c1=adj[nodeNum][0];
         preOrderTraversal(c1);
         attrSymTab[nodeNum].num=attrSymTab[c1].num;
+
+        scopeAndTable[c1].first=currScope.top();
+        // cout<<c1<<" "<<scopeAndTable[c1].first.first<<" "<<scopeAndTable[c1].first.second<<endl;
+        scopeAndTable[c1].second=currSymTab;
+        attrSymTab[nodeNum].leafNodeNum=c1;
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:{
+            typeOfNode[to_string(c1)]="int";
+            break;
+        }
+        case 2:
+            typeOfNode[to_string(c1)]="float";
+            break;
+        case 3:
+            typeOfNode[to_string(c1)]="double";
+            break;
+        case 4:
+            typeOfNode[to_string(c1)]="boolean";
+            break;
+        case 5:
+            typeOfNode[to_string(c1)]="char";
+            break;
+        case 6:
+            typeOfNode[to_string(c1)]="String";
+            break;
+        case 7:
+            typeOfNode[to_string(c1)]="null";
+            break;
+        default:
+            break;
+        }
         return;
     }
     else if (nodeType[nodeNum]=="IntegerLiteral"  ){
@@ -1384,6 +1522,19 @@ void preOrderTraversal(int nodeNum){
 
         }
 
+    }
+    else if (nodeType[nodeNum]=="PreIncrementExpression"){
+        int c2=adj[nodeNum][1];
+        preOrderTraversal(c2);
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[c2].leafNodeNum;
+        
+    }
+    else if (nodeType[nodeNum]=="PreDecrementExpression"){
+        int c2=adj[nodeNum][1];
+        preOrderTraversal(c2);
+        
+        attrSymTab[nodeNum].leafNodeNum=attrSymTab[c2].leafNodeNum;
+    
     }
     
     else {
