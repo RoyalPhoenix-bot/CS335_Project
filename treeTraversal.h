@@ -15,11 +15,16 @@ vector<string> nodeType;
 map<int,int> lineNum;
 map<int, vector<int>> adj;      
 map<int,int> prodNum;
-
+string switchExpAddr;
+string someExpAddr;
+int isWhile=0;string whileContinueLabel,whileBreakLabel;
+int isFor=0;string forContinueLabel,forBreakLabel;
+int isDo=0;string doContinueLabel,doBreakLabel;
 vector<int> helpScope;
 stack<pair<int,int>> scopeCurr;
 stack<pair<int,int>> scopeParent;
 
+map<string, string> functionParameterMap;
 map<pair<int,int>, pair<int,int>> mapParentScope;
 map<string, int> typeWiden = {{"double",0}, {"float",1}, {"long",2}, {"int",3}, {"byte",4}, {"short",4}, {"char",4}};//minimum value->widest
 vector<string> indexType = {"double", "float", "long", "int", "byte"};
@@ -175,7 +180,8 @@ string fillHelper(string _nodeNum){
 void filltypeOfNode(){
 
     for (auto &elem:typeOfNode){
-
+        // cout << "filltypeofnode " << elem.first << " " << elem.second << endl;
+        
         if (elem.second=="fillMe"){
 
             elem.second=fillHelper(elem.first);
@@ -281,10 +287,138 @@ int getLabelNumber(string s){
     return stoi(r);
 }
 
+string getTypeNode(int c){
+    // cout << "GET TYPE " << attr3AC[c].nodeno << " " << typeOfNode[to_string(attr3AC[c].nodeno)] << endl;
+    string tp;
+    if(typeOfNode.find(to_string(attr3AC[c].nodeno))!=typeOfNode.end()){
+        tp = typeOfNode[to_string(attr3AC[c].nodeno)];
+    }
+    if(attr3AC[c].addrName.size()>0 && typeOfNode.find(attr3AC[c].addrName)!=typeOfNode.end()){
+        tp = typeOfNode[attr3AC[c].addrName];
+    }
+    return tp;
+}
+
+void widenNode(int a , int b){
+    string p = getTypeNode(a);
+    string q = getTypeNode(b);
+    cout << "choda karna he " << p << " " << q << endl;
+    if(p=="int" && q=="float"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_float " + attr3AC[a].addrName;
+        attr3AC[a].threeAC.push_back(temp);
+        attr3AC[a].addrName = t;
+        attr3AC[a].type = "float";
+        typeOfNode[t] = "float";
+        //call table update
+    }else if(p=="int" && q=="double"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_double " + attr3AC[a].addrName;
+        attr3AC[a].threeAC.push_back(temp);
+        attr3AC[a].addrName = t;
+        attr3AC[a].type = "double";
+        typeOfNode[t] = "double";
+        //call table update
+    }else if(p=="float" && q=="double"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_double " + attr3AC[a].addrName;
+        attr3AC[a].threeAC.push_back(temp);
+        attr3AC[a].addrName = t;
+        attr3AC[a].type = "double";
+        typeOfNode[t] = "double";
+        //call table update
+    }else if(p=="float" && q=="int"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_float " + attr3AC[b].addrName;
+        attr3AC[b].threeAC.push_back(temp);
+        attr3AC[b].addrName = t;
+        attr3AC[b].type = "float";
+        typeOfNode[t] = "float";
+        //call table update
+    }else if(p=="double" && q=="float"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_double " + attr3AC[b].addrName;
+        attr3AC[b].threeAC.push_back(temp);
+        attr3AC[b].addrName = t;
+        attr3AC[b].type = "double";
+        typeOfNode[t] = "double";
+        //call table update
+    }else if(p=="double" && q=="int"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_double " + attr3AC[b].addrName;
+        attr3AC[b].threeAC.push_back(temp);
+        attr3AC[b].addrName = t;
+        attr3AC[b].type = "double";
+        typeOfNode[t] = "double";
+        //call table update
+    }else if(p=="int" && q=="long"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_long " + attr3AC[a].addrName;
+        attr3AC[a].threeAC.push_back(temp);
+        attr3AC[a].addrName = t;
+        attr3AC[a].type = "long";
+        typeOfNode[t] = "long";
+        //call table update
+    }else if(p=="long" && q=="float"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_float " + attr3AC[a].addrName;
+        attr3AC[a].threeAC.push_back(temp);
+        attr3AC[a].addrName = t;
+        attr3AC[a].type = "float";
+        typeOfNode[t] = "float";
+        //call table update
+    }else if(p=="long" && q=="double"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_double " + attr3AC[a].addrName;
+        attr3AC[a].threeAC.push_back(temp);
+        attr3AC[a].addrName = t;
+        attr3AC[a].type = "double";
+        typeOfNode[t] = "double";
+        //call table update
+    }else if(q == "int" && p=="long"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_long " + attr3AC[b].addrName;
+        attr3AC[b].threeAC.push_back(temp);
+        attr3AC[b].addrName = t;
+        attr3AC[b].type = "long";
+        typeOfNode[t] = "long";
+        //call table update
+    }else if(p=="float" && q=="long"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_float " + attr3AC[b].addrName;
+        attr3AC[b].threeAC.push_back(temp);
+        attr3AC[b].addrName = t;
+        attr3AC[b].type = "float";
+        typeOfNode[t] = "float";
+        //call table update
+    }else if(p == "double" && q=="long"){
+        tempNum++;
+        string t = "t" + to_string(tempNum);
+        string temp = t + " = " + "cast_to_double " + attr3AC[b].addrName;
+        attr3AC[b].threeAC.push_back(temp);
+        attr3AC[b].addrName = t;
+        attr3AC[b].type = "double";
+        typeOfNode[t] = "double";
+        //call table update
+    }
+    return;
+}
+
 void pushLabelUp(int par,int chld){
-    if(trueLabel.find(par)!=trueLabel.end() && trueLabel.find(chld)!=trueLabel.end())trueLabel[par]=trueLabel[chld];
-    if(falseLabel.find(par)!=falseLabel.end() && falseLabel.find(chld)!=falseLabel.end())falseLabel[par]=falseLabel[chld];
-    if(nextLabel.find(par)!=nextLabel.end() && nextLabel.find(chld)!=nextLabel.end())nextLabel[par]=nextLabel[chld];
+    if(trueLabel.find(chld)!=trueLabel.end())trueLabel[par]=trueLabel[chld];
+    if(falseLabel.find(chld)!=falseLabel.end())falseLabel[par]=falseLabel[chld];
+    if(nextLabel.find(chld)!=nextLabel.end())nextLabel[par]=nextLabel[chld];
     return;
 }
 
@@ -341,7 +475,7 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
             return retObj;
         }
 
-        startScope=mapParentScope[startScope];
+    startScope=mapParentScope[startScope];
     }
 
     startScope=scopeAndTable[_nodeNum].first;
@@ -437,7 +571,6 @@ bool checkIfTypeOkay(string _t1, string _t2){
     else{
         return false;
     }
-
 }
 
 void preOrderTraversal(int nodeNum){
@@ -528,15 +661,20 @@ void preOrderTraversal(int nodeNum){
         // push the lexeme into Identifier's attributes
         attrSymTab[nodeNum].name=(nodeType[adj[nodeNum][0]]);
         // cout<<(nodeType[adj[nodeNum][0]])<<"\n";
-        attrSymTab[nodeNum].type=(nodeType[adj[nodeNum][0]]);
+        // attrSymTab[nodeNum].type=(nodeType[adj[nodeNum][0]]);
         // attrSymTab[nodeNum].decLine=lineNum[nodeNum];
         int c1=adj[nodeNum][0];
         scopeAndTable[c1].first=currScope.top();
         // cout<<c1<<" "<<scopeAndTable[c1].first.first<<" "<<scopeAndTable[c1].first.second<<endl;
         scopeAndTable[c1].second=currSymTab;
         attrSymTab[nodeNum].leafNodeNum=c1;
+        // cout << "identiifer " << c1 << " " <<  << endl;
         typeOfNode[to_string(c1)]="fillMe";
-
+        if(functionParameterMap.size()!=0 && functionParameterMap.find(attrSymTab[nodeNum].name)!=functionParameterMap.end()){
+            typeOfNode[to_string(c1)] = functionParameterMap[attrSymTab[nodeNum].name];
+            // cout << "assign map " << nodeType[adj[nodeNum][0]] << " " << c1 << " " << typeOfNode[to_string(c1)] << endl;
+        }
+        // cout << "exit identifier " << typeOfNode[to_string(c1)] << endl;
         return;
     }
     else if (nodeType[nodeNum]=="Super"){
@@ -728,7 +866,8 @@ void preOrderTraversal(int nodeNum){
 
         int c1=adj[nodeNum][0];
         attrSymTab[nodeNum].name=attrSymTab[c1].name;
-        
+        attrSymTab[nodeNum].leafNodeNum = attrSymTab[c1].leafNodeNum;
+        // cout << "in vdid " << attrSymTab[nodeNum].leafNodeNum << " " << attrSymTab[nodeNum].name << endl;
         if (prodNum[nodeNum]==2){
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
@@ -807,6 +946,7 @@ void preOrderTraversal(int nodeNum){
             locRow.line=lineNum[nodeNum];
 
             (*currSymTab).push_back(locRow);
+            // functionParameterMap.clear();
             return;
       
     }
@@ -942,8 +1082,16 @@ void preOrderTraversal(int nodeNum){
     else if (nodeType[nodeNum]=="FormalParameter"){
         // only need the Type
         int c1=adj[nodeNum][0];
+        int c2 = adj[nodeNum][1];
         preOrderTraversal(c1);
+        preOrderTraversal(c2);
         attrSymTab[nodeNum].type=attrSymTab[c1].type ;
+        attrSymTab[nodeNum].leafNodeNum = attrSymTab[c2].leafNodeNum;
+        // cout <<"inside formal parameter " << attrSymTab[c2].leafNodeNum << " " << attrSymTab[c2].name  << " " << attrSymTab[c1].type << endl;
+        typeOfNode[to_string(attrSymTab[c2].leafNodeNum)] = attrSymTab[c1].type;
+        // cout << "typeOfNode after " << typeOfNode[to_string(attrSymTab[c2].leafNodeNum)] << endl;
+        functionParameterMap[attrSymTab[c2].name] = attrSymTab[nodeNum].type;
+        // cout << functionParameterMap[attrSymTab[c2].name] << " " << attrSymTab[nodeNum].type << endl;
         return;
     }
     else if (nodeType[nodeNum]=="BlockStatement"){
@@ -1548,8 +1696,6 @@ void preOrderTraversal(int nodeNum){
     
 }
 
-
-
 void printTables(){
 
     freopen("global_symbol_table.csv","w",stdout);
@@ -1669,6 +1815,10 @@ void printTables(){
     return;
 }
 
+void execIntegralType(int nodeNum){
+    return;
+}
+
 void execWhileStatementNoShortIf(int nodeNum){
     string beg = getLabel(-1,0);
     int c3 = adj[nodeNum][2];
@@ -1696,14 +1846,54 @@ void execVariableInitializers(int nodeNum){
 }
 
 void execVariableDeclarators(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+            pushLabelUp(nodeNum,c);
+        }
+        break;
+        case 2:{
+            int c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            // pushLabelUp(nodeNum,c);
+        }
+        break;
+    }
     return;
 }
 
 void execVariableDeclaratorId(int nodeNum){
+    int c = adj[nodeNum][0];
+    attr3AC[nodeNum] = attr3AC[c];
+    pushLabelUp(nodeNum,c);
     return;
 }
 
 void execVariableDeclarator(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+            pushLabelUp(nodeNum,c);
+
+        }
+        break;
+        case 2:{
+            int c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            string tp = getTypeNode(c);
+            string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
+            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
+            cout << "variabledeclarator " << temp << endl;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+        }
+        break;
+    }
     return;
 }
 
@@ -1737,24 +1927,97 @@ void execSynchronizedStatement(int nodeNum){
 }
 
 void execSwitchStatement(int nodeNum){
-    cout << "switch statemnt karna he" << endl;
+    // cout << "switch statemnt karna he" << endl;
+    int c3 = adj[nodeNum][2];
+    int c5 = adj[nodeNum][4];
+    attr3AC[nodeNum] = attr3AC[c3] + attr3AC[c5];
     return;
 }
 
 void execSwitchLabels(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+            pushLabelUp(nodeNum,c);
+            // cout << "label switch labels " << getLabel(nodeNum,1) << " " << getLabel(nodeNum,2) << " " << getLabel(c,1) << " " << getLabel(c,2) << endl;
+            // for(int i=0;i<attr3AC[c].threeAC.size();i++){
+            //     cout << attr3AC[c].threeAC[i] << endl;
+            // }
+        }
+        break;
+        case 2:{
+            int c = adj[nodeNum][0];
+            int c1 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c1];
+        }
+        break;
+    }
     return;
 }
 
 void execSwitchLabel(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c2 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c2];
+            string c2true = getLabel(c2,1);
+            string c2false =getLabel(c2,2);
+            string temp = "if " + switchExpAddr + " == " + attr3AC[c2].addrName + " goto " + c2true;
+            // cout << "sdfadfsadf as temp " << temp << endl;
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            temp = "goto " + c2false;
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            pushLabelUp(nodeNum,c2);
+            // cout << "over here  " << c2true << " " << c2false << endl;
+        }
+        break;
+        case 2:{
+            attr3AC[nodeNum].addrName = "default";
+        }
+        break;
+    }
     return;
 }
 
 void execSwitchBlockStatementGroups(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+            pushLabelUp(nodeNum,c);
+            // for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
+            //     cout << "asdfadsfasdfasdfasf1 " << attr3AC[nodeNum].threeAC[i] << endl;
+            // }
+        }
+        break;
+        case 2:{
+            int c = adj[nodeNum][0];
+            int c2 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c2];
+            // for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
+            //     cout << "asdfadsfasdfasdfasf2 " << attr3AC[nodeNum].threeAC[i] << endl;
+            // }
+        }
+        break;
+    }
     return;
 }
 
 void execSwitchBlockStatementGroup(int nodeNum){
-
+    int c = adj[nodeNum][0];
+    int c2 = adj[nodeNum][1];
+    string ctrue = getLabel(c,1);
+    string cfalse = getLabel(c,2);
+    string temp = ctrue + ":";
+    attr3AC[nodeNum] = attr3AC[c];
+    attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c2];
+    temp = cfalse + ":";
+    attr3AC[nodeNum].threeAC.push_back(temp);
+    // for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
+    //     cout << "asdfasdf " << attr3AC[nodeNum].threeAC[i] << endl;
+    // }
     return;
 }
 
@@ -1766,18 +2029,27 @@ void execSwitchBlock(int nodeNum){
             int c2 = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c2];
             pushLabelUp(nodeNum,c2);
+            // for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
+            //     cout << "asdfadsfasdfasdfasf " << attr3AC[nodeNum].threeAC[i] << endl;
+            // }
         }
         break;
         case 3:{
             int c2 = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c2];
             pushLabelUp(nodeNum,c2);
+            // for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
+            //     cout << "asdfadsfasdfasdfasf " << attr3AC[nodeNum].threeAC[i] << endl;
+            // }
         }
         break;
         case 4:{
             int c2 = adj[nodeNum][1];
             int c3 = adj[nodeNum][2];
             attr3AC[nodeNum] = attr3AC[c2] + attr3AC[c3];
+            // for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
+            //     cout << "asdfadsfasdfasdfasf " << attr3AC[nodeNum].threeAC[i] << endl;
+            // }
         }
         break;
     }
@@ -1791,7 +2063,9 @@ void execSuper(int nodeNum){
 
 void execStringLiteral(int nodeNum){
     int c = adj[nodeNum][0];
-    attr3AC[nodeNum].addrName = nodeType[c];
+    attr3AC[nodeNum].addrName = nodeType[c]; 
+    attr3AC[nodeNum].nodeno = c;
+    typeOfNode[to_string(c)] = "string";
     return;
 }
 
@@ -1861,6 +2135,7 @@ void execPreIncrementExpression(int nodeNum){
     int c = adj[nodeNum][1];
     tempNum++;
     attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+    typeOfNode[attr3AC[nodeNum].addrName] = "int";
     string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + 1";
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
@@ -1874,6 +2149,7 @@ void execPreDecrementExpression(int nodeNum){
     int c = adj[nodeNum][1];
     tempNum++;
     attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+    typeOfNode[attr3AC[nodeNum].addrName]="int";
     string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " - 1";
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
@@ -1888,6 +2164,7 @@ void execPostIncrementExpression(int nodeNum){
     attr3AC[nodeNum] = attr3AC[c];
     tempNum++;
     attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+    typeOfNode[attr3AC[nodeNum].addrName] = "int";
     string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + 1";
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
@@ -1901,6 +2178,7 @@ void execPostDecrementExpression(int nodeNum){
     attr3AC[nodeNum] = attr3AC[c];
     tempNum++;
     attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+    typeOfNode[attr3AC[nodeNum].addrName] = "int";
     string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " - 1";
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
@@ -1945,14 +2223,70 @@ void execModifier(int nodeNum){
 }
 
 void execMethodHeader_(int nodeNum){
+    int c = adj[nodeNum][0];
+    attr3AC[nodeNum] = attr3AC[c];
     return;
 }
 
 void execMethodHeader(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c3];
+        }
+        break;
+        case 2:{
+            int c2 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c2];
+        }
+        break;
+        case 3:{
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c3];
+        }
+        break;
+        case 4:{
+            int c2 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c2];
+        }
+        break;
+        case 5:{
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c3];
+        }
+        break;
+        case 6:{
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c3];
+        }
+        break;
+        case 7:{
+            int c2 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c2];
+        }
+        break;
+        case 8:{
+            int c2 = adj[nodeNum][1];
+            attr3AC[nodeNum] = attr3AC[c2];
+        }
+        break;
+    }
     return;
 }
 
 void execMethodDeclarator(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+        }
+        break;
+        case 2:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+        }
+        break;
+    }
     return;
 }
 
@@ -2085,6 +2419,8 @@ void execInterfaceBody(int nodeNum){
 void execIntegerLiteral(int nodeNum){
     int c = adj[nodeNum][0];
     attr3AC[nodeNum].addrName = nodeType[c];
+    attr3AC[nodeNum].nodeno = c;
+    typeOfNode[to_string(c)]="int";
     return;
 }
 
@@ -2142,6 +2478,7 @@ void execForStatementNoShortIf(int nodeNum){
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c9];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -2162,6 +2499,7 @@ void execForStatementNoShortIf(int nodeNum){
             temp = c4true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -2179,6 +2517,7 @@ void execForStatementNoShortIf(int nodeNum){
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -2193,6 +2532,7 @@ void execForStatementNoShortIf(int nodeNum){
             string c5true = getLabel(c5,1);
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
@@ -2210,8 +2550,10 @@ void execForStatementNoShortIf(int nodeNum){
             string beg = getLabel(-1,0);
             nextLabel[c7]= getLabelNumber(beg);
             string temp = beg + ":";
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -2221,9 +2563,11 @@ void execForStatementNoShortIf(int nodeNum){
             int c4 = adj[nodeNum][3];
             int c7 = adj[nodeNum][6];
             string beg = getLabel(-1,0);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             nextLabel[c7]= getLabelNumber(beg);
             string c4true = getLabel(c4,1);
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c4];
             temp = c4true + ":";
@@ -2239,9 +2583,11 @@ void execForStatementNoShortIf(int nodeNum){
             int c3 = adj[nodeNum][2];
             int c7 = adj[nodeNum][6];
             string beg = getLabel(-1,0);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             nextLabel[c7]= getLabelNumber(beg);
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
@@ -2251,8 +2597,10 @@ void execForStatementNoShortIf(int nodeNum){
         case 8:{
             int c6 = adj[nodeNum][5];
             string beg = getLabel(-1,0);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             nextLabel[c6]= getLabelNumber(beg);
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
@@ -2294,10 +2642,15 @@ void execFloatingPointType(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum].type = nodeType[c]; 
+            attr3AC[nodeNum].nodeno = c;
+            typeOfNode[to_string(c)] = "float";
         }
         break;
         case 2:{
-            attr3AC[nodeNum].type= "double";
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum].type = nodeType[c]; 
+            attr3AC[nodeNum].nodeno = c;
+            typeOfNode[to_string(c)] = "double";
         }
         break;
 
@@ -2313,7 +2666,9 @@ void execFinally(int nodeNum){
 
 void execFloatingPointLiteral(int nodeNum){
     int c = adj[nodeNum][0];
-    attr3AC[nodeNum].addrName = nodeType[c];
+    attr3AC[nodeNum].addrName = nodeType[c]; 
+    attr3AC[nodeNum].nodeno = c;
+    typeOfNode[to_string(c)] = "float";
     return;
 }
 
@@ -2353,16 +2708,58 @@ void execExplicitConstructorInvocation(int nodeNum){
 
 void execDoublePointLiteral(int nodeNum){
     int c = adj[nodeNum][0];
-    attr3AC[nodeNum].addrName = nodeType[c];
+    attr3AC[nodeNum].addrName = nodeType[c]; 
+    attr3AC[nodeNum].nodeno = c;
+    typeOfNode[to_string(c)] = "double";
     return;
 }
 
 void execDoStatement(int nodeNum){
-
+    // string beg = getLabel(-1,0);
+    int c2 = adj[nodeNum][1];
+    int c5 = adj[nodeNum][4];
+    string c5true = getLabel(c5,1);
+    string c5false = getLabel(c5,2);
+    // nextLabel[c2] = getLabelNumber(beg);
+    string temp = c5true + ":";
+    attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c2];
+    attr3AC[nodeNum].threeAC.push_back(doContinueLabel + ":");
+    attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
+    temp = c5false + ":";
+    attr3AC[nodeNum].threeAC.push_back(temp);
+    return;
 }
 
-void execContinueStatement(int nodeNum){
+// string beg = getLabel(-1,0);
+//     int c3 = adj[nodeNum][2];
+//     int c5 = adj[nodeNum][4];
+//     // cout << "while " << attr3AC[c3].threeAC.size() << endl;
+//     string c3true = getLabel(c3,1);
+//     // cout << "B true: " << c3true << endl;
+//     nextLabel[c5]= getLabelNumber(beg);
+//     string temp = beg + ":";
+//     attr3AC[nodeNum].threeAC.push_back(temp);
+//     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
+//     temp = c3true + ":";
+//     attr3AC[nodeNum].threeAC.push_back(temp);
+//     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
+//     temp = "goto " + beg;
+//     attr3AC[nodeNum].threeAC.push_back(temp);
 
+//     falseLabel[c3] = nextLabel[nodeNum];
+
+void execContinueStatement(int nodeNum){
+    if(isFor){
+        attr3AC[nodeNum].threeAC.push_back("goto " + forContinueLabel);
+    }else if(isWhile){
+        attr3AC[nodeNum].threeAC.push_back("goto " + whileContinueLabel);
+    }else if(isDo){
+        attr3AC[nodeNum].threeAC.push_back("goto " + doContinueLabel);
+    }else{
+        cout << "ERROR: Continue Statement must occur within a loop." << endl;
+    }
+    return;
 }
 
 void execConstructorDeclarator(int nodeNum){
@@ -2457,7 +2854,9 @@ void execClassInstanceCreationExpression(int nodeNum){
 
 void execCharacterLiteral(int nodeNum){
     int c = adj[nodeNum][0];
-    attr3AC[nodeNum].addrName = nodeType[nodeNum];
+            attr3AC[nodeNum].addrName = nodeType[c]; 
+            attr3AC[nodeNum].nodeno = c;
+            typeOfNode[to_string(c)] = "char";
     return;
 }
 
@@ -2497,7 +2896,16 @@ void execCatchClause(int nodeNum){
 }
 
 void execBreakStatement(int nodeNum){
-
+    if(isFor){
+        string temp = "goto " + forBreakLabel;
+        attr3AC[nodeNum].threeAC.push_back(temp);
+    }else if(isWhile){
+        string temp = "goto " + whileBreakLabel;
+        attr3AC[nodeNum].threeAC.push_back(temp);
+    }else if(isDo){
+        string temp = "goto " + doBreakLabel;
+        attr3AC[nodeNum].threeAC.push_back(temp);
+    }
     return;
 }
 
@@ -2506,16 +2914,19 @@ void execArrayType(int nodeNum){
 }
 
 void execBooleanLiteral(int nodeNum){
-    attr3AC[nodeNum].addrName = nodeType[nodeNum];
-    string ptrue = getLabel(nodeNum,1);
-    string pfalse = getLabel(nodeNum,2);
-    if(nodeType[nodeNum]=="true"){
-        string temp = "goto " + ptrue;
-        attr3AC[nodeNum].threeAC.push_back(temp);
-    }else{
-        string temp = "goto " + pfalse;
-        attr3AC[nodeNum].threeAC.push_back(temp);
-    }
+    int c = adj[nodeNum][0];
+    attr3AC[nodeNum].type = nodeType[c]; 
+    attr3AC[nodeNum].nodeno = c;
+    typeOfNode[to_string(c)] = "boolean";
+    // string ptrue = getLabel(nodeNum,1);
+    // string pfalse = getLabel(nodeNum,2);
+    // if(nodeType[nodeNum]=="true"){
+    //     string temp = "goto " + ptrue;
+    //     attr3AC[nodeNum].threeAC.push_back(temp);
+    // }else{
+    //     string temp = "goto " + pfalse;
+    //     attr3AC[nodeNum].threeAC.push_back(temp);
+    // }
     return;
 }
 
@@ -2768,7 +3179,9 @@ void execMethodDeclaration(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             int c2 = adj[nodeNum][1];
-            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c2];
+            string temp = nodeType[attr3AC[c].nodeno] +":";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
         }
         break;
     }
@@ -2845,7 +3258,7 @@ void execStatement(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            // cout << "statement " << attr3AC[nodeNum].threeAC.size() << endl;
+            cout << "statement " << attr3AC[nodeNum].threeAC.size() << endl;
         }
         break;
         case 2:{
@@ -2991,6 +3404,7 @@ void execForStatement(int nodeNum){
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c9];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3011,6 +3425,7 @@ void execForStatement(int nodeNum){
             temp = c4true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3028,6 +3443,7 @@ void execForStatement(int nodeNum){
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3040,8 +3456,10 @@ void execForStatement(int nodeNum){
             string beg = getLabel(-1,0);
             nextLabel[c8]= getLabelNumber(beg);
             string c5true = getLabel(c5,1);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
@@ -3061,6 +3479,7 @@ void execForStatement(int nodeNum){
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3071,8 +3490,10 @@ void execForStatement(int nodeNum){
             int c7 = adj[nodeNum][6];
             string beg = getLabel(-1,0);
             nextLabel[c7]= getLabelNumber(beg);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             string c4true = getLabel(c4,1);
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c4];
             temp = c4true + ":";
@@ -3089,8 +3510,10 @@ void execForStatement(int nodeNum){
             int c7 = adj[nodeNum][6];
             string beg = getLabel(-1,0);
             nextLabel[c7]= getLabelNumber(beg);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
@@ -3101,7 +3524,9 @@ void execForStatement(int nodeNum){
             int c6 = adj[nodeNum][5];
             string beg = getLabel(-1,0);
             nextLabel[c6]= getLabelNumber(beg);
+            // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             string temp = beg + ":";
+            attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
@@ -3117,12 +3542,13 @@ void execWhileStatement(int nodeNum){
     string beg = getLabel(-1,0);
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
-    cout << "while " << attr3AC[c3].threeAC.size() << endl;
+    // cout << "while " << attr3AC[c3].threeAC.size() << endl;
     string c3true = getLabel(c3,1);
-    cout << "B true: " << c3true << endl;
+    // cout << "B true: " << c3true << endl;
     nextLabel[c5]= getLabelNumber(beg);
     string temp = beg + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].threeAC.push_back(whileContinueLabel + ":");
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3165,6 +3591,9 @@ void execStatementWithoutTrailingSubstatement(int nodeNum){
         case 5:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            string snext = getLabel(c,3);
+            string temp = snext + ":";
+            attr3AC[nodeNum].threeAC.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3221,7 +3650,7 @@ void execStatementExpression(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            // cout << "statementexpression " << attr3AC[nodeNum].threeAC.size() << endl;;
+            cout << "statementexpression " << attr3AC[nodeNum].threeAC.size() << endl;;
         }
         break;
         case 2:{
@@ -3326,15 +3755,14 @@ void execArrayAccess(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            
-            // auto mdata = arrayInfo[attr3AC[c].nodeno];// lowestnode
-            // cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << "? " << nodeType[attr3AC[c].nodeno] << endl;
-            auto mdata=getArrayInfo(attr3AC[c].addrName,attr3AC[c].nodeno);
-            // cout << "after calling  getArrayInfo" << nodeNum << " " << attr3AC[c].nodeno << " " << attr3AC[c].addrName << endl;
+            auto mdata= getArrayInfo(attr3AC[c].addrName,attr3AC[c].nodeno);
+            // auto mdata = getArrayInfo(nodeType[adj[attr3AC[c].nodeno][0]],attr3AC[c].nodeno);// lowestnode
+            // cout << "in array access wefasdfsf " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << endl;
+
+            // cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << " " << nodeType[adj[attr3AC[c].nodeno][0]] << endl;
             string t = mdata.first;
             vector<int> d = mdata.second;
-            // for(auto i : d)cout << i << endl;
-            // cout << "idhar " << t << " " << d.size() << endl;
+            cout << "idhar " << t << " " << d.size() << endl;
             int mult=typeSize[t];
             for(int i=0;i<d.size();i++){
                 if(i)mult*=d[i];
@@ -3344,9 +3772,10 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum].type = t;
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            typeOfNode[attr3AC[nodeNum].addrName] = t;
             attr3AC[nodeNum].dimsDone++;
             attr3AC[nodeNum].nameAtNode = nodeType[attr3AC[c].nodeno];
-            // cout << "yaha pe hu aray1 " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            cout << "yaha pe hu aray1 " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -3357,18 +3786,22 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c];
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             int mult = typeSize[attr3AC[c].type];
+            cout << "in array access " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << endl;
             for(int i=attr3AC[c].dimsDone;i<attr3AC[c].arrDims.size();i++){
                 mult*=(attr3AC[c].arrDims)[i];
             }
             tempNum++;
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
+            typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
             attr3AC[nodeNum].threeAC.push_back(temp);
             tempNum++;
+            typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            // attr3AC[nodeNum].dimsDone++;
-            attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone+1;
+            cout << "dims 2 hojaye " << attr3AC[c].dimsDone << endl; 
+            attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone +1;
+            cout << "dims 2 hojaye " << attr3AC[nodeNum].dimsDone << endl; 
             attr3AC[nodeNum].nameAtNode = attr3AC[c].nameAtNode;
-            // cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
             temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + t" + to_string(tempNum-1) ;
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -3451,11 +3884,15 @@ void execPrimaryNoNewArray(int nodeNum){
         case 6:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
-            // cout << "idahr dekhra hu " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
-            tempNum++;
-            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
-            attr3AC[nodeNum].threeAC.push_back(temp);
+            cout << "idahr dekhra hu " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[c].nameAtNode << endl;
+            cout << "check dims " << attr3AC[nodeNum].dimsDone << " " << attr3AC[nodeNum].arrDims.size() << endl;
+            if(attr3AC[nodeNum].dimsDone == attr3AC[nodeNum].arrDims.size()){
+                tempNum++;
+                attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+                typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
+                string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
+                attr3AC[nodeNum].threeAC.push_back(temp);
+            }
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3508,6 +3945,7 @@ void execVariableInitializer(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
+            cout << "var init  " << attr3AC[nodeNum].threeAC.size() << endl;
             break;
         case 2:
             c = adj[nodeNum][0];
@@ -3542,6 +3980,7 @@ void execArgumentList(int nodeNum){
 void execExpression(int nodeNum){
     int c = adj[nodeNum][0];
     attr3AC[nodeNum] = attr3AC[c];
+    someExpAddr = attr3AC[nodeNum].addrName;
     pushLabelUp(nodeNum,c);
     return;
 }
@@ -3555,68 +3994,101 @@ void execAssignment(int nodeNum){
 
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            // cout << "assignment " << temp << endl;
+            cout << "assignment " << temp << endl;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 2:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " *= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 3:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " /= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 4:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " += " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 5:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " -= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 6:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " <<= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 7:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " >>= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 8:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " >>>= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 9:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " &= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 10:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " ^= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
         case 11:{
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " |= " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
     }
@@ -3635,6 +4107,8 @@ void execAssignmentExpression(int nodeNum){
         case 2:
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            // typeOfNode[attr3AC[nodeNum].addrName] = 
+            cout << "in assignment expression " << attr3AC[nodeNum].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             pushLabelUp(nodeNum,c);
             break;
     }
@@ -3713,11 +4187,13 @@ void execConditionalAndExpression(int nodeNum){
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             attr3AC[nodeNum] = attr3AC[c];
-            string cTrue = getLabel(c,1);
-            string temp = cTrue + ":";
-            (attr3AC[nodeNum].threeAC).push_back(temp);
+            // cout << "condaitona and " << attr3AC[c].threeAC.size() << endl;
+            // string cTrue = getLabel(c,1);
+            // string temp = cTrue + ":";
+            // (attr3AC[nodeNum].threeAC).push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
-
+            string temp = attr3AC[c].addrName + " && " + attr3AC[c3].addrName;
+            attr3AC[nodeNum].threeAC.push_back(temp);
             falseLabel[c] = falseLabel[nodeNum];
             trueLabel[c3]= trueLabel[nodeNum];
             falseLabel[c3] = trueLabel[nodeNum];
@@ -3742,6 +4218,9 @@ void execInclusiveOrExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            typeOfNode[attr3AC[nodeNum].addrName] = "boolean";
+    
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " | " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3764,6 +4243,8 @@ void execExclusiveOrExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            typeOfNode[attr3AC[nodeNum].addrName]="boolean";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " ^ " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3785,6 +4266,8 @@ void execAndExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            typeOfNode[attr3AC[nodeNum].addrName] = "boolean";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " & " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3806,6 +4289,9 @@ void execEqualityExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+            typeOfNode[attr3AC[nodeNum].addrName]="boolean";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " == " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3816,6 +4302,9 @@ void execEqualityExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+            typeOfNode[attr3AC[nodeNum].addrName]="boolean";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " != " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
 
@@ -3914,6 +4403,8 @@ void execShiftExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            typeOfNode[attr3AC[nodeNum].addrName] = "int";
+            
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " << " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3924,6 +4415,8 @@ void execShiftExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            typeOfNode[attr3AC[nodeNum].addrName] = "int";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >> " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3934,6 +4427,9 @@ void execShiftExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+            typeOfNode[attr3AC[nodeNum].addrName] = "int";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >>> " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
@@ -3952,20 +4448,28 @@ void execAdditiveExpression(int nodeNum){
         case 2:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
+            //widen
+            widenNode(c,c3);
+            string tp;
+            tp = getTypeNode(c);
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " + " + attr3AC[c3].addrName;
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " +" +tp + " " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
             break;
         case 3:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            widenNode(c,c3);
             tempNum++;
+            string tp = getTypeNode(c);
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " - " + attr3AC[c3].addrName;
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " -"+tp+" " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
 
         }
@@ -3985,30 +4489,39 @@ void execMultiplicativeExpression(int nodeNum){
         case 2:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            widenNode(c,c3);
             tempNum++;
+            string tp = getTypeNode(c);
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " * " + attr3AC[c3].addrName;
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " *" + tp + " " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
             break;
         case 3:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            widenNode(c,c3);
             tempNum++;
+            string tp = getTypeNode(c);
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " / " + attr3AC[c3].addrName;
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " /"+ tp + " " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
             break;
         case 4:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            widenNode(c,c3);
             tempNum++;
+            string tp = getTypeNode(c);
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " % " + attr3AC[c3].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
             break;
@@ -4039,8 +4552,16 @@ void execUnaryExpression(int nodeNum){
             c = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c];
             tempNum++;
+            string tp;
+            if(typeOfNode.find(to_string(attr3AC[c].nodeno))!=typeOfNode.end()){
+                tp = typeOfNode[to_string(attr3AC[c].nodeno)];
+            }
+            if(attr3AC[c].addrName.size()>0 && typeOfNode.find(attr3AC[c].addrName)!=typeOfNode.end()){
+                tp = typeOfNode[attr3AC[c].addrName];
+            }
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             string temp = "t" + to_string(tempNum) + " =- " + attr3AC[c].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
             break;
@@ -4065,8 +4586,16 @@ void execUnaryExpressionNotPlusMinus(int nodeNum){
             c = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c];
             tempNum++;
+            string tp;
+            if(typeOfNode.find(to_string(attr3AC[c].nodeno))!=typeOfNode.end()){
+                tp = typeOfNode[to_string(attr3AC[c].nodeno)];
+            }
+            if(attr3AC[c].addrName.size()>0 && typeOfNode.find(attr3AC[c].addrName)!=typeOfNode.end()){
+                tp = typeOfNode[attr3AC[c].addrName];
+            }
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             string temp = "t" + to_string(tempNum) + " =~ " + attr3AC[c].addrName;
+            typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
             pushLabelUp(nodeNum,c);
         }
@@ -4121,7 +4650,7 @@ void execLeftHandSide(int nodeNum){
             int c = adj[nodeNum][0];//Get child node number
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            // cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
+            cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
 
         }
         break;
@@ -4157,7 +4686,7 @@ void execSimpleName(int nodeNum){
     int c = adj[nodeNum][0];//Get child node number
     attr3AC[nodeNum] = attr3AC[c];
     pushLabelUp(nodeNum,c);
-    // cout << "Simplename " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
+    cout << "Simplename " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
     return;
 }
 
@@ -4178,15 +4707,31 @@ void labelStatementNoShortIf(int nodeNum){
     return;
 }
 
+void labelStatementWithoutTrailingSubstatement(int nodeNum){
+    if(prodNum[nodeNum]==5){
+        getLabel(adj[nodeNum][4],3);
+    }
+}
+
 void labelConditionalAndExpression(int nodeNum){
-    getLabel(nodeNum,1);
-    getLabel(nodeNum,2);
+    if(prodNum[nodeNum]==2){
+        getLabel(nodeNum,1);
+        getLabel(nodeNum,2);
+        falseLabel[adj[nodeNum][0]] = falseLabel[nodeNum];
+        trueLabel[adj[nodeNum][2]] = trueLabel[nodeNum];
+        falseLabel[adj[nodeNum][2]] = falseLabel[nodeNum];
+    }
     return;
 }
 
 void labelConditionalOrExpression(int nodeNum){
-    getLabel(nodeNum,1);
-    getLabel(nodeNum,2);
+    if(prodNum[nodeNum]==2){
+        getLabel(nodeNum,1);
+        getLabel(nodeNum,2);
+        trueLabel[adj[nodeNum][0]] = trueLabel[nodeNum];
+        trueLabel[adj[nodeNum][2]] = trueLabel[nodeNum];
+        falseLabel[adj[nodeNum][2]]= falseLabel[nodeNum];
+    }
     return;
 }
 
@@ -4207,7 +4752,58 @@ void labelIf(int nodeNum){
 
 void labelWhile(int nodeNum){
     getLabel(adj[nodeNum][2],1);
+    whileContinueLabel = getLabel(-1,0);//get label for continue
     falseLabel[adj[nodeNum][2]]=nextLabel[nodeNum];
+    cout << "idhar while ke label banana he " << nextLabel[nodeNum];
+    
+    whileBreakLabel = "L" + to_string(nextLabel[nodeNum]);
+    return;
+}
+
+void labelFor(int nodeNum){
+    forContinueLabel = getLabel(-1,0);
+    forBreakLabel = "L" + to_string(nextLabel[nodeNum]);
+    switch(prodNum[nodeNum]){
+        case 1:{
+            getLabel(adj[nodeNum][4],1);
+            falseLabel[adj[nodeNum][4]]=nextLabel[nodeNum];
+        }
+        break;
+        case 2:{
+            getLabel(adj[nodeNum][3],1);
+            falseLabel[adj[nodeNum][3]]=nextLabel[nodeNum];
+        }
+        break;
+        case 3:
+        break;
+        case 4:{
+            getLabel(adj[nodeNum][4],1);
+            falseLabel[adj[nodeNum][4]]=nextLabel[nodeNum];
+        }
+        break;
+        case 5:
+        break;
+        case 6:{
+            getLabel(adj[nodeNum][3],1);
+            falseLabel[adj[nodeNum][3]]=nextLabel[nodeNum];
+        }
+        break;
+        case 7:
+        break;
+    }
+}
+
+void labelDo(int nodeNum){
+    getLabel(adj[nodeNum][4],1);
+    doContinueLabel = getLabel(-1,0);
+    falseLabel[adj[nodeNum][4]] = nextLabel[nodeNum];
+    doBreakLabel = "L" + to_string(nextLabel[nodeNum]);
+    return;
+}
+
+void labelNot(int nodeNum){
+    trueLabel[adj[nodeNum][1]] = falseLabel[nodeNum];
+    falseLabel[adj[nodeNum][1]] = trueLabel[nodeNum];
     return;
 }
 
@@ -4225,8 +4821,16 @@ void generateLabels(int nodeNum){
         labelIfElse(nodeNum);
     }else if("IfThenStatement" == s){
         labelIf(nodeNum);
-    }else if("WhileStatement"==s || "WhileStatementNoShortIf"==s || "ForStatement"==s || "ForStatementNoShortIf"==s){
+    }else if("WhileStatement"==s || "WhileStatementNoShortIf"==s){
         labelWhile(nodeNum);
+    }else if("ForStatement"==s || "ForStatementNoShortIf"==s){
+        labelFor(nodeNum);
+    }else if("DoStatement"==s){
+        labelDo(nodeNum);
+    }else if("StatementWithoutTrailingSubstatement"==s){
+        labelStatementWithoutTrailingSubstatement(nodeNum);
+    }else if("UnaryExpressionNotPlusMinus"==s && prodNum[nodeNum]==3){
+        labelNot(nodeNum);
     }
     // if(nodeNum==127)cout << "ihfadf " << nodeType[nodeNum] << endl;
     if(adj[nodeNum].size()==1){
@@ -4244,10 +4848,32 @@ void generateLabels(int nodeNum){
 
 void postOrderTraversal3AC(int nodeNum){
 
+    if(nodeType[nodeNum]=="WhileStatement"){
+        isWhile=1;
+    }
+    if(nodeType[nodeNum]=="DoStatement"){
+        isDo=1;
+    }
+    if(nodeType[nodeNum]=="ForStatement" || nodeType[nodeNum]=="ForStatementNoShortIf"){
+        isFor = prodNum[nodeNum];
+    }
+    cout << "NODENUM " << nodeNum << " " << nodeType[nodeNum] << endl;
     for(int i=0;i<adj[nodeNum].size();i++){
         postOrderTraversal3AC(adj[nodeNum][i]);
+        if("SwitchStatement"==nodeType[nodeNum] && i==2){
+            switchExpAddr = someExpAddr;
+            cout << "inside possafsdfas df " << switchExpAddr << endl;
+        }
     }
-
+    if(nodeType[nodeNum]=="WhileStatement"){
+        isWhile=0;
+    }
+    if(nodeType[nodeNum]=="DoStatement"){
+        isDo=0;
+    }
+    if(nodeType[nodeNum]=="ForStatement" || nodeType[nodeNum]=="ForStatementNoShortIf"){
+        isFor = 0;
+    }
     string s = nodeType[nodeNum];
     if(adj[nodeNum].size()==0)return;
     if("CompilationUnit" == s){
@@ -4530,6 +5156,8 @@ void postOrderTraversal3AC(int nodeNum){
         execWhileStatementNoShortIf(nodeNum);
     }else if("MethodHeader_"==s){
         execMethodHeader_(nodeNum);
+    }else if("IntegralType"==s){
+        execIntegralType(nodeNum);
     }
     else{
         cout << "function not written " << s << endl;
@@ -5327,6 +5955,7 @@ void preOrder(int nodenum){//root left right
         int c = adj[nodenum][0];
         preOrder(c); 
         attrType[nodenum].type=attrType[c].type;
+
     }
 
     else if(nodeType[nodenum]=="ClassOrInterfaceType"){
