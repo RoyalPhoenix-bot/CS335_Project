@@ -22,6 +22,7 @@ public:
 	string type;
 	int addrConst;
 	vector<string> params;
+	vector<int> paramsNodeNo;
 	vector<int> arrDims;
 	int dimsDone;
 	vector<string> threeAC;
@@ -60,6 +61,11 @@ public:
 		nameAtNode = other.nameAtNode;
 
 		// if(trueLabel.find())
+		paramsNodeNo.clear();
+
+		for(int i=0;i<other.paramsNodeNo.size();i++){
+			paramsNodeNo.push_back((other.paramsNodeNo)[i]);
+		}
 
 		arrDims.clear();
 		
@@ -89,6 +95,8 @@ public:
 		// res.addrName = other.addrName;//not useful for +
 		// res.addrConst = other.addrConst;//not useful for +
 
+		
+
 		for(int i=0;i<arrDims.size();i++){
 			res.arrDims.push_back(arrDims[i]);
 		}
@@ -103,6 +111,14 @@ public:
 
 		for(int i=0;i<other.params.size();i++){
 			res.params.push_back((other.params)[i]);
+		}
+
+		for(int i=0;i<paramsNodeNo.size();i++){
+			res.paramsNodeNo.push_back(paramsNodeNo[i]);
+		}
+
+		for(int i=0;i<other.paramsNodeNo.size();i++){
+			res.paramsNodeNo.push_back((other.paramsNodeNo)[i]);
 		}
 
 		for(int i=0;i<threeAC.size();i++){
@@ -156,6 +172,7 @@ typedef struct Attributes{
 	vector<int> intParams;
 	int decLine;
 	int leafNodeNum;
+	vector<string> funcParams;
 	int num; // to store a numbered attribute (Ex.to get size of array, to store how many vars declared at once i.e int a,b,c)
 } attr1;
 
