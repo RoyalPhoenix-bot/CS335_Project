@@ -3596,7 +3596,7 @@ int main(int argc, char* argv[])
 	preOrderTraversal(rootNodenum);
 	printTables();
 	filltypeOfNode();
-	// printfilltypeOfNode();
+	printfilltypeOfNode();
 	generateLabels(rootNodenum);
 	postOrderTraversal3AC(rootNodenum);
 	print3AC(rootNodenum);
