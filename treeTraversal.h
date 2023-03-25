@@ -5,7 +5,7 @@ using namespace std;
 
 // ClassBody_NodeNumber->Class Name
 map<int,string>  classNameMap;
-
+string insideClassName;
 map<string,string> typeOfNode; // to_string(nodeNum) -> Type of that node
 // map<int, pair<string,vector<int>>> arrayInfo;
 map<int,int> trueLabel;
@@ -597,6 +597,43 @@ bool checkIfTypeOkay(string _t1, string _t2){
     }
 }
 
+void checkRedeclaration(int n, string x){
+    auto data = scopeAndTable[n];
+    auto scope = data.first;
+    auto table = data.second;
+    auto partable = parentTable[table];
+    while(scope.first>1){
+
+        auto rowPtr=checkInScope(x,scope,table);
+
+        if (rowPtr!=NULL){
+
+            // got the row
+            cout<<"[Compilation Error]: Variable Redeclaration on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
+            exit(0);
+        }
+
+    scope=mapParentScope[scope];
+    }
+    scope=data.first;
+    while(scope.first>1){
+
+        auto rowPtr=checkInScope(x,scope,partable);
+
+        if (rowPtr!=NULL){
+
+            // got the row
+            cout<<"[Compilation Error]: Variable Redeclaration on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
+            exit(0);
+
+        }
+
+    scope=mapParentScope[scope];
+    }
+
+    return;
+}
+
 void preOrderTraversal(int nodeNum){
 
     // cout<<"Visiting: "<<nodeType[nodeNum]<<endl;
@@ -646,8 +683,9 @@ void preOrderTraversal(int nodeNum){
         // ->
         //put the class name in the classBody map
         int cb=adj[nodeNum][adj[nodeNum].size()-1];
-        classNameMap[lineNum[cb]]=globRow.name;
+        classNameMap[cb]=globRow.name;
         // cout<<lineNum[cb]<<" "<<globRow.name<<endl;
+        // cout << "hax hax " << globRow.name << " " << lineNum[cb] << endl;
 
         // call Super 
         switch (prodNum[nodeNum])
@@ -895,7 +933,7 @@ void preOrderTraversal(int nodeNum){
         int c1=adj[nodeNum][0];
 
         attrSymTab[nodeNum].name=attrSymTab[c1].name;
-
+        attrSymTab[nodeNum].leafNodeNum = attrSymTab[c1].leafNodeNum;
         if (prodNum[nodeNum]==2){
             int c3=adj[nodeNum][2];
             attrSymTab[nodeNum].type=attrSymTab[c3].type;
@@ -914,6 +952,7 @@ void preOrderTraversal(int nodeNum){
         int c1=adj[nodeNum][0];
         attrSymTab[nodeNum].name=attrSymTab[c1].name;
         attrSymTab[nodeNum].leafNodeNum = attrSymTab[c1].leafNodeNum;
+        checkRedeclaration(attrSymTab[c1].leafNodeNum,attrSymTab[c1].name);
         attrSymTab[nodeNum].funcParams.push_back(attrSymTab[c1].funcParams[0]);
         
         // cout << "in vdid " << attrSymTab[nodeNum].leafNodeNum << " " << attrSymTab[nodeNum].name << endl;
@@ -1236,7 +1275,11 @@ void preOrderTraversal(int nodeNum){
             locRow.parentScope=parentScope.top();
             cout<<attrSymTab[c2].intParams.size()<<endl;
             locRow.arraySize=attrSymTab[c2].intParams;
-
+            if(locRow.type=="void"){
+                cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nVariable '"<<  locRow.name << "' cannot have a type 'void'!\nAborting...\n";
+                exit(0);
+            }
+            
             // cout<<"From FieldDeclaration:"<<locRow.arraySize.size()<<endl;
             (*currSymTab).push_back(locRow);
             // cout<<currSymTab<<" in locvaldec "<<(*currSymTab).size()<<"\n";
@@ -1298,8 +1341,13 @@ void preOrderTraversal(int nodeNum){
                 locRow.line=lineNum[nodeNum];
                 locRow.scope=currScope.top();
                 locRow.parentScope=parentScope.top();
+                if(locRow.type=="void"){
+                cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nVariable '"<<  locRow.name << "' cannot have a type 'void'!\nAborting...\n";
+                exit(0);
+            }
                 // cout<<"From BlockStatement: "<<varName<<endl; //works
                 // cout<<locRow.type<<" "<<locRow.name<<endl; //works
+                // checkRedeclaration(attrSymTab[c2].leafNodeNum,locRow.name);
                 (*currSymTab).push_back(locRow);
                 // cout<<currSymTab<<" in locvardec "<<(*currSymTab).size()<<"\n";
                 // cout<<currSymTab<<" From BlockStatement\n";
@@ -3395,7 +3443,8 @@ void execMethodDeclaration(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             int c2 = adj[nodeNum][1];
-            string temp = nodeType[attr3AC[c].nodeno] +":";
+            // cout << "inside method declaration " << insideClassName << endl;
+            string temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
         }
@@ -4137,7 +4186,8 @@ void execMethodInvocation(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName + ", 0";
+            cout << "inside methodinvocation " << endl;
+            string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName +insideClassName + ", 0";
             attr3AC[nodeNum].threeAC.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
@@ -4152,7 +4202,7 @@ void execMethodInvocation(int nodeNum){
                 string temp = "param " + (attr3AC[c3].params)[fcall];
                 attr3AC[nodeNum].threeAC.push_back(temp);
             }
-            string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName + ", " + to_string(attr3AC[c3].params.size());
+            string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName + insideClassName + ", " + to_string(attr3AC[c3].params.size());
             attr3AC[nodeNum].threeAC.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
@@ -5071,6 +5121,10 @@ void generateLabels(int nodeNum){
 }
 
 void postOrderTraversal3AC(int nodeNum){
+    if(nodeType[nodeNum]=="ClassBody"){
+        insideClassName = classNameMap[nodeNum];
+        cout << "initialized insideclassname " << insideClassName << " " << nodeType[nodeNum] << " " << nodeNum << endl;
+    }
 
     if(nodeType[nodeNum]=="WhileStatement"){
         isWhile=1;
@@ -5084,10 +5138,10 @@ void postOrderTraversal3AC(int nodeNum){
     // cout << "NODENUM " << nodeNum << " " << nodeType[nodeNum] << endl;
     for(int i=0;i<adj[nodeNum].size();i++){
         postOrderTraversal3AC(adj[nodeNum][i]);
-        if("SwitchStatement"==nodeType[nodeNum] && i==2){
-            switchExpAddr = someExpAddr;
-            cout << "inside possafsdfas df " << switchExpAddr << endl;
-        }
+        // if("SwitchStatement"==nodeType[nodeNum] && i==2){
+        //     switchExpAddr = someExpAddr;
+        //     cout << "inside possafsdfas df " << switchExpAddr << endl;
+        // }
     }
     if(nodeType[nodeNum]=="WhileStatement"){
         isWhile=0;
@@ -5110,6 +5164,7 @@ void postOrderTraversal3AC(int nodeNum){
         execClassDeclaration(nodeNum);
     }else if("ClassBody" == s){
         execClassBody(nodeNum);
+        insideClassName.clear();
     }else if("ClassBodyDeclarations" == s){
         execClassBodyDeclarations(nodeNum);
     }else if("ClassBodyDeclaration" == s){
