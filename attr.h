@@ -156,6 +156,7 @@ typedef struct Attributes{
 	vector<int> intParams;
 	int decLine;
 	int leafNodeNum;
+	vector<string> funcParams;
 	int num; // to store a numbered attribute (Ex.to get size of array, to store how many vars declared at once i.e int a,b,c)
 } attr1;
 
