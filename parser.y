@@ -685,10 +685,12 @@ ClassBody:
 	OPCURLY ClassBodyDeclarations CLCURLY {
 		nodeType.push_back($1); nodeType.push_back($3); nodeType.push_back("ClassBody"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back($2);adj[$$].push_back(countNodes+1);countNodes+=3;
 		prodNum[$$]=1;	
+		lineNum[$$]=yylineno;
 	}
 	| OPCURLY CLCURLY {
 		nodeType.push_back($1); nodeType.push_back($2); nodeType.push_back("ClassBody"); $$=countNodes+2; adj[$$].push_back(countNodes); adj[$$].push_back(countNodes+1);countNodes+=3;
 		prodNum[$$]=2;	
+		lineNum[$$]=yylineno;
 	}
 ;
 

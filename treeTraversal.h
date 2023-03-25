@@ -2,6 +2,10 @@
 #include "attr.h"
 
 using namespace std;
+
+// ClassBody_NodeNumber->Class Name
+map<int,string>  classNameMap;
+
 map<string,string> typeOfNode; // to_string(nodeNum) -> Type of that node
 // map<int, pair<string,vector<int>>> arrayInfo;
 map<int,int> trueLabel;
@@ -471,7 +475,7 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
 
             retObj.first=getArrayType(rowPtr->type);
             retObj.second=rowPtr->arraySize;
-            // cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
+            cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
             return retObj;
         }
 
@@ -491,14 +495,14 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
             retObj.first=getArrayType(rowPtr->type);
             retObj.second=rowPtr->arraySize;
 
-            // cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
+            cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
             return retObj;
         }
 
         startScope=mapParentScope[startScope];
     }
 
-    // cout<<"DIDN'T GET\n";
+    cout<<"DIDN'T GET\n";
     return retObj;   
 }
 
@@ -616,6 +620,14 @@ void preOrderTraversal(int nodeNum){
                 globRow.line=lineNum[adj[nodeNum][1]];
                 
         }
+
+
+        // after Identifier before uper in ClassDeclaration
+        // ->
+        //put the class name in the classBody map
+        int cb=adj[nodeNum][adj[nodeNum].size()-1];
+        classNameMap[lineNum[cb]]=globRow.name;
+        cout<<lineNum[cb]<<" "<<globRow.name<<endl;
 
         // call Super 
         switch (prodNum[nodeNum])
@@ -826,9 +838,7 @@ void preOrderTraversal(int nodeNum){
         int c1=adj[nodeNum][0];
         
         if (prodNum[nodeNum]==1){
-            cout<<"From vardecls "<<attrSymTab[nodeNum].otherParams.size()<<endl;
             attrSymTab[nodeNum].otherParams.push_back(attrSymTab[c1].name);
-            cout<<"From vardecls "<<attrSymTab[nodeNum].otherParams.size()<<endl;
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
 
