@@ -4,6 +4,7 @@
 using namespace std;
 
 // ClassBody_NodeNumber->Class Name
+map<string,int> initVal;
 map<int,string>  classNameMap;
 string insideClassName;
 map<string,string> typeOfNode; // to_string(nodeNum) -> Type of that node
@@ -14,6 +15,7 @@ map<int,int> nextLabel;
 int countNodes=0;
 int tempNum=0;
 int inStatement=0;
+int inMethodInvocation=0,inMN=0;
 map<string,int> typeSize;
 int labelNum=0;
 vector<string> nodeType;
@@ -176,14 +178,14 @@ string getType(string _varName, int _nodeNum){
 string fillHelper(string _nodeNum){
         
         int node_number=atoi(_nodeNum.c_str());
-        cout<<"from FillHeper: "<<nodeType[node_number]<<endl;
+        // cout<<"from FillHeper: "<<nodeType[node_number]<<endl;
 
         if (find(integerTypes.begin(),integerTypes.end(),typeOfNode[_nodeNum])!=integerTypes.end() || typeOfNode[_nodeNum]=="char" || typeOfNode[_nodeNum]=="String" || typeOfNode[_nodeNum]=="true" || typeOfNode[_nodeNum]=="false")
             return typeOfNode[_nodeNum];
         
         string ret;
         ret=getType(nodeType[node_number],node_number);
-        cout<<ret<<endl;
+        // cout<<ret<<endl;
         if (ret[ret.size()-1]==')'){
             string og_type=ret;
             ret=getArrayType(ret);
@@ -325,7 +327,7 @@ string getTypeNode(int c){
 void widenNode(int a , int b){
     string p = getTypeNode(a);
     string q = getTypeNode(b);
-    cout << "choda karna he " << p << " " << q << endl;
+    // cout << "choda karna he " << p << " " << q << endl;
     if(p=="int" && q=="float"){
         tempNum++;
         string t = "t" + to_string(tempNum);
@@ -478,7 +480,7 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
     
     //return {type,arraySizes}
 
-    cout<<"inside getarrayinfo\n";
+    // cout<<"inside getarrayinfo\n";
 
     vector<localTableParams>* primaryTable=scopeAndTable[_nodeNum].second;
     pair<int,int> startScope=scopeAndTable[_nodeNum].first;
@@ -496,7 +498,7 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
 
             retObj.first=getArrayType(rowPtr->type);
             retObj.second=rowPtr->arraySize;
-            cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
+            // cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
             return retObj;
         }
 
@@ -516,14 +518,14 @@ pair<string,vector<int>> getArrayInfo(string _arrayName, int _nodeNum){
             retObj.first=getArrayType(rowPtr->type);
             retObj.second=rowPtr->arraySize;
 
-            cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
+            // cout<<"GOT IT: "<<retObj.first<<" "<<retObj.second.size()<<endl;
             return retObj;
         }
 
         startScope=mapParentScope[startScope];
     }
 
-    cout<<"DIDN'T GET\n";
+    // cout<<"DIDN'T GET\n";
     return retObj;   
 }
 
@@ -636,6 +638,7 @@ void checkRedeclaration(int n, string x){
 }
 
 void checkIfDeclared(int n,string x){
+
     auto data = scopeAndTable[n];
     auto scope = data.first;
     auto table = data.second;
@@ -667,14 +670,14 @@ void checkIfDeclared(int n,string x){
     }
     if(!flag){
         cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
-        exit(0);
+        // exit(0);
     }
     return;
 }
 
 void checkFunctionParameterTypes(int n, vector<int> paramNodeNo){
-    cout << "inside check function " << n << " " << paramNodeNo.size() << endl;
-    for(int i=0;i<paramNodeNo.size();i++)cout << i << " " << nodeType[paramNodeNo[i]] << " " << typeOfNode[to_string(paramNodeNo[i])] << endl;
+    // cout << "inside check function " << n << " " << paramNodeNo.size() << endl;
+    // for(int i=0;i<paramNodeNo.size();i++)cout << i << " " << nodeType[paramNodeNo[i]] << " " << typeOfNode[to_string(paramNodeNo[i])] << endl;
     auto data = scopeAndTable[n];
     auto scope = data.first;
     auto table = data.second;
@@ -847,12 +850,12 @@ void preOrderTraversal(int nodeNum){
         scopeAndTable[c1].second=currSymTab;
         attrSymTab[nodeNum].leafNodeNum=c1;
         // cout << "identiifer " << c1 << " " <<  << endl;
-        cout<<"[From Identifier]"<<endl;
+        // cout<<"[From Identifier]"<<endl;
         typeOfNode[to_string(c1)]="fillMe";
-        cout<<nodeType[adj[nodeNum][0]]<<endl;
+        // cout<<nodeType[adj[nodeNum][0]]<<endl;
         if (attrSymTab[nodeNum].name=="true" || attrSymTab[nodeNum].name=="false"){
             typeOfNode[to_string(c1)]=attrSymTab[nodeNum].name;
-            cout<<to_string(c1)<<" "<<attrSymTab[nodeNum].name<<endl;
+            // cout<<to_string(c1)<<" "<<attrSymTab[nodeNum].name<<endl;
         }
         if(functionParameterMap.size()!=0 && functionParameterMap.find(attrSymTab[nodeNum].name)!=functionParameterMap.end()){
             typeOfNode[to_string(c1)] = functionParameterMap[attrSymTab[nodeNum].name];
@@ -951,7 +954,7 @@ void preOrderTraversal(int nodeNum){
         
         // type is filled
         attrSymTab[nodeNum].type=attrSymTab[adj[nodeNum][0]].type;
-        cout<<"from Type: "<<attrSymTab[nodeNum].type<<endl;
+        // cout<<"from Type: "<<attrSymTab[nodeNum].type<<endl;
         return;
     }
     else if (nodeType[nodeNum]=="PrimitiveType"){
@@ -970,7 +973,7 @@ void preOrderTraversal(int nodeNum){
         preOrderTraversal(adj[nodeNum][0]);
         attrSymTab[nodeNum].type=attrSymTab[adj[nodeNum][0]].type;
         
-        cout<<nodeType[nodeNum]<<" from "<<attrSymTab[nodeNum].type<<endl;
+        // cout<<nodeType[nodeNum]<<" from "<<attrSymTab[nodeNum].type<<endl;
         attrSymTab[nodeNum].name=attrSymTab[adj[nodeNum][0]].name;
         attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         return;
@@ -1014,9 +1017,10 @@ void preOrderTraversal(int nodeNum){
         if (prodNum[nodeNum]==1){
             attrSymTab[nodeNum].otherParams.push_back(attrSymTab[c1].name);
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
+            attrSymTab[nodeNum].name=attrSymTab[c1].name;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
-            cout<<"In vardecls: "<<attrSymTab[nodeNum].leafNodeNum<<endl;
+            // cout<<"In vardecls: "<<attrSymTab[nodeNum].leafNodeNum<<endl;
             // cout<<attrSymTab[nodeNum].intParams.size()<<endl;
         }
         else{
@@ -1043,7 +1047,8 @@ void preOrderTraversal(int nodeNum){
             int c3=adj[nodeNum][2];
             attrSymTab[nodeNum].type=attrSymTab[c3].type;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][2]].leafNodeNum;
-            cout<<"In vardec: "<< attrSymTab[nodeNum].leafNodeNum<<endl;
+            initVal[attrSymTab[c1].name]=atoi(nodeType[attrSymTab[nodeNum].leafNodeNum].c_str());
+            // cout<<"In vardec: "<< attrSymTab[nodeNum].leafNodeNum<<endl;
             attrSymTab[nodeNum].intParams=attrSymTab[c3].intParams;
         }
         return;
@@ -1366,7 +1371,7 @@ void preOrderTraversal(int nodeNum){
 
         //check if array is being declared
         if (attrSymTab[c2].intParams.size()!=0){
-            cout<<"Hi bhai array declare hua\n";
+            // cout<<"Hi bhai array declare hua\n";
             //array it is
 
             // check if initialized with correct type
@@ -1379,7 +1384,7 @@ void preOrderTraversal(int nodeNum){
             locRow.line=lineNum[nodeNum];
             locRow.scope=currScope.top();
             locRow.parentScope=parentScope.top();
-            cout<<attrSymTab[c2].intParams.size()<<endl;
+            // cout<<attrSymTab[c2].intParams.size()<<endl;
             locRow.arraySize=attrSymTab[c2].intParams;
             if(locRow.type=="void"){
                 cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nVariable '"<<  locRow.name << "' cannot have a type 'void'!\nAborting...\n";
@@ -1397,18 +1402,18 @@ void preOrderTraversal(int nodeNum){
         }
         else{
 
-            if (attrSymTab[c2].leafNodeNum!=0){
-
+            if (initVal.find(attrSymTab[c2].name)!=initVal.end()){
+                
                 // var is initialized as well
 
                 int c1=adj[nodeNum][0];
                 int c2=adj[nodeNum][1];
-                
+                initVal[attrSymTab[c2].name]=atoi(nodeType[attrSymTab[c2].leafNodeNum].c_str());          
                 // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
                 
                 string t3=fillHelper(to_string(attrSymTab[c2].leafNodeNum));
                 
-                cout<<"[In LocVarDec]: "<<" "<<t3<<endl;
+                // cout<<"[In LocVarDec]: "<<" "<<t3<<endl;
                 string t1=attrSymTab[c1].type;
                 t3=typeOfNode[to_string(attrSymTab[c2].leafNodeNum)];
 
@@ -1420,12 +1425,12 @@ void preOrderTraversal(int nodeNum){
                             t3=removeLastChar(t3);
                             
                         }
-                    // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c2].leafNodeNum)]<<endl;
-                    
+                // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c2].leafNodeNum)]<<endl;                     
+
                 if (checkIfTypeOkay(t1,t3))
                         attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
                 else{
-
+                  
                     string var1=nodeType[attrSymTab[c1].leafNodeNum];
                     string var2=nodeType[attrSymTab[c2].leafNodeNum];
 
@@ -1441,7 +1446,7 @@ void preOrderTraversal(int nodeNum){
 
                 localTableParams locRow ;
                 locRow.type=attrSymTab[c1].type;
-                
+
                 // cout<<locRow.type<<" From BlockStatement\n";
                 locRow.name=varName;
                 locRow.line=lineNum[nodeNum];
@@ -1459,7 +1464,7 @@ void preOrderTraversal(int nodeNum){
                 // cout<<currSymTab<<" From BlockStatement\n";
             }
         }
-        
+
         return;
     }
     else if (nodeType[nodeNum]=="ForStatement" || nodeType[nodeNum]=="IfThenStatement" || nodeType[nodeNum]=="WhileStatement"){
@@ -1524,16 +1529,16 @@ void preOrderTraversal(int nodeNum){
         int c1=adj[nodeNum][0];
         preOrderTraversal(c1);
 
-        for (auto var:attrSymTab[c1].otherParams){
-            localTableParams locRow ;
-            locRow.name=var;
-            locRow.type=attrSymTab[c1].type;
-            locRow.scope=currScope.top();
-            locRow.parentScope=parentScope.top();
-            locRow.line=lineNum[nodeNum];
-            currSymTab->push_back(locRow);
+        // for (auto var:attrSymTab[c1].otherParams){
+        //     localTableParams locRow ;
+        //     locRow.name=var;
+        //     locRow.type=attrSymTab[c1].type;
+        //     locRow.scope=currScope.top();
+        //     locRow.parentScope=parentScope.top();
+        //     locRow.line=lineNum[nodeNum];
+        //     currSymTab->push_back(locRow);
 
-        }
+        // }
         return;
         
     }
@@ -1547,11 +1552,11 @@ void preOrderTraversal(int nodeNum){
 
         attrSymTab[nodeNum].type=attrSymTab[c2].type;
         attrSymTab[nodeNum].intParams=attrSymTab[c3].intParams;
-        cout<<"[PreOrderTraversal] From ArrayCreationExpression: "<<attrSymTab[nodeNum].intParams.size()<<endl;
-        for (auto siz:attrSymTab[nodeNum].intParams)
-            cout<<siz<<" ";
-        cout<<endl;
-        cout<< attrSymTab[nodeNum].type<<endl;
+        // cout<<"[PreOrderTraversal] From ArrayCreationExpression: "<<attrSymTab[nodeNum].intParams.size()<<endl;
+        // for (auto siz:attrSymTab[nodeNum].intParams)
+        //     cout<<siz<<" ";
+        // cout<<endl;
+        // cout<< attrSymTab[nodeNum].type<<endl;
 
         return;
     }
@@ -1575,9 +1580,9 @@ void preOrderTraversal(int nodeNum){
 
         }
 
-        for (auto siz:attrSymTab[nodeNum].intParams)
-            cout<<siz<<" ";
-        cout<<endl;
+        // for (auto siz:attrSymTab[nodeNum].intParams)
+        //     cout<<siz<<" ";
+        // cout<<endl;
         return;
         
     }
@@ -1614,11 +1619,11 @@ void preOrderTraversal(int nodeNum){
             // cout<<"From Uexp: "<< attrSymTab[nodeNum].num<<endl;
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
-            cout<<"From Uexp: ";
-            for (auto siz:attrSymTab[nodeNum].intParams)
-                cout<<siz<<" ";
-            cout<< attrSymTab[nodeNum].type<<endl;
-            cout<<endl;
+            // cout<<"From Uexp: ";
+            // for (auto siz:attrSymTab[nodeNum].intParams)
+            //     cout<<siz<<" ";
+            // cout<< attrSymTab[nodeNum].type<<endl;
+            // cout<<endl;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         }
 
@@ -1655,10 +1660,14 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
-            for (auto siz:attrSymTab[nodeNum].intParams)
-                cout<<siz<<" ";
+            // for (auto siz:attrSymTab[nodeNum].intParams)
+            //     cout<<siz<<" ";
             
-            cout<<endl;
+            // cout<<endl;
+        }
+        else if (prodNum[nodeNum]==2){
+
+            attrSymTab[nodeNum].num=initVal[attrSymTab[c1].name];
         }
         attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         return;
@@ -1681,7 +1690,7 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
-            cout<<"From Primary: "<<attrSymTab[nodeNum].intParams.size()<<endl;
+            // cout<<"From Primary: "<<attrSymTab[nodeNum].intParams.size()<<endl;
         }
         return;
     }
@@ -1697,8 +1706,8 @@ void preOrderTraversal(int nodeNum){
             // cout<<"FRom Additive Expression:"<<attrSymTab[nodeNum].num<<endl;
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
-            cout<<"From  AddExpre"<<   attrSymTab[nodeNum].intParams.size()<<endl;
-            cout<<attrSymTab[nodeNum].type<<"\n";
+            // cout<<"From  AddExpre"<<   attrSymTab[nodeNum].intParams.size()<<endl;
+            // cout<<attrSymTab[nodeNum].type<<"\n";
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
         }
         else {
@@ -1707,11 +1716,11 @@ void preOrderTraversal(int nodeNum){
             int c3=adj[nodeNum][2];
             // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
             // cout<<t1<<" "<<t3<<endl;
-            cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
+            // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
             string t1=fillHelper(to_string(attrSymTab[c1].leafNodeNum));
             string t3=fillHelper(to_string(attrSymTab[c3].leafNodeNum));
 
-            cout<<t1<<" from additive expression "<<t3<<endl;
+            // cout<<t1<<" from additive expression "<<t3<<endl;
             t1=typeOfNode[to_string(attrSymTab[c1].leafNodeNum)];
             t3=typeOfNode[to_string(attrSymTab[c3].leafNodeNum)];
 
@@ -1741,7 +1750,7 @@ void preOrderTraversal(int nodeNum){
 
     }
     else if (nodeType[nodeNum]=="Assignment"){
-        
+
         for (auto child: adj[nodeNum])
             preOrderTraversal(child);
         
@@ -1750,7 +1759,7 @@ void preOrderTraversal(int nodeNum){
         // cout<<typeOfNode[to_string(attrSymTab[c1].leafNodeNum)]<<" "<<typeOfNode[to_string(attrSymTab[c3].leafNodeNum)]<<endl;
         string t1=fillHelper(to_string(attrSymTab[c1].leafNodeNum));
         string t3=fillHelper(to_string(attrSymTab[c3].leafNodeNum));
-        cout<<"[In Assignment]: "<<t1<<" "<<t3<<endl;
+        // cout<<"[In Assignment]: "<<t1<<" "<<t3<<endl;
         t1=typeOfNode[to_string(attrSymTab[c1].leafNodeNum)];
         t3=typeOfNode[to_string(attrSymTab[c3].leafNodeNum)];
 
@@ -1771,8 +1780,8 @@ void preOrderTraversal(int nodeNum){
             string var1=nodeType[attrSymTab[c1].leafNodeNum];
             string var2=nodeType[attrSymTab[c3].leafNodeNum];
 
-            cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
-            exit(0);
+            // cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
+            // exit(0);
         }
 
     }
@@ -1912,7 +1921,9 @@ void preOrderTraversal(int nodeNum){
     else if (nodeType[nodeNum]=="ArrayAccess"){
         
         int c1=adj[nodeNum][0];
+        int c3=adj[nodeNum][2];
         preOrderTraversal(c1);
+        preOrderTraversal(c3);
         attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
     }
     else if (nodeType[nodeNum]=="AssignmentExpression"){
@@ -1926,7 +1937,7 @@ void preOrderTraversal(int nodeNum){
             // cout<<"From ExclusiveOrExpression: "<<attrSymTab[c1].intParams.size()<<endl;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum; 
-            cout<<"assexrp: "<<attrSymTab[nodeNum].leafNodeNum<<endl;
+            // cout<<"assexrp: "<<attrSymTab[nodeNum].leafNodeNum<<endl;
     }
     else if (nodeType[nodeNum]=="PrimaryNoNewArray" || nodeType[nodeNum]=="ShiftExpression" || nodeType[nodeNum]=="RelationalExpression" || nodeType[nodeNum]=="EqualityExpression" || nodeType[nodeNum]=="AndExpression" || nodeType[nodeNum]=="ExclusiveOrExpression" || nodeType[nodeNum]=="InclusiveOrExpression"|| nodeType[nodeNum]=="ConditionalAndExpression" || nodeType[nodeNum]=="ConditionalOrExpression" || nodeType[nodeNum]=="ConditionalExpression" ){
         
@@ -1946,18 +1957,18 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;  
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum; 
             if (nodeType[nodeNum]=="InclusiveOrExpression"){
-                cout<<"From IncOrEx:";
-                for (auto siz:attrSymTab[nodeNum].intParams)
-                    cout<<siz<<" ";
-                cout<<endl;
-                cout<<attrSymTab[nodeNum].type<<endl;
+                // cout<<"From IncOrEx:";
+                // for (auto siz:attrSymTab[nodeNum].intParams)
+                //     cout<<siz<<" ";
+                // cout<<endl;
+                // cout<<attrSymTab[nodeNum].type<<endl;
             }
 
             break;
         }
         case 3:{
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][1]].leafNodeNum; 
-            cout<<attrSymTab[nodeNum].leafNodeNum<<": from PNNA"<<endl;
+            // cout<<attrSymTab[nodeNum].leafNodeNum<<": from PNNA"<<endl;
             
             break;
         }
@@ -1996,8 +2007,8 @@ void preOrderTraversal(int nodeNum){
             break;
         case 4:
             typeOfNode[to_string(adj[c1][0])]="boolean";
-            cout<<"Hi\n";
-            cout<<to_string(adj[c1][0])<<endl;
+            // cout<<"Hi\n";
+            // cout<<to_string(adj[c1][0])<<endl;
             break;
         case 5:
             typeOfNode[to_string(adj[c1][0])]="char";
@@ -2027,10 +2038,10 @@ void preOrderTraversal(int nodeNum){
             attrSymTab[nodeNum].type=attrSymTab[c1].type;
             attrSymTab[nodeNum].intParams=attrSymTab[c1].intParams;
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[adj[nodeNum][0]].leafNodeNum;
-            cout<<"[PreOrderTraversal] From VariableInitializer: "<<attrSymTab[nodeNum].leafNodeNum<<endl;
-            for (auto siz:attrSymTab[nodeNum].intParams)
-                cout<<siz<<" ";
-            cout<<endl;
+            // cout<<"[PreOrderTraversal] From VariableInitializer: "<<attrSymTab[nodeNum].leafNodeNum<<endl;
+            // for (auto siz:attrSymTab[nodeNum].intParams)
+            //     cout<<siz<<" ";
+            // cout<<endl;
 
         }
 
@@ -2174,12 +2185,26 @@ void printTables(){
         }
     }
 
-    freopen("log.log","w",stdout);
+    // freopen("log.log","w",stdout);
 
     return;
 }
 
+void execCastExpression(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c2 = adj[nodeNum][1];
+            int c4 = adj[nodeNum][3];
+            attr3AC[nodeNum] = attr3AC[c4];
+            attr3AC[nodeNum].type = attr3AC[c2].type;
+        }
+        break;
+    }
+    return;
+}
+
 void execIntegralType(int nodeNum){
+    attr3AC[nodeNum].type = nodeType[adj[nodeNum][0]];
     return;
 }
 
@@ -2187,9 +2212,9 @@ void execWhileStatementNoShortIf(int nodeNum){
     string beg = getLabel(-1,0);
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
-    cout << "whilestatementnoshortif " << attr3AC[c3].threeAC.size() << endl;
+    // cout << "whilestatementnoshortif " << attr3AC[c3].threeAC.size() << endl;
     string c3true = getLabel(c3,1);
-    cout << "B true: " << c3true << endl;
+    // cout << "B true: " << c3true << endl;
     nextLabel[c5]= getLabelNumber(beg);
     string temp = beg + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
@@ -2250,10 +2275,10 @@ void execVariableDeclarator(int nodeNum){
             string tp = getTypeNode(c);
             string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
             attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
-            cout << "variabledeclarator " << temp << endl;
+            // cout << "variabledeclarator " << temp << endl;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
-            cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
         break;
@@ -2492,7 +2517,7 @@ void execQualifiedName(int nodeNum){
 }
 
 void execPrimitiveType(int nodeNum){
-    //Types not required to write 3AC
+    attr3AC[nodeNum] = attr3AC[adj[nodeNum][0]];
     return;
 }
 
@@ -2801,7 +2826,7 @@ void execIfThenElseStatementNoShortIf(int nodeNum){
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
     int c7 = adj[nodeNum][6];
-    cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
+    // cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
     string c3true = getLabel(c3,1);
     string c3false = getLabel(c3,2);
     attr3AC[nodeNum] = attr3AC[c3];
@@ -3624,7 +3649,7 @@ void execStatement(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "statement " << attr3AC[nodeNum].threeAC.size() << endl;
+            // cout << "statement " << attr3AC[nodeNum].threeAC.size() << endl;
         }
         break;
         case 2:{
@@ -3679,7 +3704,7 @@ void execStatementNoShortIf(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "statementNoshort if " << attr3AC[nodeNum].threeAC.size() << endl;;
+            // cout << "statementNoshort if " << attr3AC[nodeNum].threeAC.size() << endl;;
         }
         break;
         case 2:{
@@ -3723,7 +3748,7 @@ void execIfThenElseStatement(int nodeNum){
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
     int c7 = adj[nodeNum][6];
-    cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
+    // cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
     string c3true = getLabel(c3,1);
     string c3false = getLabel(c3,2);
     attr3AC[nodeNum] = attr3AC[c3];
@@ -3933,7 +3958,7 @@ void execStatementWithoutTrailingSubstatement(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "swts " << attr3AC[nodeNum].threeAC.size() << endl;
+            // cout << "swts " << attr3AC[nodeNum].threeAC.size() << endl;
         }
         break;
         case 2:{
@@ -4016,7 +4041,7 @@ void execStatementExpression(int nodeNum){
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "statementexpression " << attr3AC[nodeNum].threeAC.size() << endl;;
+            // cout << "statementexpression " << attr3AC[nodeNum].threeAC.size() << endl;;
         }
         break;
         case 2:{
@@ -4128,10 +4153,10 @@ void execArrayAccess(int nodeNum){
             // cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << " " << nodeType[adj[attr3AC[c].nodeno][0]] << endl;
             string t = mdata.first;
             vector<int> d = mdata.second;
-            cout << "idhar " << t << " " << d.size() << endl;
+            // cout << "idhar " << t << " " << d.size() << endl;
             int mult=typeSize[t];
             for(int i=0;i<d.size();i++){
-                cout << "dims " << i << " " << d[i] << endl;
+                // cout << "dims " << i << " " << d[i] << endl;
                 if(i)mult*=d[i];
                 attr3AC[nodeNum].arrDims.push_back(d[i]);
             }
@@ -4143,7 +4168,7 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum].dimsDone++;//dimsdone=1
             for(int i=0;i<d.size();i++)attr3AC[nodeNum].arrDims.push_back(d[i]);
             attr3AC[nodeNum].nameAtNode = nodeType[attr3AC[c].nodeno];
-            cout << "yaha pe hu aray1 " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
+            // cout << "yaha pe hu aray1 " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -4151,13 +4176,13 @@ void execArrayAccess(int nodeNum){
         case 2:{
             int c =adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            cout << "first print " << attr3AC[c].dimsDone << endl;
+            // cout << "first print " << attr3AC[c].dimsDone << endl;
             attr3AC[nodeNum] = attr3AC[c];
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             int mult = typeSize[attr3AC[c].type];
-            cout << "in array access " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << " " << mult << endl;
+            // cout << "in array access " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << " " << mult << endl;
             for(int i=attr3AC[c].dimsDone+1;i<attr3AC[c].arrDims.size();i++){
-                cout << "multipling " << attr3AC[c].dimsDone << " " << i << " " << attr3AC[c].arrDims[i] <<" " << mult << endl;
+                // cout << "multipling " << attr3AC[c].dimsDone << " " << i << " " << attr3AC[c].arrDims[i] <<" " << mult << endl;
                 mult*=(attr3AC[c].arrDims)[i];
             }
             tempNum++;
@@ -4167,14 +4192,14 @@ void execArrayAccess(int nodeNum){
             tempNum++;
             typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            cout << "dims 2 hojaye " << attr3AC[c].dimsDone << endl; 
+            // cout << "dims 2 hojaye " << attr3AC[c].dimsDone << endl; 
             attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone +1;
             attr3AC[nodeNum].arrDims.clear();
             attr3AC[nodeNum].type = attr3AC[c].type;
             for(int i=0;i<attr3AC[c].arrDims.size();i++)attr3AC[nodeNum].arrDims.push_back(attr3AC[c].arrDims[i]);
-            cout << "dims 2 hojaye " << attr3AC[nodeNum].dimsDone << endl; 
+            // cout << "dims 2 hojaye " << attr3AC[nodeNum].dimsDone << endl; 
             attr3AC[nodeNum].nameAtNode = attr3AC[c].nameAtNode;
-            cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[nodeNum].arrDims.size() << endl;
+            // cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[nodeNum].arrDims.size() << endl;
             temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + t" + to_string(tempNum-1) ;
             attr3AC[nodeNum].threeAC.push_back(temp);
         }
@@ -4257,8 +4282,8 @@ void execPrimaryNoNewArray(int nodeNum){
         case 6:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
-            cout << "idahr dekhra hu " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
-            cout << "check dims " << attr3AC[nodeNum].dimsDone << " " << attr3AC[nodeNum].arrDims.size() << endl;
+            // cout << "idahr dekhra hu " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
+            // cout << "check dims " << attr3AC[nodeNum].dimsDone << " " << attr3AC[nodeNum].arrDims.size() << endl;
             attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone;
             if(attr3AC[nodeNum].dimsDone == attr3AC[nodeNum].arrDims.size()){
                 tempNum++;
@@ -4288,7 +4313,7 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum] = attr3AC[c];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-                cout << "inside methodinvocation " << endl;
+                // cout << "inside methodinvocation " << endl;
                 vector<int> p;
                 checkFunctionParameterTypes(attr3AC[c].nodeno, p);
                 string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName +insideClassName + ", 0";
@@ -4299,7 +4324,7 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum] = attr3AC[c];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-                cout << "inside methodinvocation " << endl;
+                // cout << "inside methodinvocation " << endl;
                 vector<int> p;
                 checkFunctionParameterTypes(attr3AC[c].nodeno, p);
                 string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName +insideClassName + ", 0";
@@ -4352,7 +4377,7 @@ void execVariableInitializer(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "var init  " << attr3AC[nodeNum].threeAC.size() << endl;
+            // cout << "var init  " << attr3AC[nodeNum].threeAC.size() << endl;
             break;
         case 2:
             c = adj[nodeNum][0];
@@ -4404,7 +4429,7 @@ void execAssignment(int nodeNum){
 
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            cout << "assignment " << temp << endl;
+            // cout << "assignment " << temp << endl;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
@@ -4518,7 +4543,7 @@ void execAssignmentExpression(int nodeNum){
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             // typeOfNode[attr3AC[nodeNum].addrName] = 
-            cout << "in assignment expression " << attr3AC[nodeNum].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+            // cout << "in assignment expression " << attr3AC[nodeNum].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             pushLabelUp(nodeNum,c);
             break;
     }
@@ -4738,7 +4763,7 @@ void execRelationalExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             string pTrue = getLabel(nodeNum,1);
             string pFalse = getLabel(nodeNum,2);
-            cout << nodeNum << " " << nodeType[nodeNum] << " " << pTrue << " " << pFalse << endl;
+            // cout << nodeNum << " " << nodeType[nodeNum] << " " << pTrue << " " << pFalse << endl;
             string temp = "if " + attr3AC[c].addrName+ " < " + attr3AC[c3].addrName + " goto " + pTrue;
             (attr3AC[nodeNum].threeAC).push_back(temp);
             temp = "goto " + pFalse;
@@ -5060,7 +5085,7 @@ void execLeftHandSide(int nodeNum){
             int c = adj[nodeNum][0];//Get child node number
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
-            cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
+            // cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
 
         }
         break;
@@ -5096,7 +5121,7 @@ void execSimpleName(int nodeNum){
     int c = adj[nodeNum][0];//Get child node number
     attr3AC[nodeNum] = attr3AC[c];
     pushLabelUp(nodeNum,c);
-    cout << "Simplename " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
+    // cout << "Simplename " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
     return;
 }
 
@@ -5105,7 +5130,7 @@ void execIdentifier(int nodeNum){
     int c = adj[nodeNum][0];//Get child node number
     attr3AC[nodeNum].addrName = nodeType[c];//Add addrname of identifier 
     attr3AC[nodeNum].nodeno = c;
-    if(inStatement)checkIfDeclared(c,nodeType[c]);
+    if(inStatement && !(inMethodInvocation && inMN))checkIfDeclared(c,nodeType[c]);
     return;
 }
 
@@ -5165,7 +5190,7 @@ void labelWhile(int nodeNum){
     getLabel(adj[nodeNum][2],1);
     whileContinueLabel = getLabel(-1,0);//get label for continue
     falseLabel[adj[nodeNum][2]]=nextLabel[nodeNum];
-    cout << "idhar while ke label banana he " << nextLabel[nodeNum];
+    // cout << "idhar while ke label banana he " << nextLabel[nodeNum];
     
     whileBreakLabel = "L" + to_string(nextLabel[nodeNum]);
     return;
@@ -5260,11 +5285,17 @@ void generateLabels(int nodeNum){
 void postOrderTraversal3AC(int nodeNum){
     if(nodeType[nodeNum]=="ClassBody"){
         insideClassName = classNameMap[nodeNum];
-        cout << "initialized insideclassname " << insideClassName << " " << nodeType[nodeNum] << " " << nodeNum << endl;
+        // cout << "initialized insideclassname " << insideClassName << " " << nodeType[nodeNum] << " " << nodeNum << endl;
     }
 
     if(nodeType[nodeNum]=="Statement"){
         inStatement=1;
+    }
+    if(nodeType[nodeNum]=="MethodInvocation"){
+        inMethodInvocation=1;
+    }
+    if(nodeType[nodeNum]=="Name"){
+        inMN=1;
     }
 
     if(nodeType[nodeNum]=="WhileStatement"){
@@ -5281,7 +5312,7 @@ void postOrderTraversal3AC(int nodeNum){
         postOrderTraversal3AC(adj[nodeNum][i]);
         // if("SwitchStatement"==nodeType[nodeNum] && i==2){
         //     switchExpAddr = someExpAddr;
-        //     cout << "inside possafsdfas df " << switchExpAddr << endl;
+            // cout << "inside possafsdfas df " << switchExpAddr << endl;
         // }
     }
     if(nodeType[nodeNum]=="WhileStatement"){
@@ -5349,6 +5380,7 @@ void postOrderTraversal3AC(int nodeNum){
         execPrimaryNoNewArray(nodeNum);
     }else if("MethodInvocation" == s){
         execMethodInvocation(nodeNum);
+        inMethodInvocation=0;
     }else if("VariableInitializer" == s){
         execVariableInitializer(nodeNum);
     }else if("ArgumentList" == s){
@@ -5387,6 +5419,7 @@ void postOrderTraversal3AC(int nodeNum){
         execPostfixExpression(nodeNum);
     }else if("Name" == s){
         execName(nodeNum);
+        inMN = 0;
     }else if("SimpleName" == s){
         execSimpleName(nodeNum);
     }else if("Identifier" == s){
@@ -5579,16 +5612,18 @@ void postOrderTraversal3AC(int nodeNum){
         execMethodHeader_(nodeNum);
     }else if("IntegralType"==s){
         execIntegralType(nodeNum);
+    }else if("CastExpression"==s){
+        execCastExpression(nodeNum);
     }
     else{
-        cout << "function not written " << s << endl;
+        // cout << "function not written " << s << endl;
     }
 
     return;
 }
 
 void print3AC(int nodeNum){
-    FILE* fp = freopen("hojayaar.txt","w",stdout);
+    FILE* fp = freopen("threeAC.txt","w",stdout);
     for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
         cout << (attr3AC[nodeNum].threeAC)[i] << endl;
     }
@@ -6890,6 +6925,7 @@ void preOrder(int nodenum){//root left right
 
             }
         }   
+        cout<<"retfrom MethodInv\n";
     }
 
     else if(nodeType[nodenum]=="ArgumentList"){
@@ -6919,6 +6955,7 @@ void preOrder(int nodenum){//root left right
                 attrType[nodenum].dimFuncParams.push_back(attrType[c2].nDims);
             }   
         }
+        cout<<"ret from ArgList\n";
     }
 
     else if(nodeType[nodenum]=="ClassInstanceCreationExpression"){

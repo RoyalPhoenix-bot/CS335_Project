@@ -1925,6 +1925,7 @@ MethodDeclarator:
 		adj[countNodes].push_back(n4);
 		countNodes++;	
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| Identifier OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1936,6 +1937,7 @@ MethodDeclarator:
 		adj[countNodes].push_back(n3);
 		countNodes++;	
 		prodNum[$$]=2;
+		lineNum[$$]=yylineno;
 	}
 
 ;
@@ -3594,14 +3596,13 @@ int main(int argc, char* argv[])
 	initializeAttributeVectors();
 	
 	preOrderTraversal(rootNodenum);
-	printTables();
 	filltypeOfNode();
-	printfilltypeOfNode();
+	// printfilltypeOfNode();
 	generateLabels(rootNodenum);
 	postOrderTraversal3AC(rootNodenum);
 	print3AC(rootNodenum);
 
 	storeParseTree(flag);
-
+	printTables();
     return 0;
 }
