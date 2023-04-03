@@ -162,7 +162,21 @@ void fillOffsets(){
 
 }
 
+int getOffset(int _nodeNum){
+    
+    vector<localTableParams>* funTabPtr = scopeAndTable[_nodeNum].second ;
+    vector<localTableParams>* classTabPtr = parentTable[funTabPtr];
+    string varName=nodeType[_nodeNum];
 
+    for (auto cRow: classTabPtr){
+
+        if (cRow.name==varName){
+            return cRow.offset;
+        }
+    }
+
+    return 0;
+}
 
 localTableParams* checkInScope(string _varName, pair<int,int> _scope, vector<localTableParams>* _tablePointer){
     // cout<<"Hi\n";
