@@ -3597,6 +3597,7 @@ int main(int argc, char* argv[])
 	
 	preOrderTraversal(rootNodenum);
 	filltypeOfNode();
+	fillOffsets();
 	// printfilltypeOfNode();
 	generateLabels(rootNodenum);
 	postOrderTraversal3AC(rootNodenum);
