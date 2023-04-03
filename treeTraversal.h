@@ -3,6 +3,7 @@
 
 using namespace std;
 
+map<string,string> funcParamTemp;//maps function parameter list to their corresponding temp
 // ClassBody_NodeNumber->Class Name
 map<string,int> initVal;
 map<int,string>  classNameMap;
@@ -2668,6 +2669,19 @@ void execModifier(int nodeNum){
 void execMethodHeader_(int nodeNum){
     int c = adj[nodeNum][0];
     attr3AC[nodeNum] = attr3AC[c];
+    for(int i=0;i<attr3AC[nodeNum].params.size();i++){
+        // cout << "methodheader____ " << attr3AC[nodeNum].params[i] << " " << attr3AC[nodeNum].paramsNodeNo[i] << endl;
+    }
+    for(int i=attr3AC[nodeNum].params.size()-1;i>=0;i--){
+        tempNum++;
+        string temp = "t" + to_string(tempNum);
+        funcParamTemp[attr3AC[nodeNum].params[i]]=temp;
+        string temp2 = temp + " = popparam";
+        attr3AC[nodeNum].threeAC.push_back(temp2);
+        // cout << "in lop " << i << " " << temp2 << endl;
+    }
+    attr3AC[nodeNum].params.clear();
+    attr3AC[nodeNum].paramsNodeNo.clear();
     return;
 }
 
@@ -2721,7 +2735,15 @@ void execMethodDeclarator(int nodeNum){
     switch(prodNum[nodeNum]){
         case 1:{
             int c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
             attr3AC[nodeNum] = attr3AC[c];
+            for(int i=0;i<attr3AC[c3].params.size();i++){
+                attr3AC[nodeNum].params.push_back(attr3AC[c3].params[i]);
+                attr3AC[nodeNum].paramsNodeNo.push_back(attr3AC[c3].paramsNodeNo[i]);
+            }
+            // for(int i=0;i<attr3AC[nodeNum].params.size();i++){
+            //     cout << "methoddeclarator " << attr3AC[nodeNum].params[i] << " " << attr3AC[nodeNum].paramsNodeNo[i] << endl;
+            // }
         }
         break;
         case 2:{
@@ -3056,10 +3078,35 @@ void execForStatementNoShortIf(int nodeNum){
 }
 
 void execFormalParameter(int nodeNum){
+    int c = adj[nodeNum][1];
+    attr3AC[nodeNum].params.push_back(attr3AC[c].addrName);
+    attr3AC[nodeNum].paramsNodeNo.push_back(attr3AC[c].nodeno);
+    // cout << "formal parameter " << attr3AC[nodeNum].params[0] << " " << attr3AC[nodeNum].paramsNodeNo[0] << endl;
     return;
 }
 
 void execFormalParameterList(int nodeNum){
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum]=attr3AC[c];
+            for(int i=0;i<attr3AC[nodeNum].params.size();i++){
+                // cout << "formalparamterlist1 " << attr3AC[nodeNum].params[i] << " " << attr3AC[nodeNum].paramsNodeNo[i] << endl;
+            }
+        }
+        break;
+        case 2:{
+            int c = adj[nodeNum][0];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c];
+            attr3AC[nodeNum].params.push_back(attr3AC[c3].params[0]);
+            attr3AC[nodeNum].paramsNodeNo.push_back(attr3AC[c3].paramsNodeNo[0]);
+            for(int i=0;i<attr3AC[nodeNum].params.size();i++){
+                // cout << "formalparamterlist " << attr3AC[nodeNum].params[i] << " " << attr3AC[nodeNum].paramsNodeNo[i] << endl;
+            }
+        }
+        break;
+    }
     return;
 }
 
@@ -3625,6 +3672,7 @@ void execMethodDeclaration(int nodeNum){
             // cout << "inside method declaration " << insideClassName << endl;
             string temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
         }
         break;
@@ -4394,7 +4442,7 @@ void execMethodInvocation(int nodeNum){
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
                 for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
-                    string temp = "param " + (attr3AC[c3].params)[fcall];
+                    string temp = "pushparam " + (attr3AC[c3].params)[fcall];
                     attr3AC[nodeNum].threeAC.push_back(temp);
                 }
                 checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
@@ -4408,7 +4456,7 @@ void execMethodInvocation(int nodeNum){
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
                 for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
-                    string temp = "param " + (attr3AC[c3].params)[fcall];
+                    string temp = "pushparam " + (attr3AC[c3].params)[fcall];
                     attr3AC[nodeNum].threeAC.push_back(temp);
                 }
                 checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
@@ -5184,6 +5232,7 @@ void execIdentifier(int nodeNum){
     attr3AC[nodeNum].addrName = nodeType[c];//Add addrname of identifier 
     attr3AC[nodeNum].nodeno = c;
     if(inStatement && !(inMethodInvocation && inMN))checkIfDeclared(c,nodeType[c]);
+    if(funcParamTemp.find(nodeType[c])!=funcParamTemp.end())attr3AC[nodeNum].addrName = funcParamTemp[nodeType[c]];
     return;
 }
 
@@ -5398,6 +5447,7 @@ void postOrderTraversal3AC(int nodeNum){
         execClassMemberDeclaration(nodeNum);
     }else if("MethodDeclaration" == s){
         execMethodDeclaration(nodeNum);
+        funcParamTemp.clear();
     }else if("MethodBody" == s){
         execMethodBody(nodeNum);
     }else if("Block" == s){
