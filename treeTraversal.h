@@ -168,7 +168,7 @@ int getOffset(int _nodeNum){
     vector<localTableParams>* classTabPtr = parentTable[funTabPtr];
     string varName=nodeType[_nodeNum];
 
-    for (auto cRow: classTabPtr){
+    for (auto cRow: *classTabPtr){
 
         if (cRow.name==varName){
             return cRow.offset;
@@ -256,7 +256,7 @@ string fillHelper(string _nodeNum){
                 dims++ ;
                 i--;
             }
-            ret=ret+to_string(dims);
+            ret=ret+to_string(dims)+";";
         }
         
         typeOfNode[_nodeNum]=ret;
@@ -732,7 +732,7 @@ void checkIfDeclared(int n,string x){
     }
     if(!flag){
         cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
-        // exit(0);
+        exit(0);
     }
     return;
 }
@@ -1802,7 +1802,14 @@ void preOrderTraversal(int nodeNum){
 
                 string var1=nodeType[attrSymTab[c1].leafNodeNum];
                 string var2=nodeType[attrSymTab[c3].leafNodeNum];
-                
+                if(t1=="notfound"){
+                    cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var1 << "' !\nAborting...\n";
+                    exit(0);
+                }
+                if(t3=="notfound"){
+                    cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var2 << "' !\nAborting...\n";
+                    exit(0);
+                }
                 cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
                 exit(0);
             }
@@ -1896,7 +1903,14 @@ void preOrderTraversal(int nodeNum){
 
                     string var1=nodeType[attrSymTab[c1].leafNodeNum];
                     string var2=nodeType[attrSymTab[c3].leafNodeNum];
-
+                    if(t1=="notfound"){
+                        cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var1 << "' !\nAborting...\n";
+                        exit(0);
+                    }
+                    if(t3=="notfound"){
+                        cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var2 << "' !\nAborting...\n";
+                        exit(0);
+                    }
                     cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
                     exit(0);
                 }
@@ -2341,13 +2355,20 @@ void execVariableDeclarator(int nodeNum){
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             string tp = getTypeNode(c);
-            string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
-            // cout << "variabledeclarator " << temp << endl;
-            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
-            attr3AC[nodeNum].threeAC.push_back(temp);
-            // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
-            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            // cout << "in vardec " << tp << endl;
+            if(tp[tp.size()-1]==';'){
+                string temp = attr3AC[c].addrName + " = popparam";
+                attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
+                attr3AC[nodeNum].threeAC.push_back(temp);
+            }else{
+                string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
+                attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
+                // cout << "variabledeclarator " << temp << endl;
+                typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+                attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            }
         }
         break;
     }
@@ -2586,6 +2607,7 @@ void execQualifiedName(int nodeNum){
 
 void execPrimitiveType(int nodeNum){
     attr3AC[nodeNum] = attr3AC[adj[nodeNum][0]];
+    // cout << "primtive " << attr3AC[nodeNum].type << endl;
     return;
 }
 
@@ -4220,17 +4242,25 @@ void execPrimary(int nodeNum){
 void execArrayCreationExpression(int nodeNum){
     switch(prodNum[nodeNum]){
         case 1:{
-            // int c2 = adj[nodeNum][1];
-            // int c3 = adj[nodeNum][2];
-            // attr3AC[nodeNum] = attr3AC[c3];
-            // attr3AC[nodeNum].type = attr3AC[c2].type;
-            // tempNum++;
-            // attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            // string temp = attr3AC[nodeNum].addrName + " = NEW " + attr3AC[c2].type;
-            // for(int i=0;i<attr3AC[nodeNum].arrDims.size();i++){
-            //     temp = temp + to_string((attr3AC[nodeNum].arrDims)[i]) + ", ";
-            // }
-            // attr3AC[nodeNum].threeAC.push_back(temp);
+            int c2 = adj[nodeNum][1];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum]=attr3AC[c2]+attr3AC[c3];
+            int totsize = typeSize[attr3AC[c2].type];
+            for(int i=0;i<attr3AC[c3].arrDims.size();i++){
+                totsize*=attr3AC[c3].arrDims[i];
+            }
+            tempNum++;
+            string temp = "t" + to_string(tempNum);
+            string temp2 = temp + " = " + to_string(totsize);
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "pushparam " + temp;
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "stackpointer + 4";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "call allocmem 1";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "stackpointer - 4";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
         }
         break;
         case 2:{
@@ -4302,7 +4332,7 @@ void execArrayAccess(int nodeNum){
             }
             tempNum++;
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
-            typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
+            typeOfNode["t"+to_string(tempNum)] = attr3AC[c].type;
             attr3AC[nodeNum].threeAC.push_back(temp);
             tempNum++;
             typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
@@ -4328,6 +4358,7 @@ void execDimExprs(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            // cout << "dimexprs" << endl;
         }   
         break;
         case 2:{
@@ -4343,8 +4374,12 @@ void execDimExprs(int nodeNum){
 void execDimExpr(int nodeNum){
     int c = adj[nodeNum][1];
     attr3AC[nodeNum]=attr3AC[c];
-    // cout << "Dimexpr " << attr3AC[c].nameAtNode << endl;
+    // cout << "Dimexpr1 " << attr3AC[c].nameAtNode << endl;
     if(attr3AC[c].nameAtNode.size()!=0)attr3AC[nodeNum].arrDims.push_back(stoi(attr3AC[c].nameAtNode));
+    else{
+        attr3AC[nodeNum].arrDims.push_back(stoi(attr3AC[c].addrName));
+        // cout << "dimexpr " << attr3AC[nodeNum].arrDims[0] << endl;
+    }
     return;
 }
 
