@@ -6,7 +6,7 @@ public class sample2 {
         int columns = 3;
         int depth = 5;
  
-        int[][][] array = new int[rows][columns][depth];
+        int[][][] array = new int[4][3][5];
  
         int value = 1;
         for (int i = 0; i < rows; i++) {
