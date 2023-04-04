@@ -168,7 +168,7 @@ int getOffset(int _nodeNum){
     vector<localTableParams>* classTabPtr = parentTable[funTabPtr];
     string varName=nodeType[_nodeNum];
 
-    for (auto cRow: classTabPtr){
+    for (auto cRow: *classTabPtr){
 
         if (cRow.name==varName){
             return cRow.offset;
@@ -2683,9 +2683,6 @@ void execModifier(int nodeNum){
 void execMethodHeader_(int nodeNum){
     int c = adj[nodeNum][0];
     attr3AC[nodeNum] = attr3AC[c];
-    for(int i=0;i<attr3AC[nodeNum].params.size();i++){
-        // cout << "methodheader____ " << attr3AC[nodeNum].params[i] << " " << attr3AC[nodeNum].paramsNodeNo[i] << endl;
-    }
     for(int i=attr3AC[nodeNum].params.size()-1;i>=0;i--){
         tempNum++;
         string temp = "t" + to_string(tempNum);
@@ -3182,7 +3179,33 @@ void execFieldDeclaration(int nodeNum){
 }
 
 void execFieldAccess(int nodeNum){
-    
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c1 = adj[nodeNum][0];
+            int c2 = adj[nodeNum][2];
+            if(attr3AC[c1].isthis==1){
+                attr3AC[nodeNum].isthis=1;
+                // cout<<"this spotted\n";
+                tempNum++;
+                attr3AC[nodeNum].addrName = "t"+to_string(tempNum); 
+                typeOfNode[attr3AC[nodeNum].addrName]= typeOfNode[to_string(adj[c2][0])];
+                
+                int offset_val = getOffset(adj[c2][0]);
+                //have to get offset of classVarName and store in temporary
+
+                attr3AC[nodeNum].threeAC.push_back(attr3AC[nodeNum].addrName + " = "+to_string(offset_val)+" offset line");
+
+            }
+            else{
+                //meant to be empty
+            }
+        }
+        break;
+        case 2:{
+
+        }
+        break;
+    }
     return;
 }
 
@@ -3267,12 +3290,77 @@ void execContinueStatement(int nodeNum){
 }
 
 void execConstructorDeclarator(int nodeNum){
-    //Declaration: not necessarily required for 3AC
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c = adj[nodeNum][0];
+            int c2 = adj[nodeNum][2];
+            attr3AC[nodeNum] = attr3AC[c2];
+
+            for(int i=attr3AC[nodeNum].params.size()-1;i>=0;i--){
+                tempNum++;
+                string temp = "t" + to_string(tempNum);
+                funcParamTemp[attr3AC[nodeNum].params[i]]=temp;
+                string temp2 = temp + " = popparam";
+                attr3AC[nodeNum].threeAC.push_back(temp2);
+            }
+
+            tempNum++;
+            string temp = "t" + to_string(tempNum);
+            funcParamTemp["this"]=temp;
+            string temp2 = temp + " = popparam";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            
+            attr3AC[nodeNum].params.clear();
+            attr3AC[nodeNum].paramsNodeNo.clear();
+        }
+        case 2:{
+            tempNum++;
+            string temp = "t" + to_string(tempNum);
+            funcParamTemp["this"]=temp;
+
+            string temp2 = temp + " = popparam";
+
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+
+            attr3AC[nodeNum].params.clear();
+            attr3AC[nodeNum].paramsNodeNo.clear();
+
+        }
+    }
     return;
 }
 
 void execConstructorDeclaration(int nodeNum){
-    //Just a declaration
+    string temp = insideClassName +".ctor:";
+    attr3AC[Nodenum].threeAC.push_back(temp);
+
+    switch(prodNum[nodeNum]){
+        case 1:{
+            int c1=adj[nodeNum][1], c2=adj[nodeNum][3];
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
+            attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+        }
+        case 2:{
+            int c1=adj[nodeNum][0], c2=adj[nodeNum][2];
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
+            attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+        }
+        case 3:{
+            int c1=adj[nodeNum][0], c2=adj[nodeNum][1];
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
+            attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+        }
+        case 4:{
+            int c1=adj[nodeNum][1], c2=adj[nodeNum][2];
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
+            attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+        }
+    }
+
     return;
 }
 
@@ -3340,16 +3428,46 @@ void execClassOrInterfaceType(int nodeNum){
 
 void execClassInstanceCreationExpression(int nodeNum){
     switch(prodNum[nodeNum]){
-        case 1:{
-            int c2 = adj[nodeNum][1];
-            attr3AC[nodeNum] = attr3AC[c2];
-            pushLabelUp(nodeNum,c2);
+        //push this and argumentlist
+        case 1:{//nno arguments, only "this"
+            int c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+
+            //PUSH THIS
+
+
+            vector<int> p;
+            checkFunctionParameterTypes(attr3AC[c].nodeno, p);
+
+            string temp = attr3AC[nodeNum].addrName " = call " + insideClassName + ".ctor , 1";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            pushLabelUp(nodeNum,c);
+
         }
         break;
         case 2:{
             int c2 = adj[nodeNum][1];
             int c4 = adj[nodeNum][3];
-            attr3AC[nodeNum] = attr3AC[c2] + attr3AC[c4];
+            attr3AC[nodeNum] = attr3AC[c2] + attr3AC[c4];   
+            
+            tempNum++;
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+            //get this reference and push
+            
+
+            for(int fcall=0; fcall<(attr3AC[c4].params).size();fcall++){
+                string temp = "pushparam " + (attr3AC[c4].params)[fcall];
+                attr3AC[nodeNum].threeAC.push_back(temp);
+            }
+            checkFunctionParameterTypes(attr3AC[c2].nodeno, attr3AC[c4].paramsNodeNo);
+            string temp = attr3AC[nodeNum].addrName + " = call "+insideClassName+".ctor , " + to_string(attr3AC[c3].params.size()+1);
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            pushLabelUp(nodeNum,c);
         }
         break;
     }
@@ -4373,6 +4491,7 @@ void execPrimaryNoNewArray(int nodeNum){
         }
         break;
         case 2:{
+            attr3AC[nodeNum].isthis=1;
             attr3AC[nodeNum].nameAtNode = "THIS";
         }
         break;
@@ -4541,14 +4660,24 @@ void execAssignment(int nodeNum){
     int c3 = adj[nodeNum][2];
     switch(prodNum[c2]){
         case 1:{
+            if(attr3AC[c].isthis==0){
+                attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+                string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
+                // cout << "assignment " << temp << endl;
+                typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+                attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            }
+            else{
+                attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+                string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
 
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
-            string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            // cout << "assignment " << temp << endl;
-            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
-            attr3AC[nodeNum].threeAC.push_back(temp);
-            // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
-            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+                typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+                attr3AC[nodeNum].threeAC.push_back(temp);
+
+                attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            }
         }
         break;
         case 2:{
