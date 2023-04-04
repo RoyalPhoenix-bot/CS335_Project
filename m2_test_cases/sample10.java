@@ -1,30 +1,15 @@
-package m2_test_cases;
+public class sample1 {
+  int x;
+  double y;
 
-public class sample10 {
-    int add (int num1 , int num2){
-        int x = num1;
-        int y = num2;
-        int z = num1 + num2;
-        return z;
-    }
-    public void main(String[] args){
-        int a,b;
-        int c;
-        c = add(a,b);
-    }
+  sample1(int _x, double _y) {
+      int _a=1;
+  		this.x = _x;
+      this.y = _y;
+  }
+
+  public static void main(String[] args /*so that we can compile with javac*/) {
+  		sample1 a = new sample1(2,3.14);
+  }
 }
 
-public class B{
-    int add (int num1,int num2){
-        int x = num1;
-        int y = num2;
-        int z = num1 + num2;
-        return z;
-    }
-
-    public void main(String[] args){
-        int a,b;
-        int c;
-        c = add(a,b);
-    }
-}
