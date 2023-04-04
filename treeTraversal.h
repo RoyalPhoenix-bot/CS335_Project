@@ -1228,6 +1228,102 @@ void preOrderTraversal(int nodeNum){
         globalTable.push_back(globRow);
         return;
     }
+    else if (nodeType[nodeNum]=="ConstructorDeclarator"){
+
+        
+        for (auto &child:adj[nodeNum]){
+            preOrderTraversal(child);
+        }
+
+        int c1=adj[nodeNum][0];
+        attrSymTab[nodeNum].name=attrSymTab[c1].name;
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:{
+            int c3=adj[nodeNum][2];
+            attrSymTab[nodeNum].otherParams=attrSymTab[c3].otherParams;
+            int i=0;
+            for (auto paramType:attrSymTab[c3].otherParams){
+                
+                localTableParams locRow ;
+            
+                locRow.type=paramType;
+
+                locRow.name=attrSymTab[c3].funcParams[i];
+                locRow.line=lineNum[nodeNum];
+                locRow.scope=currScope.top();
+                locRow.parentScope=parentScope.top();
+                // cout<<attrSymTab[cb2].intParams.size()<<endl;
+
+                // cout<<"From FieldDeclaration:"<<locRow.arraySize.size()<<endl;
+                (*currSymTab).push_back(locRow);
+                i++;
+            }
+
+        }
+            
+        break;
+        
+        default:
+            break;
+        }
+
+        return;
+
+    }
+    else if (nodeType[nodeNum]=="ConstructorDeclaration"){
+        
+        funcInClass++ ;
+        localTableParams locRow;
+        locRow.scope=currScope.top();
+        locRow.parentScope=parentScope.top();
+            
+        parentScope.push(currScope.top());
+        currScope.push(make_pair(3,funcInClass));
+        mapParentScope[currScope.top()]=parentScope.top();
+
+        locRow.functionTablePointer=new vector<localTableParams>();
+        locRow.type="method";
+        vector<localTableParams>* saveClassSymTab=currSymTab;
+        currSymTab=locRow.functionTablePointer;
+
+        parentTable[currSymTab]=saveClassSymTab;
+
+        for (auto &child:adj[nodeNum]){
+            preOrderTraversal(child);
+        }
+
+        parentScope.pop();
+        currScope.pop();
+            
+        currSymTab=saveClassSymTab;
+        locRow.functionReturnType="none";
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:
+        case 4:{
+            locRow.name=attrSymTab[adj[nodeNum][1]].name;
+            locRow.functionParams=attrSymTab[adj[nodeNum][1]].otherParams;
+
+        }
+        break;
+        case 2:
+        case 3:{
+            locRow.name=attrSymTab[adj[nodeNum][0]].name;
+            locRow.functionParams=attrSymTab[adj[nodeNum][0]].otherParams;
+           break; 
+        }
+        default:
+            break;
+
+        }
+
+        locRow.line=lineNum[nodeNum];
+        
+        (*currSymTab).push_back(locRow);
+    }
     else if (nodeType[nodeNum]=="MethodDeclaration"){
 
             funcInClass++;
@@ -5813,15 +5909,15 @@ void postOrderTraversal3AC(int nodeNum){
     }else if("MethodDeclaration" == s){
         execMethodDeclaration(nodeNum);
         funcParamTemp.clear();
-        vector<localTableParams>* fTabPtr = scopeAndTable[attr3AC[nodeNum].nodeno].second;
+        // vector<localTableParams>* fTabPtr = scopeAndTable[attr3AC[nodeNum].nodeno].second;
 
-        for (int i=(*fTabPtr).size()-1;i>=0;i--){
-                auto fRow = (*fTabPtr)[i];
-                if (fRow.scope.first==3 && fRow.arraySize.size()==0){
-                        string temp3AC="stackpointer -"+to_string(typeSize[fRow.type])+"\npopfromstack "+fRow.name;
-                        attr3AC[nodeNum].threeAC.push_back(temp3AC);
-                }
-        }
+        // for (int i=(*fTabPtr).size()-1;i>=0;i--){
+        //         auto fRow = (*fTabPtr)[i];
+        //         if (fRow.scope.first==3 && fRow.arraySize.size()==0){
+        //                 string temp3AC="stackpointer -"+to_string(typeSize[fRow.type])+"\npopfromstack "+fRow.name;
+        //                 attr3AC[nodeNum].threeAC.push_back(temp3AC);
+        //         }
+        // }
 
     }else if("MethodBody" == s){
         execMethodBody(nodeNum);

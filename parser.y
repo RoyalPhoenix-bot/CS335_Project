@@ -2088,6 +2088,7 @@ ConstructorDeclarator:
 		adj[countNodes].push_back(n4);
 		countNodes++;
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| SimpleName OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -2099,6 +2100,7 @@ ConstructorDeclarator:
 		adj[countNodes].push_back(n3);
 		countNodes++;
 		prodNum[$$]=2;
+		lineNum[$$]=yylineno;
 	}
 ;
 
