@@ -2,7 +2,7 @@
 #include "attr.h"
 
 using namespace std;
-
+vector<vector<string>> ForInitVars; // ForInitVars[n-1] stores the popping 3ACs of the vars declared in the current "ForStatement"
 map<string,string> funcParamTemp;//maps function parameter list to their corresponding temp
 // ClassBody_NodeNumber->Class Name
 map<string,int> initVal;
@@ -74,6 +74,8 @@ vector<attr> attr3AC;
 stack<pair<int,int>> currScope;
 stack<pair<int,int>> parentScope;
 
+bool inFormalParameterList=false;
+bool inForInit=false;
 map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
 
 string removeLastChar(string _type){
@@ -168,7 +170,7 @@ int getOffset(int _nodeNum){
     vector<localTableParams>* classTabPtr = parentTable[funTabPtr];
     string varName=nodeType[_nodeNum];
 
-    for (auto cRow: classTabPtr){
+    for (auto cRow: *classTabPtr){
 
         if (cRow.name==varName){
             return cRow.offset;
@@ -1543,6 +1545,8 @@ void preOrderTraversal(int nodeNum){
         for (auto child:adj[nodeNum]){
             preOrderTraversal(child);
         }
+        scopeAndTable[nodeNum].first=currScope.top();
+        scopeAndTable[nodeNum].second=currSymTab;
         parentScope.pop();
         currScope.pop();
         return;
@@ -2329,10 +2333,45 @@ void execVariableDeclaratorId(int nodeNum){
 }
 
 void execVariableDeclarator(int nodeNum){
+    
+    // start Stack Allocation 3AC
+
+    if (!inFormalParameterList){
+        
+        int c1=adj[nodeNum][0];
+        
+        string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
+        string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+        attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+        attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+    }
+
+    if (inForInit){
+        int c1=adj[nodeNum][0];
+
+        string temp3AC="stackpointer -"+ to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) +"\npopfromstack "+nodeType[attr3AC[c1].nodeno];
+        ForInitVars[ForInitVars.size()-1].push_back(temp3AC);
+        
+    }
+
+    // end Stack Allocation 3AC
+
     switch(prodNum[nodeNum]){
         case 1:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            // start Stack Allocation 3AC
+            // doing this again because 3AC gets overwritten on the above line
+            if (!inFormalParameterList){
+        
+                int c1=adj[nodeNum][0];
+                
+                string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
+                string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+                attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+                attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+            }
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
 
         }
@@ -2342,7 +2381,8 @@ void execVariableDeclarator(int nodeNum){
             int c3 = adj[nodeNum][2];
             string tp = getTypeNode(c);
             string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
             // cout << "variabledeclarator " << temp << endl;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3688,6 +3728,9 @@ void execMethodDeclaration(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+            attr3AC[nodeNum].nodeno =  attr3AC[c].nodeno;
+            // cout<<nodeType[attr3AC[c].nodeno]<<endl;
+            // cout<<scopeAndTable[attr3AC[c].nodeno].second<<endl;
         }
         break;
     }
@@ -3779,6 +3822,11 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3788,6 +3836,11 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3797,6 +3850,11 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3806,6 +3864,14 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            
+            for (int i=ForInitVars[ForInitVars.size()-1].size()-1;i>=0;i--){
+                attr3AC[nodeNum].threeAC.push_back(ForInitVars[ForInitVars.size()-1][i]);
+            }
+
+            ForInitVars.pop_back();
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3870,12 +3936,27 @@ void execIfThenElseStatement(int nodeNum){
     // cout << " vasf " << attr3AC[c3].threeAC[0] << endl;
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    // start Stack Allocation 3AC
+            
+    attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+    attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+    attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+            
+    // end Stack Allocation 3AC
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
     string pnext = getLabel(nodeNum,3);
     temp = "goto " + pnext;
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = c3false + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+        // start Stack Allocation 3AC
+            
+    attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+    attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+    attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+            
+    // end Stack Allocation 3AC
+
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
 
     return;
@@ -3885,10 +3966,30 @@ void execIfThenStatement(int nodeNum){
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
     string c3true = getLabel(c3,1);
-    attr3AC[nodeNum] = attr3AC[c3];
+    attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
+
+    // start Stack Allocation 3AC
+
+            // need to pop vars declared in this scope
+            // vector<localTableParams>* locTable=scopeAndTable[nodeNum].second;
+            // pair<int,int> varsScope=scopeAndTable[nodeNum].first;
+
+            // for (int i=(*locTable).size()-1;i>=0;i--){
+
+            //     if ((*locTable)[i].arraySize.size()==0 && varsScope==(*locTable)[i].scope){
+            //         // var other than array
+            //         string temp3AC1="stackpointer -" + to_string(typeSize[(*locTable)[i].type]) ;
+            //         string temp3AC2="popfromstack " +  (*locTable)[i].name;
+
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+
+            //     }
+            // }
+    // end Stack Allocation 3AC
 
     return;
 }
@@ -3903,15 +4004,47 @@ void execForStatement(int nodeNum){
             string beg = getLabel(-1,0);
             nextLabel[c9]= getLabelNumber(beg);
             string c5true = getLabel(c5,1);
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            
+            // start Stack Allocation 3AC
+            
+            attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+            
+            // end Stack Allocation 3AC
+
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c9];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
+             
+            // start Stack Allocation 3AC
+
+            // need to pop vars declared in this scope
+            // vector<localTableParams>* locTable=scopeAndTable[nodeNum].second;
+            // pair<int,int> varsScope=scopeAndTable[nodeNum].first;
+
+            // for (int i=(*locTable).size()-1;i>=0;i--){
+
+            //     if ((*locTable)[i].arraySize.size()==0 && varsScope==(*locTable)[i].scope){
+            //         // var other than array
+            //         string temp3AC1="stackpointer -" + to_string(typeSize[(*locTable)[i].type]) ;
+            //         string temp3AC2="popfromstack " +  (*locTable)[i].name;
+
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+
+            //     }
+            // }
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
 
@@ -3945,7 +4078,7 @@ void execForStatement(int nodeNum){
             int c8 = adj[nodeNum][7];
             string beg = getLabel(-1,0);
             nextLabel[c8]= getLabelNumber(beg);
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
@@ -3963,7 +4096,7 @@ void execForStatement(int nodeNum){
             nextLabel[c8]= getLabelNumber(beg);
             string c5true = getLabel(c5,1);
             // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -4017,7 +4150,7 @@ void execForStatement(int nodeNum){
             string beg = getLabel(-1,0);
             nextLabel[c7]= getLabelNumber(beg);
             // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -4054,11 +4187,42 @@ void execWhileStatement(int nodeNum){
     nextLabel[c5]= getLabelNumber(beg);
     string temp = beg + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+        
+    // start Stack Allocation 3AC
+    
+    attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+    attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+    attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+    
+    // end Stack Allocation 3AC
+
     attr3AC[nodeNum].threeAC.push_back(whileContinueLabel + ":");
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
+     // start Stack Allocation 3AC
+
+            // need to pop vars declared in this scope
+            // vector<localTableParams>* locTable=scopeAndTable[nodeNum].second;
+            // pair<int,int> varsScope=scopeAndTable[nodeNum].first;
+
+            // for (int i=(*locTable).size()-1;i>=0;i--){
+
+            //     if ((*locTable)[i].arraySize.size()==0 && varsScope==(*locTable)[i].scope){
+            //         // var other than array
+            //         string temp3AC1="stackpointer -" + to_string(typeSize[(*locTable)[i].type]) ;
+            //         string temp3AC2="popfromstack " +  (*locTable)[i].name;
+
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+
+            //     }
+            // }
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
     temp = "goto " + beg;
     attr3AC[nodeNum].threeAC.push_back(temp);
 
@@ -5407,6 +5571,14 @@ void postOrderTraversal3AC(int nodeNum){
     if(nodeType[nodeNum]=="Statement"){
         inStatement=1;
     }
+    if (nodeType[nodeNum]=="FormalParameterList"){
+        inFormalParameterList=true;
+    }
+    if (nodeType[nodeNum]=="ForInit"){
+        inForInit=true;
+        vector<string> temp;
+        ForInitVars.push_back(temp);
+    }
     if(nodeType[nodeNum]=="MethodInvocation"){
         inMethodInvocation=1;
     }
@@ -5422,6 +5594,15 @@ void postOrderTraversal3AC(int nodeNum){
     }
     if(nodeType[nodeNum]=="ForStatement" || nodeType[nodeNum]=="ForStatementNoShortIf"){
         isFor = prodNum[nodeNum];
+    }
+
+    if ( nodeType[nodeNum]=="IfThenStatement"){
+        // new scope starting
+        // cout<<"Hello\n";
+        attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+        attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+        attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+
     }
     // cout << "NODENUM " << nodeNum << " " << nodeType[nodeNum] << endl;
     for(int i=0;i<adj[nodeNum].size();i++){
@@ -5462,6 +5643,16 @@ void postOrderTraversal3AC(int nodeNum){
     }else if("MethodDeclaration" == s){
         execMethodDeclaration(nodeNum);
         funcParamTemp.clear();
+        vector<localTableParams>* fTabPtr = scopeAndTable[attr3AC[nodeNum].nodeno].second;
+
+        for (int i=(*fTabPtr).size()-1;i>=0;i--){
+                auto fRow = (*fTabPtr)[i];
+                if (fRow.scope.first==3){
+                        string temp3AC="stackpointer -"+to_string(typeSize[fRow.type])+"\npopfromstack "+fRow.name;
+                        attr3AC[nodeNum].threeAC.push_back(temp3AC);
+                }
+        }
+
     }else if("MethodBody" == s){
         execMethodBody(nodeNum);
     }else if("Block" == s){
@@ -5611,8 +5802,10 @@ void postOrderTraversal3AC(int nodeNum){
         execFloatingPointType(nodeNum);
     }else if("ForInit"==s){
         execForInit(nodeNum);
+        inForInit=false;
     }else if("FormalParameterList"== s){
         execFormalParameterList(nodeNum);
+        inFormalParameterList=false;
     }else if("FormalParameter" == s){
         execFormalParameter(nodeNum);
     }else if("ForStatementNoShortIf"==s){
