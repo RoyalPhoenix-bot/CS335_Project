@@ -300,6 +300,41 @@ void printfilltypeOfNode(){
         cout<<nodeType[stoi(elem.first)]<<" "<<elem.first<<"->"<<elem.second<<endl;
 }
 
+void fillClassSizes(){
+
+    for (auto &globRow: globalTable){
+
+        if (globRow.type=="class"){
+            vector<localTableParams>* classTabPtr = globRow.localTablePointer ;
+            int classSize=0;
+
+            for (auto &cRow: *classTabPtr){
+
+                if (cRow.scope.first ==2){
+
+                    if (cRow.arraySize.size()==0){
+                        // normal var
+                        classSize+=typeSize[cRow.type];
+
+                    }
+                    else{
+                        //array
+                        int size=1;
+
+                        for (int i=0;i<cRow.arraySize.size();i++){
+                            size*=cRow.arraySize[i];
+                        }
+                        classSize+=(size*typeSize[getArrayType(cRow.type)]);
+                    }
+                }
+            }
+
+            typeSize[globRow.name]=classSize;
+            // cout<<globRow.name<<" "<<classSize<<endl;
+        }
+    }
+}
+
 void storeParseTree(int flag){
 
     if(!flag)freopen("output.dot","w",stdout);
@@ -2375,10 +2410,18 @@ void execVariableDeclarator(int nodeNum){
         
         int c1=adj[nodeNum][0];
         
-        string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
-        string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
-        attr3AC[nodeNum].threeAC.push_back(temp3AC1);
-        attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+        string varType=typeOfNode[to_string(attr3AC[c1].nodeno)];
+
+        if (varType[varType.size()-1] == ';'){
+            // type is array // do nothing
+        }
+        else{
+            string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
+            string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+            attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+        }
+        
     }
 
     if (inForInit){
@@ -2394,19 +2437,7 @@ void execVariableDeclarator(int nodeNum){
     switch(prodNum[nodeNum]){
         case 1:{
             int c = adj[nodeNum][0];
-            attr3AC[nodeNum] = attr3AC[c];
-            // start Stack Allocation 3AC
-            // doing this again because 3AC gets overwritten on the above line
-            if (!inFormalParameterList){
-        
-                int c1=adj[nodeNum][0];
-                
-                string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
-                string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
-                attr3AC[nodeNum].threeAC.push_back(temp3AC1);
-                attr3AC[nodeNum].threeAC.push_back(temp3AC2);
-            }
-            // end Stack Allocation 3AC
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c];
             pushLabelUp(nodeNum,c);
 
         }
@@ -5786,7 +5817,7 @@ void postOrderTraversal3AC(int nodeNum){
 
         for (int i=(*fTabPtr).size()-1;i>=0;i--){
                 auto fRow = (*fTabPtr)[i];
-                if (fRow.scope.first==3){
+                if (fRow.scope.first==3 && fRow.arraySize.size()==0){
                         string temp3AC="stackpointer -"+to_string(typeSize[fRow.type])+"\npopfromstack "+fRow.name;
                         attr3AC[nodeNum].threeAC.push_back(temp3AC);
                 }
