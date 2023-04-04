@@ -1,29 +1,15 @@
-package programs;
-
-public class sample2 {
-    public static void main(String[] args) {
-        int rows = 4;
-        int columns = 3;
-        int depth = 5;
- 
-        int[][][] array = new int[4][3][5];
- 
-        int value = 1;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                for (int k = 0; k < depth; k++) {
-                    array[i][j][k] = value;
-                    value++;
-                }
-            }
-        }
- 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                for (int k = 0; k < depth; k++) {
-                    value++;
-                }
-            }
-        }
+public class sample1 {
+    int x;
+    double y;
+  
+    sample1(int _x, double _y) {
+        int _a=1;
+        this.x = _x;
+        this.y = _y;
+    }
+  
+    public static void main(String[] args /*so that we can compile with javac*/) {
+        sample1 a = new sample1(2,3.14);
     }
 }
+  

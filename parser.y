@@ -972,6 +972,7 @@ MethodInvocation:
 		adj[countNodes].push_back(n2);
 		adj[countNodes].push_back(n3);
 		countNodes++;
+		lineNum[$$]=yylineno;
 	}
 	| Name OPROUND ArgumentList CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -984,7 +985,7 @@ MethodInvocation:
 		adj[countNodes].push_back($3);
 		adj[countNodes].push_back(n4);
 		countNodes++;	
-
+		lineNum[$$]=yylineno;
 	}
 	| Primary DOT Identifier OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -999,6 +1000,8 @@ MethodInvocation:
 		adj[countNodes].push_back(n4);
 		adj[countNodes].push_back(n5);
 		countNodes++;	
+		lineNum[$$]=yylineno;
+		
 	}
 	| Primary DOT Identifier OPROUND ArgumentList CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -1013,7 +1016,8 @@ MethodInvocation:
 		adj[countNodes].push_back($5);
 		adj[countNodes].push_back(n6);
 		countNodes++;	
-
+		prodNum[$$]=4;
+		lineNum[$$]=yylineno;
 	}
 	| SUPER DOT Identifier OPROUND CLROUND {
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -2084,6 +2088,7 @@ ConstructorDeclarator:
 		adj[countNodes].push_back(n4);
 		countNodes++;
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| SimpleName OPROUND CLROUND{
 		nodeType.push_back($2); int n2 = countNodes; countNodes++;
@@ -2095,6 +2100,7 @@ ConstructorDeclarator:
 		adj[countNodes].push_back(n3);
 		countNodes++;
 		prodNum[$$]=2;
+		lineNum[$$]=yylineno;
 	}
 ;
 
@@ -3598,6 +3604,7 @@ int main(int argc, char* argv[])
 	preOrderTraversal(rootNodenum);
 	filltypeOfNode();
 	fillOffsets();
+	fillClassSizes();
 	// printfilltypeOfNode();
 	generateLabels(rootNodenum);
 	postOrderTraversal3AC(rootNodenum);

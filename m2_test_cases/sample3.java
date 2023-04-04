@@ -1,13 +1,20 @@
-package programs;
-// This test case is to show that it supports inheritance
-class cs335 {
-  
-    public static void main(String args[])
-    {
-        String s = "Hello ";
-    }
-}
+class sample3 {
+    public static void main(String[] args) {
+      
+        int months = 26;
+        int weeks = 13;
+        int count=0;
 
-class lex extends cs220 {
-    int no;
+        for(int i=0;i<months;i++){
+            for(int j=0;j<weeks;j++){
+                int k;
+                count++;
+                if(count>100){
+                    break;
+                }
+            }
+        }
+        int day = count%7;
+    }        
 }
+  

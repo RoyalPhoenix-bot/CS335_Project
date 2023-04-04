@@ -21,6 +21,7 @@ public:
 	string addrName;
 	string type;
 	int addrConst;
+	int isthis=1;
 	vector<string> params;
 	vector<int> paramsNodeNo;
 	vector<int> arrDims;
@@ -28,6 +29,7 @@ public:
 	vector<string> threeAC;
 	
 	attr(){
+		isthis=0;
 		nodeno=-1;
 		dimsDone=0;
 		addrName="";
@@ -55,6 +57,7 @@ public:
 
 	void operator=(attr const& other){
 		nodeno = other.nodeno;
+		isthis = other.isthis;
 		type = other.type;
 		addrName = other.addrName;
 		addrConst = other.addrConst;

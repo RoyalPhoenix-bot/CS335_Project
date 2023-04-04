@@ -2,7 +2,7 @@
 #include "attr.h"
 
 using namespace std;
-
+vector<vector<string>> ForInitVars; // ForInitVars[n-1] stores the popping 3ACs of the vars declared in the current "ForStatement"
 map<string,string> funcParamTemp;//maps function parameter list to their corresponding temp
 // ClassBody_NodeNumber->Class Name
 map<string,int> initVal;
@@ -28,10 +28,8 @@ string someExpAddr;
 int isWhile=0;string whileContinueLabel,whileBreakLabel;
 int isFor=0;string forContinueLabel,forBreakLabel;
 int isDo=0;string doContinueLabel,doBreakLabel;
-
 map<string, string> functionParameterMap;
 map<pair<int,int>, pair<int,int>> mapParentScope;
-
 vector<string> integerTypes = {"double", "float", "long", "int", "byte", "short"};
 
 typedef struct localtableparams{
@@ -74,7 +72,27 @@ vector<attr> attr3AC;
 stack<pair<int,int>> currScope;
 stack<pair<int,int>> parentScope;
 
+bool inFormalParameterList=false;
+bool inForInit=false;
 map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
+
+string getFuncRet(int calleNodeNum, string funcName, string className){
+    for(int i=0;i<globalTable.size();i++){
+        if(globalTable[i].type=="class" && globalTable[i].name==className){
+            vector<localTableParams> *classtab = globalTable[i].localTablePointer;
+            for(int j=0;j<(*classtab).size();j++){
+                if((*classtab)[j].type=="method" && (*classtab)[j].name==funcName){
+                    if(lineNum[calleNodeNum]>=(*classtab)[j].line){
+                        // cout << "idhar  " << (*classtab)[j].functionReturnType << " " << funcName << " " << className << endl;
+                        return (*classtab)[j].functionReturnType;
+                    }
+                }
+            }
+        }
+    }
+    cout<<"[Compilation Error]: Function not declared but called on line "<<lineNum[calleNodeNum]<<"\nFunction '"<<  funcName << "' in class '"<< className << "' !\nAborting...\n";
+    exit(0);
+}
 
 string removeLastChar(string _type){
     string ret="";
@@ -256,7 +274,7 @@ string fillHelper(string _nodeNum){
                 dims++ ;
                 i--;
             }
-            ret=ret+to_string(dims);
+            ret=ret+to_string(dims)+";";
         }
         
         typeOfNode[_nodeNum]=ret;
@@ -278,6 +296,41 @@ void filltypeOfNode(){
 void printfilltypeOfNode(){
     for (auto elem:typeOfNode)
         cout<<nodeType[stoi(elem.first)]<<" "<<elem.first<<"->"<<elem.second<<endl;
+}
+
+void fillClassSizes(){
+
+    for (auto &globRow: globalTable){
+
+        if (globRow.type=="class"){
+            vector<localTableParams>* classTabPtr = globRow.localTablePointer ;
+            int classSize=0;
+
+            for (auto &cRow: *classTabPtr){
+
+                if (cRow.scope.first ==2){
+
+                    if (cRow.arraySize.size()==0){
+                        // normal var
+                        classSize+=typeSize[cRow.type];
+
+                    }
+                    else{
+                        //array
+                        int size=1;
+
+                        for (int i=0;i<cRow.arraySize.size();i++){
+                            size*=cRow.arraySize[i];
+                        }
+                        classSize+=(size*typeSize[getArrayType(cRow.type)]);
+                    }
+                }
+            }
+
+            typeSize[globRow.name]=classSize;
+            // cout<<globRow.name<<" "<<classSize<<endl;
+        }
+    }
 }
 
 void storeParseTree(int flag){
@@ -706,11 +759,13 @@ void checkIfDeclared(int n,string x){
     auto table = data.second;
     auto partable = parentTable[table];
     int flag=0;
+    int useLineNumber = lineNum[n];
     while(scope.first>1){
 
         auto rowPtr=checkInScope(x,scope,table);
 
         if (rowPtr!=NULL){
+            if((*rowPtr).line <= useLineNumber)
             flag=1;
         }
 
@@ -724,6 +779,7 @@ void checkIfDeclared(int n,string x){
         if (rowPtr!=NULL){
 
             // got the row
+            if((*rowPtr).line <= useLineNumber)
             flag=1;
 
         }
@@ -732,7 +788,7 @@ void checkIfDeclared(int n,string x){
     }
     if(!flag){
         cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
-        // exit(0);
+        exit(0);
     }
     return;
 }
@@ -1170,6 +1226,102 @@ void preOrderTraversal(int nodeNum){
         globalTable.push_back(globRow);
         return;
     }
+    else if (nodeType[nodeNum]=="ConstructorDeclarator"){
+
+        
+        for (auto &child:adj[nodeNum]){
+            preOrderTraversal(child);
+        }
+
+        int c1=adj[nodeNum][0];
+        attrSymTab[nodeNum].name=attrSymTab[c1].name;
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:{
+            int c3=adj[nodeNum][2];
+            attrSymTab[nodeNum].otherParams=attrSymTab[c3].otherParams;
+            int i=0;
+            for (auto paramType:attrSymTab[c3].otherParams){
+                
+                localTableParams locRow ;
+            
+                locRow.type=paramType;
+
+                locRow.name=attrSymTab[c3].funcParams[i];
+                locRow.line=lineNum[nodeNum];
+                locRow.scope=currScope.top();
+                locRow.parentScope=parentScope.top();
+                // cout<<attrSymTab[cb2].intParams.size()<<endl;
+
+                // cout<<"From FieldDeclaration:"<<locRow.arraySize.size()<<endl;
+                (*currSymTab).push_back(locRow);
+                i++;
+            }
+
+        }
+            
+        break;
+        
+        default:
+            break;
+        }
+
+        return;
+
+    }
+    else if (nodeType[nodeNum]=="ConstructorDeclaration"){
+        
+        funcInClass++ ;
+        localTableParams locRow;
+        locRow.scope=currScope.top();
+        locRow.parentScope=parentScope.top();
+            
+        parentScope.push(currScope.top());
+        currScope.push(make_pair(3,funcInClass));
+        mapParentScope[currScope.top()]=parentScope.top();
+
+        locRow.functionTablePointer=new vector<localTableParams>();
+        locRow.type="method";
+        vector<localTableParams>* saveClassSymTab=currSymTab;
+        currSymTab=locRow.functionTablePointer;
+
+        parentTable[currSymTab]=saveClassSymTab;
+
+        for (auto &child:adj[nodeNum]){
+            preOrderTraversal(child);
+        }
+
+        parentScope.pop();
+        currScope.pop();
+            
+        currSymTab=saveClassSymTab;
+        locRow.functionReturnType="none";
+
+        switch (prodNum[nodeNum])
+        {
+        case 1:
+        case 4:{
+            locRow.name=attrSymTab[adj[nodeNum][1]].name;
+            locRow.functionParams=attrSymTab[adj[nodeNum][1]].otherParams;
+
+        }
+        break;
+        case 2:
+        case 3:{
+            locRow.name=attrSymTab[adj[nodeNum][0]].name;
+            locRow.functionParams=attrSymTab[adj[nodeNum][0]].otherParams;
+           break; 
+        }
+        default:
+            break;
+
+        }
+
+        locRow.line=lineNum[nodeNum];
+        
+        (*currSymTab).push_back(locRow);
+    }
     else if (nodeType[nodeNum]=="MethodDeclaration"){
 
             funcInClass++;
@@ -1543,6 +1695,8 @@ void preOrderTraversal(int nodeNum){
         for (auto child:adj[nodeNum]){
             preOrderTraversal(child);
         }
+        scopeAndTable[nodeNum].first=currScope.top();
+        scopeAndTable[nodeNum].second=currSymTab;
         parentScope.pop();
         currScope.pop();
         return;
@@ -1802,7 +1956,14 @@ void preOrderTraversal(int nodeNum){
 
                 string var1=nodeType[attrSymTab[c1].leafNodeNum];
                 string var2=nodeType[attrSymTab[c3].leafNodeNum];
-                
+                if(t1=="notfound"){
+                    cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var1 << "' !\nAborting...\n";
+                    exit(0);
+                }
+                if(t3=="notfound"){
+                    cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var2 << "' !\nAborting...\n";
+                    exit(0);
+                }
                 cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
                 exit(0);
             }
@@ -1896,7 +2057,14 @@ void preOrderTraversal(int nodeNum){
 
                     string var1=nodeType[attrSymTab[c1].leafNodeNum];
                     string var2=nodeType[attrSymTab[c3].leafNodeNum];
-
+                    if(t1=="notfound"){
+                        cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var1 << "' !\nAborting...\n";
+                        exit(0);
+                    }
+                    if(t3=="notfound"){
+                        cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var2 << "' !\nAborting...\n";
+                        exit(0);
+                    }
                     cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
                     exit(0);
                 }
@@ -2329,10 +2497,53 @@ void execVariableDeclaratorId(int nodeNum){
 }
 
 void execVariableDeclarator(int nodeNum){
+    
+    // start Stack Allocation 3AC
+
+    if (!inFormalParameterList){
+        
+        int c1=adj[nodeNum][0];
+        
+        string varType=typeOfNode[to_string(attr3AC[c1].nodeno)];
+
+        if (varType[varType.size()-1] == ';'){
+            // type is array // do nothing
+        }
+        else{
+            string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
+            string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+            attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+        }
+        
+    }
+
+    if (inForInit){
+        int c1=adj[nodeNum][0];
+
+        string temp3AC="stackpointer -"+ to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) +"\npopfromstack "+nodeType[attr3AC[c1].nodeno];
+        ForInitVars[ForInitVars.size()-1].push_back(temp3AC);
+        
+    }
+
+    // end Stack Allocation 3AC
+
     switch(prodNum[nodeNum]){
         case 1:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            // start Stack Allocation 3AC
+            // doing this again because 3AC gets overwritten on the above line
+            if (!inFormalParameterList){
+        
+                int c1=adj[nodeNum][0];
+                
+                string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
+                string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+                attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+                attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+            }
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
 
         }
@@ -2341,13 +2552,22 @@ void execVariableDeclarator(int nodeNum){
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             string tp = getTypeNode(c);
-            string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-            attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
-            // cout << "variabledeclarator " << temp << endl;
-            typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
-            attr3AC[nodeNum].threeAC.push_back(temp);
-            // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
-            attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            // cout << "in vardec " << tp << endl;
+            if(tp[tp.size()-1]==';'){
+                string temp = attr3AC[c].addrName + " = popparam";
+                attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
+                attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
+                attr3AC[nodeNum].threeAC.push_back(temp);
+            }else{
+                string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
+                attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
+                attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
+                // cout << "variabledeclarator " << temp << endl;
+                typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+                attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            }
         }
         break;
     }
@@ -2586,6 +2806,7 @@ void execQualifiedName(int nodeNum){
 
 void execPrimitiveType(int nodeNum){
     attr3AC[nodeNum] = attr3AC[adj[nodeNum][0]];
+    // cout << "primtive " << attr3AC[nodeNum].type << endl;
     return;
 }
 
@@ -2683,6 +2904,9 @@ void execModifier(int nodeNum){
 void execMethodHeader_(int nodeNum){
     int c = adj[nodeNum][0];
     attr3AC[nodeNum] = attr3AC[c];
+    for(int i=0;i<attr3AC[nodeNum].params.size();i++){
+        // cout << "methodheader____ " << attr3AC[nodeNum].params[i] << " " << attr3AC[nodeNum].paramsNodeNo[i] << endl;
+    }
     for(int i=attr3AC[nodeNum].params.size()-1;i>=0;i--){
         tempNum++;
         string temp = "t" + to_string(tempNum);
@@ -3193,8 +3417,8 @@ void execFieldAccess(int nodeNum){
                 int offset_val = getOffset(adj[c2][0]);
                 //have to get offset of classVarName and store in temporary
 
-                attr3AC[nodeNum].threeAC.push_back(attr3AC[nodeNum].addrName + " = "+to_string(offset_val)+" offset line");
-
+                attr3AC[nodeNum].threeAC.push_back(attr3AC[nodeNum].addrName + " = "+to_string(offset_val));
+                break;
             }
             else{
                 //meant to be empty
@@ -3295,11 +3519,11 @@ void execConstructorDeclarator(int nodeNum){
             int c = adj[nodeNum][0];
             int c2 = adj[nodeNum][2];
             attr3AC[nodeNum] = attr3AC[c2];
-
             for(int i=attr3AC[nodeNum].params.size()-1;i>=0;i--){
                 tempNum++;
                 string temp = "t" + to_string(tempNum);
                 funcParamTemp[attr3AC[nodeNum].params[i]]=temp;
+                // cout << "over here " << attr3AC[nodeNum].params.size()<<attr3AC[nodeNum].params[i] << endl; 
                 string temp2 = temp + " = popparam";
                 attr3AC[nodeNum].threeAC.push_back(temp2);
             }
@@ -3312,6 +3536,7 @@ void execConstructorDeclarator(int nodeNum){
             
             attr3AC[nodeNum].params.clear();
             attr3AC[nodeNum].paramsNodeNo.clear();
+            break;
         }
         case 2:{
             tempNum++;
@@ -3324,7 +3549,7 @@ void execConstructorDeclarator(int nodeNum){
 
             attr3AC[nodeNum].params.clear();
             attr3AC[nodeNum].paramsNodeNo.clear();
-
+            break;
         }
     }
     return;
@@ -3332,35 +3557,40 @@ void execConstructorDeclarator(int nodeNum){
 
 void execConstructorDeclaration(int nodeNum){
     string temp = insideClassName +".ctor:";
-    attr3AC[Nodenum].threeAC.push_back(temp);
+    attr3AC[nodeNum].threeAC.push_back(temp);
 
     switch(prodNum[nodeNum]){
         case 1:{
             int c1=adj[nodeNum][1], c2=adj[nodeNum][3];
-            attr3AC[nodeNum].threeAC.push_back(temp);
+            // attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+            break;
         }
         case 2:{
             int c1=adj[nodeNum][0], c2=adj[nodeNum][2];
-            attr3AC[nodeNum].threeAC.push_back(temp);
+            // attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+            break;
         }
         case 3:{
             int c1=adj[nodeNum][0], c2=adj[nodeNum][1];
-            attr3AC[nodeNum].threeAC.push_back(temp);
+            // attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+            break;
         }
         case 4:{
             int c1=adj[nodeNum][1], c2=adj[nodeNum][2];
-            attr3AC[nodeNum].threeAC.push_back(temp);
+            // attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c1];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+            break;
         }
     }
 
+    funcParamTemp.clear();
     return;
 }
 
@@ -3432,44 +3662,125 @@ void execClassInstanceCreationExpression(int nodeNum){
         case 1:{//nno arguments, only "this"
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            
+            string oldsp = "pushonstack oldstackpointer";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "stackpointer + 8";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "oldstackpointer = stackpointer";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+
+            int size_class = typeSize[insideClassName];
+
+
             tempNum++;
+            string temp = "t"+to_string(tempNum)+" = "+to_string(size_class);
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            temp = "pushparam t"+to_string(tempNum);
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            //get this reference and push
+            temp = "stackpointer + 4";            
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            temp = "call allocmem 1";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            temp = "stackpointer - 4";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            tempNum++;
+            temp = "t"+to_string(tempNum)+" = popparam";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
 
-
-            //PUSH THIS
-
-
+            temp = "pushparam " + attr3AC[nodeNum].addrName;
+            attr3AC[nodeNum].threeAC.push_back(temp);
+                
             vector<int> p;
             checkFunctionParameterTypes(attr3AC[c].nodeno, p);
 
-            string temp = attr3AC[nodeNum].addrName " = call " + insideClassName + ".ctor , 1";
+            string spointer = "stackpointer + " + to_string(size_class);
+            attr3AC[nodeNum].threeAC.push_back(spointer);
+            temp = "call " + insideClassName + ".ctor , " + to_string(1);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            temp = attr3AC[nodeNum].addrName + " = popparam";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            oldsp = "stackpointer = oldstackpointer";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "stackpointer - 8";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "oldstackpointer = popfromstack";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);            
 
             pushLabelUp(nodeNum,c);
-
+            break;
         }
-        break;
         case 2:{
             int c2 = adj[nodeNum][1];
             int c4 = adj[nodeNum][3];
             attr3AC[nodeNum] = attr3AC[c2] + attr3AC[c4];   
             
+            string oldsp = "pushonstack oldstackpointer";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "stackpointer + 8";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "oldstackpointer = stackpointer";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+
+            int size_class = typeSize[insideClassName];
+
+
             tempNum++;
-            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            string temp = "t"+to_string(tempNum)+" = "+to_string(size_class);
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            temp = "pushparam t"+to_string(tempNum);
+            attr3AC[nodeNum].threeAC.push_back(temp);
 
             //get this reference and push
-            
+            temp = "stackpointer + 4";            
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            temp = "call allocmem 1";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            temp = "stackpointer - 4";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            tempNum++;
+            temp = "t"+to_string(tempNum)+" = popparam";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+            temp = "pushparam " + attr3AC[nodeNum].addrName;
+            attr3AC[nodeNum].threeAC.push_back(temp);
 
             for(int fcall=0; fcall<(attr3AC[c4].params).size();fcall++){
                 string temp = "pushparam " + (attr3AC[c4].params)[fcall];
                 attr3AC[nodeNum].threeAC.push_back(temp);
             }
             checkFunctionParameterTypes(attr3AC[c2].nodeno, attr3AC[c4].paramsNodeNo);
-            string temp = attr3AC[nodeNum].addrName + " = call "+insideClassName+".ctor , " + to_string(attr3AC[c3].params.size()+1);
+
+            string spointer = "stackpointer + " + to_string(size_class);
+            attr3AC[nodeNum].threeAC.push_back(spointer);
+            temp = "call " + insideClassName + ".ctor , " + to_string(attr3AC[c4].params.size()+1);
             attr3AC[nodeNum].threeAC.push_back(temp);
-            pushLabelUp(nodeNum,c);
+            temp = attr3AC[nodeNum].addrName + " = popparam";
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            oldsp = "stackpointer = oldstackpointer";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "stackpointer - 8";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);
+            oldsp = "oldstackpointer = popfromstack";
+            attr3AC[nodeNum].threeAC.push_back(oldsp);            
+
+            pushLabelUp(nodeNum,c2);
+            break;
         }
-        break;
     }
     return;
 }
@@ -3806,6 +4117,9 @@ void execMethodDeclaration(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
+            attr3AC[nodeNum].nodeno =  attr3AC[c].nodeno;
+            // cout<<nodeType[attr3AC[c].nodeno]<<endl;
+            // cout<<scopeAndTable[attr3AC[c].nodeno].second<<endl;
         }
         break;
     }
@@ -3897,6 +4211,11 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3906,6 +4225,11 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3915,6 +4239,11 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3924,6 +4253,14 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            // start Stack Allocation 3AC
+            
+            for (int i=ForInitVars[ForInitVars.size()-1].size()-1;i>=0;i--){
+                attr3AC[nodeNum].threeAC.push_back(ForInitVars[ForInitVars.size()-1][i]);
+            }
+
+            ForInitVars.pop_back();
+            // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -3988,12 +4325,27 @@ void execIfThenElseStatement(int nodeNum){
     // cout << " vasf " << attr3AC[c3].threeAC[0] << endl;
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    // start Stack Allocation 3AC
+            
+    attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+    attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+    attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+            
+    // end Stack Allocation 3AC
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
     string pnext = getLabel(nodeNum,3);
     temp = "goto " + pnext;
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = c3false + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+        // start Stack Allocation 3AC
+            
+    attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+    attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+    attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+            
+    // end Stack Allocation 3AC
+
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
 
     return;
@@ -4003,10 +4355,30 @@ void execIfThenStatement(int nodeNum){
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
     string c3true = getLabel(c3,1);
-    attr3AC[nodeNum] = attr3AC[c3];
+    attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
+
+    // start Stack Allocation 3AC
+
+            // need to pop vars declared in this scope
+            // vector<localTableParams>* locTable=scopeAndTable[nodeNum].second;
+            // pair<int,int> varsScope=scopeAndTable[nodeNum].first;
+
+            // for (int i=(*locTable).size()-1;i>=0;i--){
+
+            //     if ((*locTable)[i].arraySize.size()==0 && varsScope==(*locTable)[i].scope){
+            //         // var other than array
+            //         string temp3AC1="stackpointer -" + to_string(typeSize[(*locTable)[i].type]) ;
+            //         string temp3AC2="popfromstack " +  (*locTable)[i].name;
+
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+
+            //     }
+            // }
+    // end Stack Allocation 3AC
 
     return;
 }
@@ -4021,15 +4393,47 @@ void execForStatement(int nodeNum){
             string beg = getLabel(-1,0);
             nextLabel[c9]= getLabelNumber(beg);
             string c5true = getLabel(c5,1);
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            
+            // start Stack Allocation 3AC
+            
+            attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+            
+            // end Stack Allocation 3AC
+
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c9];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
+             
+            // start Stack Allocation 3AC
+
+            // need to pop vars declared in this scope
+            // vector<localTableParams>* locTable=scopeAndTable[nodeNum].second;
+            // pair<int,int> varsScope=scopeAndTable[nodeNum].first;
+
+            // for (int i=(*locTable).size()-1;i>=0;i--){
+
+            //     if ((*locTable)[i].arraySize.size()==0 && varsScope==(*locTable)[i].scope){
+            //         // var other than array
+            //         string temp3AC1="stackpointer -" + to_string(typeSize[(*locTable)[i].type]) ;
+            //         string temp3AC2="popfromstack " +  (*locTable)[i].name;
+
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+
+            //     }
+            // }
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
 
@@ -4063,7 +4467,7 @@ void execForStatement(int nodeNum){
             int c8 = adj[nodeNum][7];
             string beg = getLabel(-1,0);
             nextLabel[c8]= getLabelNumber(beg);
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
@@ -4081,7 +4485,7 @@ void execForStatement(int nodeNum){
             nextLabel[c8]= getLabelNumber(beg);
             string c5true = getLabel(c5,1);
             // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -4135,7 +4539,7 @@ void execForStatement(int nodeNum){
             string beg = getLabel(-1,0);
             nextLabel[c7]= getLabelNumber(beg);
             // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
-            attr3AC[nodeNum] = attr3AC[c3];
+            attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -4172,11 +4576,42 @@ void execWhileStatement(int nodeNum){
     nextLabel[c5]= getLabelNumber(beg);
     string temp = beg + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+        
+    // start Stack Allocation 3AC
+    
+    attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+    attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+    attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+    
+    // end Stack Allocation 3AC
+
     attr3AC[nodeNum].threeAC.push_back(whileContinueLabel + ":");
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
+     // start Stack Allocation 3AC
+
+            // need to pop vars declared in this scope
+            // vector<localTableParams>* locTable=scopeAndTable[nodeNum].second;
+            // pair<int,int> varsScope=scopeAndTable[nodeNum].first;
+
+            // for (int i=(*locTable).size()-1;i>=0;i--){
+
+            //     if ((*locTable)[i].arraySize.size()==0 && varsScope==(*locTable)[i].scope){
+            //         // var other than array
+            //         string temp3AC1="stackpointer -" + to_string(typeSize[(*locTable)[i].type]) ;
+            //         string temp3AC2="popfromstack " +  (*locTable)[i].name;
+
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC1);
+            //     attr3AC[nodeNum].threeAC.push_back(temp3AC2);
+
+            //     }
+            // }
+            attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
+            attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
+            attr3AC[nodeNum].threeAC.push_back("oldstackpointer = popfromstack");
+            // end Stack Allocation 3AC
     temp = "goto " + beg;
     attr3AC[nodeNum].threeAC.push_back(temp);
 
@@ -4338,17 +4773,25 @@ void execPrimary(int nodeNum){
 void execArrayCreationExpression(int nodeNum){
     switch(prodNum[nodeNum]){
         case 1:{
-            // int c2 = adj[nodeNum][1];
-            // int c3 = adj[nodeNum][2];
-            // attr3AC[nodeNum] = attr3AC[c3];
-            // attr3AC[nodeNum].type = attr3AC[c2].type;
-            // tempNum++;
-            // attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            // string temp = attr3AC[nodeNum].addrName + " = NEW " + attr3AC[c2].type;
-            // for(int i=0;i<attr3AC[nodeNum].arrDims.size();i++){
-            //     temp = temp + to_string((attr3AC[nodeNum].arrDims)[i]) + ", ";
-            // }
-            // attr3AC[nodeNum].threeAC.push_back(temp);
+            int c2 = adj[nodeNum][1];
+            int c3 = adj[nodeNum][2];
+            attr3AC[nodeNum]=attr3AC[c2]+attr3AC[c3];
+            int totsize = typeSize[attr3AC[c2].type];
+            for(int i=0;i<attr3AC[c3].arrDims.size();i++){
+                totsize*=attr3AC[c3].arrDims[i];
+            }
+            tempNum++;
+            string temp = "t" + to_string(tempNum);
+            string temp2 = temp + " = " + to_string(totsize);
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "pushparam " + temp;
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "stackpointer + 4";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "call allocmem 1";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
+            temp2 = "stackpointer - 4";
+            attr3AC[nodeNum].threeAC.push_back(temp2);
         }
         break;
         case 2:{
@@ -4420,7 +4863,7 @@ void execArrayAccess(int nodeNum){
             }
             tempNum++;
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
-            typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
+            typeOfNode["t"+to_string(tempNum)] = attr3AC[c].type;
             attr3AC[nodeNum].threeAC.push_back(temp);
             tempNum++;
             typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
@@ -4446,6 +4889,7 @@ void execDimExprs(int nodeNum){
         case 1:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            // cout << "dimexprs" << endl;
         }   
         break;
         case 2:{
@@ -4461,8 +4905,12 @@ void execDimExprs(int nodeNum){
 void execDimExpr(int nodeNum){
     int c = adj[nodeNum][1];
     attr3AC[nodeNum]=attr3AC[c];
-    // cout << "Dimexpr " << attr3AC[c].nameAtNode << endl;
+    // cout << "Dimexpr1 " << attr3AC[c].nameAtNode << endl;
     if(attr3AC[c].nameAtNode.size()!=0)attr3AC[nodeNum].arrDims.push_back(stoi(attr3AC[c].nameAtNode));
+    else{
+        attr3AC[nodeNum].arrDims.push_back(stoi(attr3AC[c].addrName));
+        // cout << "dimexpr " << attr3AC[nodeNum].arrDims[0] << endl;
+    }
     return;
 }
 
@@ -4492,7 +4940,7 @@ void execPrimaryNoNewArray(int nodeNum){
         break;
         case 2:{
             attr3AC[nodeNum].isthis=1;
-            attr3AC[nodeNum].nameAtNode = "THIS";
+            attr3AC[nodeNum].nameAtNode = "this";
         }
         break;
         case 3:{
@@ -4550,19 +4998,57 @@ void execMethodInvocation(int nodeNum){
                 // cout << "inside methodinvocation " << endl;
                 vector<int> p;
                 checkFunctionParameterTypes(attr3AC[c].nodeno, p);
-                string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName +insideClassName + ", 0";
+                // pushonstack oldstackpointer
+                //stackpointer =8
+                //oldsp = sp
+                string oldsp = "pushonstack oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer + 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = stackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                string temp = "call " + attr3AC[c].addrName +insideClassName + ", 0";
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                temp = attr3AC[nodeNum].addrName + " = popparam";
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                //stackpointer = oldsp
+                //sp-8
+                //oldsp=popfromstack
+                oldsp = "stackpointer = oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer - 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = popfromstack";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
+
                 pushLabelUp(nodeNum,c);
             }else{
                 int c = adj[nodeNum][0];
                 attr3AC[nodeNum] = attr3AC[c];
                 tempNum++;
+                string fname = attr3AC[adj[adj[c][0]][2]].addrName;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
                 // cout << "inside methodinvocation " << endl;
                 vector<int> p;
                 checkFunctionParameterTypes(attr3AC[c].nodeno, p);
-                string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName +insideClassName + ", 0";
+                string oldsp = "pushonstack oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer + 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = stackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                string temp = "call " + fname +insideClassName + ", 0";
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                temp = attr3AC[nodeNum].addrName + " = popparam";
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                oldsp = "stackpointer = oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer - 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = popfromstack";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, fname, insideClassName);
                 pushLabelUp(nodeNum,c);
             }
         }
@@ -4574,27 +5060,71 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+                string oldsp = "pushonstack oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer + 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = stackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
                 for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
                     string temp = "pushparam " + (attr3AC[c3].params)[fcall];
                     attr3AC[nodeNum].threeAC.push_back(temp);
                 }
                 checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
-                string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName + insideClassName + ", " + to_string(attr3AC[c3].params.size());
+                int sizeOfParams=0;
+                for(int i=0;i<attr3AC[c3].paramsNodeNo.size();i++){
+                    sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
+                }
+                string spointer = "stackpointer + " + to_string(sizeOfParams);
+                attr3AC[nodeNum].threeAC.push_back(spointer);
+                string temp = "call " + attr3AC[c].addrName + insideClassName + ", " + to_string(attr3AC[c3].params.size());
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                temp = attr3AC[nodeNum].addrName + " = popparam";
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                oldsp = "stackpointer = oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer - 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = popfromstack";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
                 pushLabelUp(nodeNum,c);
             }else{
                 int c = adj[nodeNum][0];
                 int c3 = adj[nodeNum][2];
+                string fname = attr3AC[adj[adj[c][0]][2]].addrName;
+                // cout << "in methodinvocation " << fname << endl;
                 attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+                string oldsp = "pushonstack oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer + 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = stackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
                 for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
                     string temp = "pushparam " + (attr3AC[c3].params)[fcall];
                     attr3AC[nodeNum].threeAC.push_back(temp);
                 }
                 checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
-                string temp = attr3AC[nodeNum].addrName + " = " "call " + attr3AC[c].addrName + insideClassName + ", " + to_string(attr3AC[c3].params.size());
+                int sizeOfParams=0;
+                for(int i=0;i<attr3AC[c3].paramsNodeNo.size();i++){
+                    sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
+                }
+                string spointer = "stackpointer + " + to_string(sizeOfParams);
+                attr3AC[nodeNum].threeAC.push_back(spointer);
+                string temp = "call " + fname + insideClassName + ", " + to_string(attr3AC[c3].params.size());
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                temp = attr3AC[nodeNum].addrName + " = popparam";
+                attr3AC[nodeNum].threeAC.push_back(temp);
+                oldsp = "stackpointer = oldstackpointer";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "stackpointer - 8";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                oldsp = "oldstackpointer = popfromstack";
+                attr3AC[nodeNum].threeAC.push_back(oldsp);
+                typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, fname, insideClassName);
                 pushLabelUp(nodeNum,c);
             }
         }
@@ -5330,13 +5860,19 @@ void execLeftHandSide(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
             // cout << "LeftHandSide " << attr3AC[nodeNum].addrName << " " << attr3AC[c].addrName << endl;
-
+            break;
         }
         break;
         case 2:{
             int c = adj[nodeNum][0];//Get child node number
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
+            if(attr3AC[nodeNum].isthis==1){
+                string temp = "*("+funcParamTemp["this"]+" + "+ attr3AC[c].addrName +")";
+                // string temp = funcParamTemp["this"] +")";
+                attr3AC[nodeNum].addrName = temp;
+            }
+            break;
         }
         break;
         case 3:{
@@ -5528,6 +6064,7 @@ void generateLabels(int nodeNum){
 }
 
 void postOrderTraversal3AC(int nodeNum){
+    cout<<nodeType[nodeNum]<<endl;
     if(nodeType[nodeNum]=="ClassBody"){
         insideClassName = classNameMap[nodeNum];
         // cout << "initialized insideclassname " << insideClassName << " " << nodeType[nodeNum] << " " << nodeNum << endl;
@@ -5535,6 +6072,14 @@ void postOrderTraversal3AC(int nodeNum){
 
     if(nodeType[nodeNum]=="Statement"){
         inStatement=1;
+    }
+    if (nodeType[nodeNum]=="FormalParameterList"){
+        inFormalParameterList=true;
+    }
+    if (nodeType[nodeNum]=="ForInit"){
+        inForInit=true;
+        vector<string> temp;
+        ForInitVars.push_back(temp);
     }
     if(nodeType[nodeNum]=="MethodInvocation"){
         inMethodInvocation=1;
@@ -5552,8 +6097,18 @@ void postOrderTraversal3AC(int nodeNum){
     if(nodeType[nodeNum]=="ForStatement" || nodeType[nodeNum]=="ForStatementNoShortIf"){
         isFor = prodNum[nodeNum];
     }
+
+    if ( nodeType[nodeNum]=="IfThenStatement"){
+        // new scope starting
+        // cout<<"Hello\n";
+        attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
+        attr3AC[nodeNum].threeAC.push_back("stackpointer +8");
+        attr3AC[nodeNum].threeAC.push_back("oldstackpointer = stackpointer");
+
+    }
     // cout << "NODENUM " << nodeNum << " " << nodeType[nodeNum] << endl;
     for(int i=0;i<adj[nodeNum].size();i++){
+        cout<<"I am "<<nodeType[nodeNum]<<" calling child:"<<nodeType[adj[nodeNum][i]]<<endl;
         postOrderTraversal3AC(adj[nodeNum][i]);
         // if("SwitchStatement"==nodeType[nodeNum] && i==2){
         //     switchExpAddr = someExpAddr;
@@ -5591,6 +6146,16 @@ void postOrderTraversal3AC(int nodeNum){
     }else if("MethodDeclaration" == s){
         execMethodDeclaration(nodeNum);
         funcParamTemp.clear();
+        // vector<localTableParams>* fTabPtr = scopeAndTable[attr3AC[nodeNum].nodeno].second;
+
+        // for (int i=(*fTabPtr).size()-1;i>=0;i--){
+        //         auto fRow = (*fTabPtr)[i];
+        //         if (fRow.scope.first==3 && fRow.arraySize.size()==0){
+        //                 string temp3AC="stackpointer -"+to_string(typeSize[fRow.type])+"\npopfromstack "+fRow.name;
+        //                 attr3AC[nodeNum].threeAC.push_back(temp3AC);
+        //         }
+        // }
+
     }else if("MethodBody" == s){
         execMethodBody(nodeNum);
     }else if("Block" == s){
@@ -5740,8 +6305,10 @@ void postOrderTraversal3AC(int nodeNum){
         execFloatingPointType(nodeNum);
     }else if("ForInit"==s){
         execForInit(nodeNum);
+        inForInit=false;
     }else if("FormalParameterList"== s){
         execFormalParameterList(nodeNum);
+        inFormalParameterList=false;
     }else if("FormalParameter" == s){
         execFormalParameter(nodeNum);
     }else if("ForStatementNoShortIf"==s){
@@ -5870,8 +6437,16 @@ void postOrderTraversal3AC(int nodeNum){
 
 void print3AC(int nodeNum){
     FILE* fp = freopen("threeAC.txt","w",stdout);
+    set<string> checkLabel;
     for(int i=0;i<attr3AC[nodeNum].threeAC.size();i++){
-        cout << (attr3AC[nodeNum].threeAC)[i] << endl;
+        int siz = attr3AC[nodeNum].threeAC[i].size();
+        if(attr3AC[nodeNum].threeAC[i][0]=='L' && attr3AC[nodeNum].threeAC[i][siz-1]==':'){
+            string lab=attr3AC[nodeNum].threeAC[i];
+            if(checkLabel.find(lab)==checkLabel.end()){
+                cout << (attr3AC[nodeNum].threeAC)[i] << endl;
+                checkLabel.insert(lab);
+            }
+        }else cout << (attr3AC[nodeNum].threeAC)[i] << endl;
     }
     fclose(fp);
 }
