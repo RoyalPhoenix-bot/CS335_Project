@@ -1,0 +1,15 @@
+public class sample1 {
+    int x;
+    double y;
+  
+    sample1(int _x, double _y) {
+        int _a=1;
+        this.x = _x;
+        this.y = _y;
+    }
+  
+    public static void main(String[] args) {
+            sample1 a = new sample1(2,3.14);
+    }
+}
+  
