@@ -45,7 +45,6 @@ typedef struct localtableparams{
 	string functionReturnType;
 } localTableParams ;
 
-
 typedef struct globaltableparams{
 	string name="";
 	string type="";
@@ -3426,7 +3425,7 @@ void execFieldAccess(int nodeNum){
         }
         break;
         case 2:{
-
+            
         }
         break;
     }
@@ -3660,7 +3659,7 @@ void execClassInstanceCreationExpression(int nodeNum){
     switch(prodNum[nodeNum]){
         //push this and argumentlist
         case 1:{//nno arguments, only "this"
-            int c = adj[nodeNum][0];
+            int c = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c];
             
             string oldsp = "pushonstack oldstackpointer";
@@ -3699,8 +3698,8 @@ void execClassInstanceCreationExpression(int nodeNum){
             temp = "pushparam " + attr3AC[nodeNum].addrName;
             attr3AC[nodeNum].threeAC.push_back(temp);
                 
-            vector<int> p;
-            checkFunctionParameterTypes(attr3AC[c].nodeno, p);
+            // vector<int> p;
+            // checkFunctionParameterTypes(attr3AC[c].nodeno, p);
 
             string spointer = "stackpointer + " + to_string(size_class);
             attr3AC[nodeNum].threeAC.push_back(spointer);
@@ -3763,7 +3762,7 @@ void execClassInstanceCreationExpression(int nodeNum){
                 string temp = "pushparam " + (attr3AC[c4].params)[fcall];
                 attr3AC[nodeNum].threeAC.push_back(temp);
             }
-            checkFunctionParameterTypes(attr3AC[c2].nodeno, attr3AC[c4].paramsNodeNo);
+            // checkFunctionParameterTypes(attr3AC[c2].nodeno, attr3AC[c4].paramsNodeNo);
 
             string spointer = "stackpointer + " + to_string(size_class);
             attr3AC[nodeNum].threeAC.push_back(spointer);
@@ -6064,7 +6063,7 @@ void generateLabels(int nodeNum){
 }
 
 void postOrderTraversal3AC(int nodeNum){
-    cout<<nodeType[nodeNum]<<endl;
+    // cout<<nodeType[nodeNum]<<endl;
     if(nodeType[nodeNum]=="ClassBody"){
         insideClassName = classNameMap[nodeNum];
         // cout << "initialized insideclassname " << insideClassName << " " << nodeType[nodeNum] << " " << nodeNum << endl;
@@ -6108,7 +6107,7 @@ void postOrderTraversal3AC(int nodeNum){
     }
     // cout << "NODENUM " << nodeNum << " " << nodeType[nodeNum] << endl;
     for(int i=0;i<adj[nodeNum].size();i++){
-        cout<<"I am "<<nodeType[nodeNum]<<" calling child:"<<nodeType[adj[nodeNum][i]]<<endl;
+        // cout<<"I am "<<nodeType[nodeNum]<<" calling child:"<<nodeType[adj[nodeNum][i]]<<endl;
         postOrderTraversal3AC(adj[nodeNum][i]);
         // if("SwitchStatement"==nodeType[nodeNum] && i==2){
         //     switchExpAddr = someExpAddr;
