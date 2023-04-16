@@ -2,14 +2,18 @@ public class sample1 {
     int x;
     double y;
   
-    sample1(int _x, double _y) {
-        int _a=1;
-        this.x = _x;
-        this.y = _y;
+    sample1() {
+        int _a = 1;
+        this.x = 3;
+        this.y = 2.5d;
+        for(int i=0;i<10;i++){
+            int q = 3;
+        }
     }
   
     public static void main(String[] args /*so that we can compile with javac*/) {
-        sample1 a = new sample1(2,3.14);
+        sample1 a = new sample1();
+        
     }
 }
   
