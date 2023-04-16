@@ -3671,7 +3671,7 @@ void execClassInstanceCreationExpression(int nodeNum){
 
             int size_class = typeSize[insideClassName];
 
-
+            cout << "over here" << endl;
             tempNum++;
             string temp = "t"+to_string(tempNum)+" = "+to_string(size_class);
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -3697,10 +3697,10 @@ void execClassInstanceCreationExpression(int nodeNum){
 
             temp = "pushparam " + attr3AC[nodeNum].addrName;
             attr3AC[nodeNum].threeAC.push_back(temp);
-                
+            cout << "safadsf " << endl;
             // vector<int> p;
             // checkFunctionParameterTypes(attr3AC[c].nodeno, p);
-
+            cout << "here" << endl;
             string spointer = "stackpointer + " + to_string(size_class);
             attr3AC[nodeNum].threeAC.push_back(spointer);
             temp = "call " + insideClassName + ".ctor , " + to_string(1);
@@ -3713,7 +3713,7 @@ void execClassInstanceCreationExpression(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(oldsp);
             oldsp = "oldstackpointer = popfromstack";
             attr3AC[nodeNum].threeAC.push_back(oldsp);            
-
+            cout << "okay" << endl;
             pushLabelUp(nodeNum,c);
             break;
         }
@@ -5495,26 +5495,24 @@ void execEqualityExpression(int nodeNum){
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
-            tempNum++;
-            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-
-            typeOfNode[attr3AC[nodeNum].addrName]="boolean";
-
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " == " + attr3AC[c3].addrName;
-            (attr3AC[nodeNum].threeAC).push_back(temp);
+            string pTrue = getLabel(nodeNum,1);
+            string pFalse = getLabel(nodeNum,2);
+            string temp = "if " + attr3AC[c].addrName + " == " + attr3AC[c3].addrName + " goto " + pTrue;
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            temp = "goto " + pFalse;
+            attr3AC[nodeNum].threeAC.push_back(temp);
         }
             break;
         case 3:{
             c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
-            tempNum++;
-            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-
-            typeOfNode[attr3AC[nodeNum].addrName]="boolean";
-
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " != " + attr3AC[c3].addrName;
-            (attr3AC[nodeNum].threeAC).push_back(temp);
+            string pTrue = getLabel(nodeNum,1);
+            string pFalse = getLabel(nodeNum,2);
+            string temp = "if " + attr3AC[c].addrName + " != " + attr3AC[c3].addrName + " goto " + pTrue;
+            attr3AC[nodeNum].threeAC.push_back(temp);
+            temp = "goto " + pFalse;
+            attr3AC[nodeNum].threeAC.push_back(temp);
 
         }
             break;
