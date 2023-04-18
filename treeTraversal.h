@@ -161,9 +161,10 @@ void fillClassOffsets(vector<localTableParams>* _classTablePtr){
             classRow.offset=classOffset;
             classRow.useOffset= m4Offset;
 
-            if (classRow.arraySize.size()==0)
+            if (classRow.arraySize.size()==0){
                 classOffset+=typeSize[classRow.type];
                 m4Offset+=8;
+            }
             else{
                 //it's an array
                 int jump=1;
@@ -3195,7 +3196,7 @@ void execIfThenElseStatementNoShortIf(int nodeNum){
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
     int c7 = adj[nodeNum][6];
-    // cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
+    cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
     string c3true = getLabel(c3,1);
     string c3false = getLabel(c3,2);
     attr3AC[nodeNum] = attr3AC[c3];
