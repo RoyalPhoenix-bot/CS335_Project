@@ -20,14 +20,15 @@ public:
 	string nameAtNode;
 	string addrName;
 	string type;
-	int addrConst;
+	// int addrConst;
 	int isthis=1;
 	vector<string> params;
 	vector<int> paramsNodeNo;
 	vector<int> arrDims;
 	int dimsDone;
 	vector<string> threeAC;
-	
+	vector<string> assemblyCode;
+
 	attr(){
 		isthis=0;
 		nodeno=-1;
