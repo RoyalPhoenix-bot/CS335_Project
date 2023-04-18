@@ -3609,9 +3609,8 @@ int main(int argc, char* argv[])
 	generateLabels(rootNodenum);
 	postOrderTraversal3AC(rootNodenum);
 	print3AC(rootNodenum);
-
+	printAssemblyCode(rootNodenum);
 	storeParseTree(flag);
 	printTables();
-	printAssemblyCode(rootNodenum);
     return 0;
 }

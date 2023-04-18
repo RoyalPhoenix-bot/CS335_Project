@@ -13,6 +13,7 @@ map<string,string> typeOfNode; // to_string(nodeNum) -> Type of that node
 map<int,int> trueLabel;
 map<int,int> falseLabel;
 map<int,int> nextLabel;
+map<string,string> varToTemp;
 int countNodes=0;
 int tempNum=0;
 int inStatement=0;
@@ -4985,7 +4986,7 @@ void execArrayAccess(int nodeNum){
             int c3 = adj[nodeNum][2];
             auto mdata= getArrayInfo(attr3AC[c].addrName,attr3AC[c].nodeno);
             // auto mdata = getArrayInfo(nodeType[adj[attr3AC[c].nodeno][0]],attr3AC[c].nodeno);// lowestnode
-            // cout << "in array access wefasdfsf " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << endl;
+            cout << "in array access wefasdfsf " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << endl;
 
             // cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << " " << nodeType[adj[attr3AC[c].nodeno][0]] << endl;
             string t = mdata.first;
@@ -5008,12 +5009,23 @@ void execArrayAccess(int nodeNum){
             // cout << "yaha pe hu aray1 " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
             string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
             attr3AC[nodeNum].threeAC.push_back(temp);
+
+            
+            //Assembly code generation GAS x86_64
+            // string temp2 = "movq " + attr3AC[c3].addrName + ", %rax";
+            cout << "oba here "<<attr3AC[nodeNum].addrName << " " << attr3AC[c3].addrName << " " << to_string(mult) << endl;
+            vector<string> tempVec = getMulAssemblyCode(attr3AC[nodeNum].addrName,attr3AC[c3].addrName,to_string(mult));
+            cout << "after mul" << endl;
+            for(int i=0;i<tempVec.size();i++){
+                attr3AC[nodeNum].assemblyCode.push_back(tempVec[i]);
+            }
+            cout << "done with acess" << endl;
         }
         break;
         case 2:{
             int c =adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            // cout << "first print " << attr3AC[c].dimsDone << endl;
+            cout << "first print " << attr3AC[c].dimsDone << endl;
             attr3AC[nodeNum] = attr3AC[c];
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             int mult = typeSize[attr3AC[c].type];
@@ -5024,6 +5036,11 @@ void execArrayAccess(int nodeNum){
             }
             tempNum++;
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c3].addrName + " * " + to_string(mult);
+            //assembly
+            auto tempVec = getMulAssemblyCode("t"+to_string(tempNum),attr3AC[c3].addrName,to_string(mult));
+            for(int i=0;i<tempVec.size();i++){
+                attr3AC[nodeNum].assemblyCode.push_back(tempVec[i]);
+            }
             typeOfNode["t"+to_string(tempNum)] = attr3AC[c].type;
             attr3AC[nodeNum].threeAC.push_back(temp);
             tempNum++;
@@ -5039,7 +5056,13 @@ void execArrayAccess(int nodeNum){
             // cout << "yaha pe hu aray " << attr3AC[nodeNum].nameAtNode << " " << attr3AC[nodeNum].arrDims.size() << endl;
             temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].addrName + " + t" + to_string(tempNum-1) ;
             attr3AC[nodeNum].threeAC.push_back(temp);
-        }
+
+            //Call function getmulassembly to generate assemblycode
+            tempVec = getAddAssemblyCode(attr3AC[nodeNum].addrName,attr3AC[c].addrName,to_string(tempNum-1));
+            for(int i=0;i<tempVec.size();i++){
+                attr3AC[nodeNum].assemblyCode.push_back(tempVec[i]);
+            }
+        }   
         break;
     }
     return;
@@ -5125,7 +5148,7 @@ void execPrimaryNoNewArray(int nodeNum){
         case 6:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
-            // cout << "idahr dekhra hu " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
+            cout << "idahr dekhra hu " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
             // cout << "check dims " << attr3AC[nodeNum].dimsDone << " " << attr3AC[nodeNum].arrDims.size() << endl;
             attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone;
             if(attr3AC[nodeNum].dimsDone == attr3AC[nodeNum].arrDims.size()){
@@ -5134,6 +5157,31 @@ void execPrimaryNoNewArray(int nodeNum){
                 typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
                 string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                cout << "idhar aagya " << endl;
+                //Generate GAS code for array access
+                string tempArr = varToTemp[attr3AC[c].nameAtNode];
+                //Put value of index from attr3AC[c].addrName inside %rsi
+                int tempOffset;string tempA;
+                if(attr3AC[c].addrName[0]=='t'){
+                    tempOffset = 8*stoi(attr3AC[c].addrName.substr(1));
+                    tempA = "movq " + to_string(tempOffset) + "(%rbp), %rsi";
+                }else{
+                    tempOffset = stoi(attr3AC[c].addrName);
+                    tempA = "movq $" + attr3AC[c].addrName + ", %rsi"; 
+                }
+                attr3AC[nodeNum].assemblyCode.push_back(tempA);
+                // string arg1=getArgumentFromTemp(attr3AC[c].addrName);
+                cout << "over here now" << endl;
+                tempOffset = 8*stoi(tempArr.substr(1)); 
+                string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
+                string movins = "movq " + arg1 + ", %rax";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+                cout << "okay " << endl;
+                tempOffset = 8*stoi(attr3AC[nodeNum].addrName.substr(1));
+                movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                cout << "error here?" << endl;
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+                cout << "done with this" << endl;
             }
             pushLabelUp(nodeNum,c);
         }
@@ -6082,8 +6130,11 @@ void execSimpleName(int nodeNum){
 }
 
 void execIdentifier(int nodeNum){
-
+    //initialize varToTemp
     int c = adj[nodeNum][0];//Get child node number
+    tempNum++;
+    string temp = "t" + to_string(tempNum);
+    varToTemp[nodeType[c]] = temp;
     attr3AC[nodeNum].addrName = nodeType[c];//Add addrname of identifier 
     attr3AC[nodeNum].nodeno = c;
     if(inStatement && !(inMethodInvocation && inMN))checkIfDeclared(c,nodeType[c]);
@@ -6624,11 +6675,12 @@ void print3AC(int nodeNum){
             }
         }else cout << (attr3AC[nodeNum].threeAC)[i] << endl;
     }
-    fclose(fp);
+    // fclose(fp);
 }
 
 void printAssemblyCode (int nodeNum){
     FILE* fp = freopen("assemblyCode.s","w",stdout);
+    // cout << attr3AC[nodeNum].assemblyCode.size() << endl;
     set<string> checkLabel;
     for(int i=0;i<attr3AC[nodeNum].assemblyCode.size();i++){
         int siz = attr3AC[nodeNum].assemblyCode[i].size();

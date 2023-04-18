@@ -53,6 +53,9 @@ public:
 		for(int i=0;i<other.threeAC.size();i++){
 			if(threeAC[i]!=(other.threeAC)[i]) return false;
 		}
+		for(int i=0;i<other.assemblyCode.size();i++){
+			if(assemblyCode[i]!=(other.assemblyCode)[i]) return false;
+		}
 		return true;
 	} 
 
@@ -87,6 +90,12 @@ public:
 
 		for(int i=0;i<other.threeAC.size();i++){
 			threeAC.push_back((other.threeAC)[i]);
+		}
+
+		assemblyCode.clear();
+
+		for(int i=0;i<other.assemblyCode.size();i++){
+			assemblyCode.push_back((other.assemblyCode)[i]);
 		}
 	} 
 
@@ -131,6 +140,14 @@ public:
 
 		for(int i=0;i<other.threeAC.size();i++){
 			res.threeAC.push_back((other.threeAC)[i]);
+		}
+
+		for(int i=0;i<assemblyCode.size();i++){
+			res.assemblyCode.push_back(assemblyCode[i]);
+		}
+
+		for(int i=0;i<other.assemblyCode.size();i++){
+			res.assemblyCode.push_back((other.assemblyCode)[i]);
 		}
 
 		return res;
