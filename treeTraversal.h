@@ -55,6 +55,8 @@ typedef struct globaltableparams{
 	vector<localTableParams>* localTablePointer; 
 } globalTableParams;
 
+
+
 vector<globalTableParams> globalTable;
 vector<localTableParams>* currSymTab;
 map< int, pair< pair<int,int>,vector<localTableParams>* > > scopeAndTable;
@@ -64,7 +66,6 @@ int funcInClass=0;
 vector<int> scopeHelper;
 // scopeHelper[0] is the number of 4 level stuffs
 // scopeHelper[1] is the number of 5 level stuffs ...
-
 
 vector<attr1> attrSymTab;
 vector<attr> attr3AC;
@@ -463,6 +464,32 @@ string getLabel(int nodeNum, int type){
             return r;
         }
     }
+}
+
+vector<string> getAddAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+
+
+
+    return ret;
+}
+
+vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
+    vector<string> ret;
+
+    return ret;
+}
+
+vector<string> getMulAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+
+    return ret;
+}
+
+vector<string> getDivAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+
+    return ret;
 }
 
 int getLabelNumber(string s){
