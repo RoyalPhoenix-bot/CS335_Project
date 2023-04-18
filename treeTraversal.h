@@ -91,7 +91,8 @@ string getFuncRet(int calleNodeNum, string funcName, string className){
         }
     }
     cout<<"[Compilation Error]: Function not declared but called on line "<<lineNum[calleNodeNum]<<"\nFunction '"<<  funcName << "' in class '"<< className << "' !\nAborting...\n";
-    exit(0);
+    // exit(0);
+    return "";
 }
 
 string removeLastChar(string _type){
@@ -699,7 +700,7 @@ int checkIfValidSuperClass(string _superClass, int _line){
 
     // Super class not found
     cout<<"[Compilation Error]: Undeclared class on line "<<_line<<"\nSuper Class '"<<_superClass<<"' must be declared before inheriting!\nAborting...\n";
-    exit(0);
+    // exit(0);
 
     return 0;
 }
@@ -729,7 +730,7 @@ bool checkIfValidArrayDeclaration(string _typeLHS, string _typeRHS, int _rDims, 
 
     if (lDims!=_rDims){
         cout<<"[Compilation Error]: Dimension mismatch on line "<<_line<<"\nLHS dimensions "<<lDims<<" do not match "<<_rDims<<"!\nAborting...\n";
-        exit(0);
+        // exit(0);
     }
 
 
@@ -738,7 +739,7 @@ bool checkIfValidArrayDeclaration(string _typeLHS, string _typeRHS, int _rDims, 
     }
     else{
         cout<<"[Compilation Error]: Type mismatch on line "<<_line<<"\nArray Type "<<lType<<" does not match "<<_typeRHS<<"!\nAborting...\n";
-        exit(0);
+        // exit(0);
     }
     return false;
 }
@@ -772,7 +773,7 @@ void checkRedeclaration(int n, string x){
 
             // got the row
             cout<<"[Compilation Error]: Variable Redeclaration on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
-            exit(0);
+            // exit(0);
         }
 
     scope=mapParentScope[scope];
@@ -786,7 +787,7 @@ void checkRedeclaration(int n, string x){
 
             // got the row
             cout<<"[Compilation Error]: Variable Redeclaration on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
-            exit(0);
+            // exit(0);
 
         }
 
@@ -832,7 +833,7 @@ void checkIfDeclared(int n,string x){
     }
     if(!flag){
         cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[n]<<"\nVariable '"<<  x << "' !\nAborting...\n";
-        exit(0);
+        // exit(0);
     }
     return;
 }
@@ -853,17 +854,17 @@ void checkFunctionParameterTypes(int n, vector<int> paramNodeNo){
             if((rowPtr->functionParams).size()!=paramNodeNo.size()){
                 cout<<"[Compilation Error]: Incompatible function parameters on line "<<lineNum[n]<<"\nFunction'"<<  x << "' takes " <<
                 (rowPtr->functionParams).size() <<" parameters, but you passed "<< paramNodeNo.size() << " parameters!\nAborting...\n";
-                exit(0);
+                // exit(0);
             }
             for(int i=0;i<(rowPtr->functionParams).size();i++){
                 if((rowPtr->functionParams)[i]!=typeOfNode[to_string(paramNodeNo[i])]){
                     if(typeOfNode[to_string(paramNodeNo[i])]=="notfound"){
                         cout<<"[Compilation Error]: Function parameter not declared on line "<<lineNum[n]<<"\nVariable '"<<  nodeType[paramNodeNo[i]] << "' !\nAborting...\n";
-                        exit(0);
+                        // exit(0);
                     }
                         cout<<"[Compilation Error]: Incompatibe function parameter types on line "<<lineNum[n]<<"\n Parameter No. '"<<  i
                          << "' Expected type: "<< (rowPtr->functionParams)[i] <<" but got type: "<< typeOfNode[to_string(paramNodeNo[i])] <<"!\nAborting...\n";
-                        exit(0);
+                        // exit(0);
                 }
             }
             // got the row
@@ -882,17 +883,17 @@ void checkFunctionParameterTypes(int n, vector<int> paramNodeNo){
             if((rowPtr->functionParams).size()!=paramNodeNo.size()){
                 cout<<"[Compilation Error]: Incompatible function parameters on line "<<lineNum[n]<<"\nFunction'"<<  x << "' takes " <<
                 (rowPtr->functionParams).size() <<" parameters, but you passed "<< paramNodeNo.size() << " parameters!\nAborting...\n";
-                exit(0);
+                // exit(0);
             }
             for(int i=0;i<(rowPtr->functionParams).size();i++){
                 if((rowPtr->functionParams)[i]!=typeOfNode[to_string(paramNodeNo[i])]){
                     if(typeOfNode[to_string(paramNodeNo[i])]=="notfound"){
                         cout<<"[Compilation Error]: Function parameter not declared on line "<<lineNum[n]<<"\nVariable '"<<  nodeType[paramNodeNo[i]] << "' !\nAborting...\n";
-                        exit(0);
+                        // exit(0);
                     }
                         cout<<"[Compilation Error]: Incompatibe function parameter types on line "<<lineNum[n]<<"\n Parameter No. '"<<  i
                          << "' Expected type: "<< (rowPtr->functionParams)[i] <<" but got type: "<< typeOfNode[to_string(paramNodeNo[i])] <<"!\nAborting...\n";
-                        exit(0);
+                        // exit(0);
                 }
             }
 
@@ -1646,7 +1647,7 @@ void preOrderTraversal(int nodeNum){
             locRow.arraySize=attrSymTab[c2].intParams;
             if(locRow.type=="void"){
                 cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nVariable '"<<  locRow.name << "' cannot have a type 'void'!\nAborting...\n";
-                exit(0);
+                // exit(0);
             }
             
             // cout<<"From FieldDeclaration:"<<locRow.arraySize.size()<<endl;
@@ -1712,7 +1713,7 @@ void preOrderTraversal(int nodeNum){
                 locRow.parentScope=parentScope.top();
                 if(locRow.type=="void"){
                 cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nVariable '"<<  locRow.name << "' cannot have a type 'void'!\nAborting...\n";
-                exit(0);
+                // exit(0);
             }
                 // cout<<"From BlockStatement: "<<varName<<endl; //works
                 // cout<<locRow.type<<" "<<locRow.name<<endl; //works
@@ -2002,14 +2003,14 @@ void preOrderTraversal(int nodeNum){
                 string var2=nodeType[attrSymTab[c3].leafNodeNum];
                 if(t1=="notfound"){
                     cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var1 << "' !\nAborting...\n";
-                    exit(0);
+                    // exit(0);
                 }
                 if(t3=="notfound"){
                     cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var2 << "' !\nAborting...\n";
-                    exit(0);
+                    // exit(0);
                 }
                 cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
-                exit(0);
+                // exit(0);
             }
         }
         return;
@@ -2103,14 +2104,14 @@ void preOrderTraversal(int nodeNum){
                     string var2=nodeType[attrSymTab[c3].leafNodeNum];
                     if(t1=="notfound"){
                         cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var1 << "' !\nAborting...\n";
-                        exit(0);
+                        // exit(0);
                     }
                     if(t3=="notfound"){
                         cout<<"[Compilation Error]: Variable Not Declared on line "<<lineNum[nodeNum]<<"\nVariable '"<<  var2 << "' !\nAborting...\n";
-                        exit(0);
+                        // exit(0);
                     }
                     cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
-                    exit(0);
+                    // exit(0);
                 }
 
                 break;
@@ -2857,7 +2858,7 @@ void execQualifiedName(int nodeNum){
 
     string temp2 = "*("+ attr3AC[c].addrName + " + " + attr3AC[nodeNum].addrName + ")";
     attr3AC[nodeNum].addrName = temp2;
-
+    typeSize[attr3AC[nodeNum].addrName]=typeSize[attr3AC[c].addrName];
     // string temp = "*("+"whathere"+" + "++")";
     // attr3AC[nodeNum].addrName = temp;
 
@@ -2880,6 +2881,7 @@ void execPreIncrementExpression(int nodeNum){
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum]+ attr3AC[c];
+    // typeSize[attr3AC[nodeNum].addrName]=typeSize[attr3AC[c].addrName];
     pushLabelUp(nodeNum,c);
     return;
 }
@@ -2894,6 +2896,8 @@ void execPreDecrementExpression(int nodeNum){
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
+    // typeSize[attr3AC[nodeNum].addrName]=typeSize[attr3AC[c].addrName];
+
     pushLabelUp(nodeNum,c);
     return;
 }
@@ -2973,6 +2977,7 @@ void execMethodHeader_(int nodeNum){
         funcParamTemp[attr3AC[nodeNum].params[i]]=temp;
         string temp2 = temp + " = popparam";
         attr3AC[nodeNum].threeAC.push_back(temp2);
+        typeSize[temp] = 8;
         // cout << "in lop " << i << " " << temp2 << endl;
     }
     attr3AC[nodeNum].params.clear();
@@ -4315,11 +4320,14 @@ void execStatement(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
             // start Stack Allocation 3AC
             
-            for (int i=ForInitVars[ForInitVars.size()-1].size()-1;i>=0;i--){
-                attr3AC[nodeNum].threeAC.push_back(ForInitVars[ForInitVars.size()-1][i]);
-            }
+            if(prodNum[c]==1 || prodNum[c]==3 || prodNum[c]==4 || prodNum[c]== 7){
+                for (int i=ForInitVars[ForInitVars.size()-1].size()-1;i>=0;i--){
+                    attr3AC[nodeNum].threeAC.push_back(ForInitVars[ForInitVars.size()-1][i]);
+                }
 
-            ForInitVars.pop_back();
+                ForInitVars.pop_back();
+            }
+            // cout << "statement" << endl;
             // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
         }
@@ -4517,7 +4525,6 @@ void execForStatement(int nodeNum){
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
-
             falseLabel[c4] = nextLabel[nodeNum];
         }
         break;
@@ -5061,6 +5068,7 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum] = attr3AC[c];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+                attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,attr3AC[c].addrName,insideClassName);
                 // cout << "inside methodinvocation " << endl;
                 vector<int> p;
                 checkFunctionParameterTypes(attr3AC[c].nodeno, p);
@@ -5092,6 +5100,7 @@ void execMethodInvocation(int nodeNum){
             }else{
                 int c = adj[nodeNum][0];
                 attr3AC[nodeNum] = attr3AC[c];
+                attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,attr3AC[c].addrName,insideClassName);
                 tempNum++;
                 string fname = attr3AC[adj[adj[c][0]][2]].addrName;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
@@ -5123,6 +5132,7 @@ void execMethodInvocation(int nodeNum){
             if(prodNum[adj[nodeNum][0]]==1){
                 int c = adj[nodeNum][0];
                 int c3 = adj[nodeNum][2];
+                attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,attr3AC[c].addrName,insideClassName);
                 attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
@@ -5139,7 +5149,8 @@ void execMethodInvocation(int nodeNum){
                 checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
                 int sizeOfParams=0;
                 for(int i=0;i<attr3AC[c3].paramsNodeNo.size();i++){
-                    sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
+                    // sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
+                    sizeOfParams+=8;//since we're only required to implement long type
                 }
                 string spointer = "stackpointer + " + to_string(sizeOfParams);
                 attr3AC[nodeNum].threeAC.push_back(spointer);
@@ -5158,6 +5169,7 @@ void execMethodInvocation(int nodeNum){
             }else{
                 int c = adj[nodeNum][0];
                 int c3 = adj[nodeNum][2];
+                attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,attr3AC[c].addrName,insideClassName);
                 string fname = attr3AC[adj[adj[c][0]][2]].addrName;
                 // cout << "in methodinvocation " << fname << endl;
                 attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
@@ -5176,7 +5188,8 @@ void execMethodInvocation(int nodeNum){
                 checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
                 int sizeOfParams=0;
                 for(int i=0;i<attr3AC[c3].paramsNodeNo.size();i++){
-                    sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
+                    // sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
+                    sizeOfParams+=8;//Since we're only required to implement long
                 }
                 string spointer = "stackpointer + " + to_string(sizeOfParams);
                 attr3AC[nodeNum].threeAC.push_back(spointer);
