@@ -2510,7 +2510,7 @@ void execVariableDeclarator(int nodeNum){
         }
         else{
             string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
-            string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+            string temp3AC2="stackpointer + " + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
             attr3AC[nodeNum].threeAC.push_back(temp3AC1);
             attr3AC[nodeNum].threeAC.push_back(temp3AC2);
         }
@@ -2538,7 +2538,7 @@ void execVariableDeclarator(int nodeNum){
                 int c1=adj[nodeNum][0];
                 
                 string temp3AC1="pushonstack " + nodeType[attr3AC[c1].nodeno] ;
-                string temp3AC2="stackpointer +" + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
+                string temp3AC2="stackpointer + " + to_string(typeSize[typeOfNode[to_string(attr3AC[c1].nodeno)]]) ;
                 attr3AC[nodeNum].threeAC.push_back(temp3AC1);
                 attr3AC[nodeNum].threeAC.push_back(temp3AC2);
             }
@@ -4807,6 +4807,12 @@ void execArrayCreationExpression(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp2);
             temp2 = "stackpointer - 4";
             attr3AC[nodeNum].threeAC.push_back(temp2);
+
+            // tempNum++;
+            // temp = "t" + to_string(tempNum);
+            // temp2 = temp + " = " + "popparam";
+            // attr3AC[nodeNum].threeAC.push_back(temp2);
+            attr3AC[nodeNum].addrName = "popparam";
         }
         break;
         case 2:{
@@ -5677,7 +5683,7 @@ void execAdditiveExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
-            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " +" +tp + " " + attr3AC[c3].addrName;
+            string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " + " +tp + " " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
         }
