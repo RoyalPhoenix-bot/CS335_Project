@@ -467,27 +467,88 @@ string getLabel(int nodeNum, int type){
 }
 
 vector<string> getAddAssemblyCode(string t1, string t2, string t3){
-    vector<string> ret;
+    vector<string> ret;//###t3 assumed to be temporary always
+    //t1=t2+t3
+    
+    //get address of t2 and t3 using their offsets from stack pointer
+    //load t2 and t3 in registers r8, r9
+    //add them using addq. stores result in r9
+    //store r9 contents to stack location of t1 (get offset)
 
+    int of1 = 8*stoi(t1.substr(1));
+    int of2 = 8*stoi(t2.substr(1));
+    int of3 = 8*stoi(t3.substr(1));
 
+    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    else ret.push_back("movq " + "$"+to_string(t2)+", %r8");  //if t2 is a constant
+
+    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    else ret.push_back("movq " + "$"+to_string(t3)+", %r9");
+
+    ret.push_back("addq %r9, %r8");
+
+    ret.push_back("movq %r8, " + to_string(t1) + "(%rbp)");  
 
     return ret;
 }
 
 vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     vector<string> ret;
+    //t1=t2-t3
+
+    int of1 = 8*stoi(t1.substr(1));
+    int of2 = 8*stoi(t2.substr(1));
+    int of3 = 8*stoi(t3.substr(1));
+
+    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    else ret.push_back("movq " + "$"+to_string(t2)+", %r8");  //if t2 is a constant
+
+    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    else ret.push_back("movq " + "$"+to_string(t3)+", %r9");
+
+    ret.push_back("subq %r9, %r8");
+
+    ret.push_back("movq %r8, " + to_string(t1) + "(%rbp)");  
 
     return ret;
 }
 
 vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
+    //t1=t2*t3
+    int of1 = 8*stoi(t1.substr(1));
+    int of2 = 8*stoi(t2.substr(1));
+    int of3 = 8*stoi(t3.substr(1));
+
+    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    else ret.push_back("movq " + "$"+to_string(t2)+", %r8");  //if t2 is a constant
+
+    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    else ret.push_back("movq " + "$"+to_string(t3)+", %r9");
+
+    ret.push_back("imulq %r9, %r8");
+
+    ret.push_back("movq %r8, " + to_string(t1) + "(%rbp)");  
 
     return ret;
 }
 
 vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
+    //t1=t2/t3
+    int of1 = 8*stoi(t1.substr(1));
+    int of2 = 8*stoi(t2.substr(1));
+    int of3 = 8*stoi(t3.substr(1));
+
+    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
+    else ret.push_back("movq " + "$"+to_string(t2)+", %rax");  //if t2 is a constant
+
+    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r8");
+    else ret.push_back("movq " + "$"+to_string(t3)+", %r8");
+
+    ret.push_back("idivq %r8");
+
+    ret.push_back("movq %rax, " + to_string(t1) + "(%rbp)");  
 
     return ret;
 }
