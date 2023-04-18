@@ -43,6 +43,7 @@ typedef struct localtableparams{
 	vector<localtableparams>* functionTablePointer;
 	vector<string> functionParams;
 	string functionReturnType;
+    int useOffset;
 } localTableParams ;
 
 typedef struct globaltableparams{
@@ -127,9 +128,11 @@ string getArrayType(string _type){
 
 void fillFunctionOffsets(vector<localTableParams>* _funcTablePtr){
     int funcOffset=0;
+    int m4Offset=0;
     for(auto &funcRow: *_funcTablePtr){
 
             funcRow.offset=funcOffset;
+            funcRow.useOffset = m4Offset;
 
             if (funcRow.arraySize.size()==0)
                 funcOffset+=typeSize[funcRow.type];
@@ -141,11 +144,14 @@ void fillFunctionOffsets(vector<localTableParams>* _funcTablePtr){
                 jump*=typeSize[getArrayType(funcRow.type)];
                 funcOffset+=jump;
             }
+
+            m4Offset+=8;
     } 
 }
 
 void fillClassOffsets(vector<localTableParams>* _classTablePtr){
     int classOffset=0;
+    int m4Offset=0;
     for(auto &classRow: *_classTablePtr){
 
         if (classRow.type=="method"){
@@ -153,16 +159,23 @@ void fillClassOffsets(vector<localTableParams>* _classTablePtr){
         }
         else {
             classRow.offset=classOffset;
+            classRow.useOffset= m4Offset;
 
             if (classRow.arraySize.size()==0)
                 classOffset+=typeSize[classRow.type];
+                m4Offset+=8;
             else{
                 //it's an array
                 int jump=1;
-                for (int i=0;i<classRow.arraySize.size();i++)
+                int m4jump;
+                for (int i=0;i<classRow.arraySize.size();i++){
                     jump=jump*classRow.arraySize[i];
+                }
+                m4jump=jump*8;
                 jump*=typeSize[getArrayType(classRow.type)];
                 classOffset+=jump;
+                m4Offset+=m4jump;
+
             }
 
         }
@@ -192,7 +205,38 @@ int getOffset(int _nodeNum){
         }
     }
 
+    for (auto fRow: *funTabPtr){
+
+        if (fRow.name==varName){
+            return fRow.offset;
+        }
+    }
+
     return 0;
+}
+
+int useOffset(int _nodeNum){
+
+    vector<localTableParams>* funTabPtr = scopeAndTable[_nodeNum].second ;
+    vector<localTableParams>* classTabPtr = parentTable[funTabPtr];
+    string varName=nodeType[_nodeNum];
+
+    for (auto cRow: *classTabPtr){
+
+        if (cRow.name==varName){
+            return cRow.useOffset;
+        }
+    }
+
+    for (auto fRow: *funTabPtr){
+
+        if (fRow.name==varName){
+            return fRow.useOffset;
+        }
+    }
+
+    return 0;
+
 }
 
 localTableParams* checkInScope(string _varName, pair<int,int> _scope, vector<localTableParams>* _tablePointer){
