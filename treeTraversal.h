@@ -479,15 +479,15 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
     int of2 = 8*stoi(t2.substr(1));
     int of3 = 8*stoi(t3.substr(1));
 
-    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
-    else ret.push_back("movq " + "$"+to_string(t2)+", %r8");  //if t2 is a constant
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
-    else ret.push_back("movq " + "$"+to_string(t3)+", %r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("addq %r9, %r8");
 
-    ret.push_back("movq %r8, " + to_string(t1) + "(%rbp)");  
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
 
     return ret;
 }
@@ -500,15 +500,15 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     int of2 = 8*stoi(t2.substr(1));
     int of3 = 8*stoi(t3.substr(1));
 
-    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
-    else ret.push_back("movq " + "$"+to_string(t2)+", %r8");  //if t2 is a constant
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
-    else ret.push_back("movq " + "$"+to_string(t3)+", %r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("subq %r9, %r8");
 
-    ret.push_back("movq %r8, " + to_string(t1) + "(%rbp)");  
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
 
     return ret;
 }
@@ -520,15 +520,15 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     int of2 = 8*stoi(t2.substr(1));
     int of3 = 8*stoi(t3.substr(1));
 
-    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
-    else ret.push_back("movq " + "$"+to_string(t2)+", %r8");  //if t2 is a constant
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
-    else ret.push_back("movq " + "$"+to_string(t3)+", %r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("imulq %r9, %r8");
 
-    ret.push_back("movq %r8, " + to_string(t1) + "(%rbp)");  
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
 
     return ret;
 }
@@ -540,15 +540,15 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     int of2 = 8*stoi(t2.substr(1));
     int of3 = 8*stoi(t3.substr(1));
 
-    if(t2[0]=="t") ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
-    else ret.push_back("movq " + "$"+to_string(t2)+", %rax");  //if t2 is a constant
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
+    else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
 
-    if(t3[0]=="t") ret.push_back("movq " + to_string(of3) + "(%rbp), $r8");
-    else ret.push_back("movq " + "$"+to_string(t3)+", %r8");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r8");
+    else ret.push_back("movq $"+(t3)+", %r8");
 
     ret.push_back("idivq %r8");
 
-    ret.push_back("movq %rax, " + to_string(t1) + "(%rbp)");  
+    ret.push_back("movq %rax, " + to_string(of1) + "(%rbp)");  
 
     return ret;
 }
@@ -5832,6 +5832,10 @@ void execAdditiveExpression(int nodeNum){
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " + " +tp + " " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+
+            // attr3AC[nodeNum].assemblyCode.push_back(getAddAssemblyCode(attr3AC[nodeNum].addrName, attr3AC[c].addrName, attr3AC[c3].addrName));
         }
             break;
         case 3:{
