@@ -2798,8 +2798,24 @@ void execReferenceType(int nodeNum){
 }
 
 void execQualifiedName(int nodeNum){
-    int c = adj[nodeNum][1];
+    int c = adj[nodeNum][0];
+    int c2 = adj[nodeNum][2];
     attr3AC[nodeNum] = attr3AC[c];
+    
+    int offset_val = getOffset(adj[c2][0]);
+
+    tempNum++;
+    attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+    // typeOfNode[attr3AC[nodeNum].addrName] = typeOfNode[to_string(adj[c2][0])];
+    
+    attr3AC[nodeNum].threeAC.push_back(attr3AC[nodeNum].addrName +" = "+ to_string(offset_val));
+
+    string temp2 = "*("+ attr3AC[c].addrName + " + " + attr3AC[nodeNum].addrName + ")";
+    attr3AC[nodeNum].addrName = temp2;
+
+    // string temp = "*("+"whathere"+" + "++")";
+    // attr3AC[nodeNum].addrName = temp;
+
     return;
 }
 
@@ -5885,11 +5901,18 @@ void execLeftHandSide(int nodeNum){
 void execName(int nodeNum){
     int c;
     switch(prodNum[nodeNum]){
-        case 1:
+        case 1:{
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
             pushLabelUp(nodeNum,c);
             break;
+        }
+        case 2:{
+            c = adj[nodeNum][0];
+            attr3AC[nodeNum] = attr3AC[c];
+            pushLabelUp(nodeNum,c);
+            break;
+        }
     }
     return;
 }
