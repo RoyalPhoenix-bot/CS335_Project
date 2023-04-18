@@ -27,6 +27,7 @@ public:
 	vector<int> arrDims;
 	int dimsDone;
 	vector<string> threeAC;
+	vector<string> assemblyCode;
 	
 	attr(){
 		isthis=0;
