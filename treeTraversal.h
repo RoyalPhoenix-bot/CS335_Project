@@ -476,9 +476,20 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
     //add them using addq. stores result in r9
     //store r9 contents to stack location of t1 (get offset)
 
-    int of1 = 8*stoi(t1.substr(1));
-    int of2 = 8*stoi(t2.substr(1));
-    int of3 = 8*stoi(t3.substr(1));
+    // cout<<"inside hereen\n";
+    // cout<<t1.size()<<"\n";
+    // cout<<t1.substr(1, t1.size()-1);
+    // cout<<t1<<" "<<t2<<" "<<t3<<"\n";
+    
+    // cout<<"calc val :"<<8*stoi(t1.substr(1, t1.size()-1));
+
+
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
+
+    // cout<<"after offset : "<<of1<<"\n";
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -490,16 +501,19 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
 
     ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
 
+    // cout<<ret.size()<<endl;
     return ret;
 }
 
 vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     vector<string> ret;
     //t1=t2-t3
+    // cout<<"inside hereen\n";
 
-    int of1 = 8*stoi(t1.substr(1));
-    int of2 = 8*stoi(t2.substr(1));
-    int of3 = 8*stoi(t3.substr(1));
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -517,9 +531,13 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
 vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2*t3
-    int of1 = 8*stoi(t1.substr(1));
-    int of2 = 8*stoi(t2.substr(1));
-    int of3 = 8*stoi(t3.substr(1));
+
+    // cout<<"inside hereen\n";
+
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -531,15 +549,17 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
 
     ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
 
+    // cout<<"returnedddd";
     return ret;
 }
 
 vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
-    int of1 = 8*stoi(t1.substr(1));
-    int of2 = 8*stoi(t2.substr(1));
-    int of3 = 8*stoi(t3.substr(1));
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
@@ -5877,13 +5897,31 @@ void execAdditiveExpression(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
             tempNum++;
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+
+            // cout<<"just after init"<<attr3AC[nodeNum].addrName<<"\n";
+
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " + " +tp + " " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+            
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
 
-            attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+            string arg1 = varToTemp[attr3AC[nodeNum].addrName];
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
 
-            // attr3AC[nodeNum].assemblyCode.push_back(getAddAssemblyCode(attr3AC[nodeNum].addrName, attr3AC[c].addrName, attr3AC[c3].addrName));
+            if(arg1.size()==0) arg2 = attr3AC[nodeNum].addrName;
+            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
+            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+
+            auto x = getAddAssemblyCode(attr3AC[c].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
         case 3:{
@@ -5898,6 +5936,24 @@ void execAdditiveExpression(int nodeNum){
             typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
 
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+            string arg1 = varToTemp[attr3AC[nodeNum].addrName];
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
+            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+
+            auto x = getSubAssemblyCode(attr3AC[c].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
     }
@@ -5923,6 +5979,22 @@ void execMultiplicativeExpression(int nodeNum){
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " *" + tp + " " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
+            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+
+            auto x = getMulAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
         case 3:{
@@ -5936,6 +6008,22 @@ void execMultiplicativeExpression(int nodeNum){
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " /"+ tp + " " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
+            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+
+            auto x = getDivAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
         case 4:{
@@ -6694,6 +6782,5 @@ void printAssemblyCode (int nodeNum){
         else cout << (attr3AC[nodeNum].assemblyCode)[i] << endl;
     }
     fclose(fp);
-
 }
 
