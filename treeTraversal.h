@@ -6522,3 +6522,21 @@ void print3AC(int nodeNum){
     fclose(fp);
 }
 
+void printAssemblyCode (int nodeNum){
+    FILE* fp = freopen("assemblyCode.s","w",stdout);
+    set<string> checkLabel;
+    for(int i=0;i<attr3AC[nodeNum].assemblyCode.size();i++){
+        int siz = attr3AC[nodeNum].assemblyCode[i].size();
+        if(attr3AC[nodeNum].assemblyCode[i][0]=='L' && attr3AC[nodeNum].assemblyCode[i][siz-1]==':'){
+            string lab=attr3AC[nodeNum].assemblyCode[i];
+            if(checkLabel.find(lab)==checkLabel.end()){
+                cout << (attr3AC[nodeNum].assemblyCode)[i] << endl;
+                checkLabel.insert(lab);
+            }
+        }
+        else cout << (attr3AC[nodeNum].assemblyCode)[i] << endl;
+    }
+    fclose(fp);
+
+}
+

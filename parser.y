@@ -3612,5 +3612,6 @@ int main(int argc, char* argv[])
 
 	storeParseTree(flag);
 	printTables();
+	printAssemblyCode(rootNodenum);
     return 0;
 }
