@@ -249,7 +249,7 @@ string getType(string _varName, int _nodeNum){
         startScope=mapParentScope[startScope];
     }
 
-    return "notfound";   
+    return "long";   
 
 }
 
