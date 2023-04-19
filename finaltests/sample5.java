@@ -1,12 +1,13 @@
-public class sample1 {
+public class sample5 {
     
     public static void main() {
        
         int m=4 ;
 
-        for (int i=0;i<10;i++){
-            m=m+1;
+        if (m==5){
+            m = 2*m+42 ;
         }
+
         return;
 
     }

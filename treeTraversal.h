@@ -2359,7 +2359,7 @@ void preOrderTraversal(int nodeNum){
             if (attrSymTab[adj[nodeNum][0]].name=="this"){
                 // cout<<isFinalField["m"]<<endl;
                 if ((isFinalField.find(attrSymTab[adj[nodeNum][2]].name))!=isFinalField.end()){
-                    cout<<"[Compilation Error]: Cannot assign a value to final field '"<<attrSymTab[adj[nodeNum][2]].name<<"!\nAborting...\n";
+                    cout<<"[Compilation Error]: Cannot assign a value to final field on line "<<lineNum[nodeNum]<<" to '"<<attrSymTab[adj[nodeNum][2]].name<<"'!\nAborting...\n";
                     // exit(0);
                 }
             }
@@ -7223,7 +7223,7 @@ void execAdditiveExpression(int nodeNum){
             if(arg2=="") { arg2 = attr3AC[c].addrName; }
             if(arg3=="") { arg3 = attr3AC[c3].addrName; }
 
-            cout << "obafasfsadfsafsd hre " << attr3AC[nodeNum].addrName << " " << arg2 << " " << arg3 << endl;
+            // cout << "obafasfsadfsafsd hre " << attr3AC[nodeNum].addrName << " " << arg2 << " " << arg3 << endl;
             auto x = getAddAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
 
             for(auto el:x){
