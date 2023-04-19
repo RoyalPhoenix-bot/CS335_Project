@@ -101,6 +101,23 @@ string getArg (string t){
 }
 
 
+string addFuncParamsToReg(string p, string reg, int c3, int fcall){
+    if(p[0]>='0' && p[0]<='9'){
+        string temp = "movq $" + p + ", " + reg;
+        return temp;
+    }
+    if(p[0]=='t'){
+        int pOffset = -8*(stoi(p.substr(1)))-8;
+        string temp = "movq " + to_string(pOffset) + "(%rbp), " + reg;
+        return temp;
+    }else{
+        p = varToTemp[attr3AC[c3].params[fcall]];
+        int pOffset = -8*(stoi(p.substr(1)))-8;
+        string temp = "movq " + to_string(pOffset) + "(%rbp), " + reg;
+        return temp;
+    }
+}
+
 string getFuncRet(int calleNodeNum, string funcName, string className){
     for(int i=0;i<globalTable.size();i++){
         if(globalTable[i].type=="class" && globalTable[i].name==className){
@@ -227,7 +244,9 @@ int getOffset(int _nodeNum){
 
     for (auto cRow: *classTabPtr){
 
-        if (cRow.name==varName){
+        if (cRow.name==varName && cRow.type=="method"){
+            return -1;
+        }else if(cRow.name==varName){
             return cRow.offset;
         }
     }
@@ -2916,7 +2935,9 @@ void execVariableDeclarator(int nodeNum){
 
                 string arg1 = getArg(attr3AC[c].addrName);
                 string arg2 = getArg(attr3AC[c3].addrName);
-                string tempac = "movq " + arg2 + ", " + arg1;
+                string tempac = "movq " + arg2 + ", %r11";
+                attr3AC[nodeNum].assemblyCode.push_back(tempac);
+                tempac = "movq %r11, " + arg1;
                 attr3AC[nodeNum].assemblyCode.push_back(tempac);
                 // cout << "assigning temp2 " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
 
@@ -3177,9 +3198,11 @@ void execQualifiedName(int nodeNum){
     int c = adj[nodeNum][0];
     int c2 = adj[nodeNum][2];
     attr3AC[nodeNum] = attr3AC[c];
-    
+    cout << "in qualified name " << attr3AC[c].threeAC.size() << endl;
     int offset_val = getOffset(adj[c2][0]);
-
+    cout << "in qn " << offset_val << endl;
+    // cout << "in qualified name " << getTypeNode(attr3AC[c2].nodeno) << endl;
+    if(offset_val==-1)return;
     tempNum++;
     attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
     // typeOfNode[attr3AC[nodeNum].addrName] = typeOfNode[to_string(adj[c2][0])];
@@ -3375,8 +3398,25 @@ void execMethodHeader_(int nodeNum){
 
         //Add GAS x86_64 for popping the params
         int tempOffset = -8*(stoi(temp.substr(1)))-8;
-        string gas = "popq " + to_string(tempOffset) + "(%rbp)";
-        attr3AC[nodeNum].assemblyCode.push_back(gas);
+        if(i==5){
+            string gas = "movq %r9, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(gas);
+        }else if(i==4){
+            string gas = "movq %r8, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(gas);
+        }else if(i==3){
+            string gas = "movq %rcx, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(gas);
+        }else if(i==2){
+            string gas = "movq %rdx, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(gas);
+        }else if(i==1){
+            string gas = "movq %rsi, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(gas);            
+        }else if(i==0){
+            string gas = "movq %rdi, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(gas);
+        }
 
     }
     attr3AC[nodeNum].params.clear();
@@ -5605,7 +5645,7 @@ void execPrimaryNoNewArray(int nodeNum){
                 attr3AC[nodeNum].assemblyCode.push_back("addq %rsi, %rax");
                 //move from %rax to tempvar
                 tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1))-8;
-                movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                movins = "movq (%rax), " + to_string(tempOffset) + "(%rbp)";
                 cout << "error here?" << endl;
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
                 cout << "done with this" << endl;
@@ -5676,8 +5716,8 @@ void execMethodInvocation(int nodeNum){
                 string fname = attr3AC[adj[adj[c][0]][2]].addrName;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
                 // cout << "inside methodinvocation " << endl;
-                vector<int> p;
-                checkFunctionParameterTypes(attr3AC[c].nodeno, p);
+                // vector<int> p;
+                // checkFunctionParameterTypes(attr3AC[c].nodeno, p);
                 string oldsp = "pushonstack oldstackpointer";
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 oldsp = "stackpointer + 8";
@@ -5746,24 +5786,35 @@ void execMethodInvocation(int nodeNum){
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
                 pushLabelUp(nodeNum,c);
 
-                //GAS x86_64 code for function call with parameters
+                //GAS x86_64 code for function call with parameters, pass the args in corresponding registers
                 for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
-                    string p = attr3AC[c3].params[fcall];
-                    if(p[0]>='0' && p[0]<='9'){
-                        string temp = "pushq $" + p;
-                        attr3AC[nodeNum].assemblyCode.push_back(temp);
-                        continue;
-                    }
-                    if(p[0]=='t'){
-                        int pOffset = -8*(stoi(p.substr(1)))-8;
-                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
-                        attr3AC[nodeNum].assemblyCode.push_back(temp);
-                        continue;
+                    if(fcall==0){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rdi",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==1){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rsi",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==2){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rdx",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==3){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rcx",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==4){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%r8",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==5){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%r9",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
                     }else{
-                        p = varToTemp[attr3AC[c3].params[fcall]];
-                        int pOffset = -8*(stoi(p.substr(1)))-8;
-                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
-                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        cout << "Too many func arguments" << endl;
+                        exit(0);
                     }
                 }
                 //call function in GAS
@@ -5777,9 +5828,12 @@ void execMethodInvocation(int nodeNum){
             }else{
                 int c = adj[nodeNum][0];
                 int c3 = adj[nodeNum][2];
-                attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,attr3AC[c].addrName,insideClassName);
                 string fname = attr3AC[adj[adj[c][0]][2]].addrName;
+                attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,fname,insideClassName);
+                // string fname = attr3AC[adj[adj[c][0]][2]].addrName;
                 // cout << "in methodinvocation " << fname << endl;
+                cout << "inside method " << attr3AC[c].threeAC.size() << " " << attr3AC[c3].threeAC.size() << endl;
+                // cout << attr3AC[c].threeAC[0] << endl;
                 attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
                 tempNum++;
                 attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
@@ -5793,7 +5847,7 @@ void execMethodInvocation(int nodeNum){
                     string temp = "pushparam " + (attr3AC[c3].params)[fcall];
                     attr3AC[nodeNum].threeAC.push_back(temp);
                 }
-                checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
+                // checkFunctionParameterTypes(attr3AC[c].nodeno, attr3AC[c3].paramsNodeNo);
                 int sizeOfParams=0;
                 for(int i=0;i<attr3AC[c3].paramsNodeNo.size();i++){
                     // sizeOfParams+=typeSize[typeOfNode[to_string(attr3AC[c3].paramsNodeNo[i])]];
@@ -5940,7 +5994,6 @@ void execAssignment(int nodeNum){
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
-            string tempac = "movq " + arg2 + ", " + arg1;
             // cout<<tempac<<endl;
             if(attr3AC[c].isthis==0){
                 attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
@@ -5948,7 +6001,6 @@ void execAssignment(int nodeNum){
                 // cout << "assignment " << temp << endl;
                 typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
                 attr3AC[nodeNum].threeAC.push_back(temp);
-                attr3AC[nodeNum].assemblyCode.push_back(tempac);
                 // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
             }
@@ -5958,10 +6010,13 @@ void execAssignment(int nodeNum){
 
                 typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
                 attr3AC[nodeNum].threeAC.push_back(temp);
-                attr3AC[nodeNum].assemblyCode.push_back(tempac);
 
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
             }
+            string tempac = "movq " + arg2 + ", %r11";
+            attr3AC[nodeNum].assemblyCode.push_back(tempac);
+            tempac = "movq %r11, "+ arg1;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac);
         }
         break;
         case 2:{
@@ -7224,6 +7279,7 @@ void execName(int nodeNum){
         case 2:{
             c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
+            // cout << "in name " << attr3AC[c].threeAC[0] << endl;
             pushLabelUp(nodeNum,c);
             break;
         }
