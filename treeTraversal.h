@@ -468,7 +468,7 @@ string getLabel(int nodeNum, int type){
 }
 
 int getStackOffset(string t1){
-    return -8*stoi(t1.substr(1, t1.size()-1))+8;
+    return -8*stoi(t1.substr(1, t1.size()-1));
 }
 
 vector<string> getAddAssemblyCode(string t1, string t2, string t3){
@@ -489,16 +489,16 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
 
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
     // cout<<"after offset : "<<of1<<"\n";
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("addq %r9, %r8");
@@ -515,14 +515,14 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     // cout<<"inside hereen\n";
     // cout << "inside here " << t1 << " " << t2 << " " << t3 << endl;
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("subq %r9, %r8");
@@ -539,14 +539,14 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     // cout<<"inside hereen\n";
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("imulq %r9, %r8");
@@ -561,14 +561,14 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r8");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t3)+", %r8");
 
     ret.push_back("idivq %r8");
@@ -3118,6 +3118,12 @@ void execMethodHeader_(int nodeNum){
         attr3AC[nodeNum].threeAC.push_back(temp2);
         typeSize[temp] = 8;
         // cout << "in lop " << i << " " << temp2 << endl;
+
+        //Add GAS x86_64 for popping the params
+        int tempOffset = -8*(stoi(temp.substr(1)));
+        string gas = "popq " + to_string(tempOffset) + "(%rbp)";
+        attr3AC[nodeNum].assemblyCode.push_back(gas);
+
     }
     attr3AC[nodeNum].params.clear();
     attr3AC[nodeNum].paramsNodeNo.clear();
@@ -4366,6 +4372,8 @@ void execMethodDeclaration(int nodeNum){
             // cout << "inside method declaration " << insideClassName << endl;
             string temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            //Add function label for GAS x86_64
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
             attr3AC[nodeNum].nodeno =  attr3AC[c].nodeno;
@@ -5383,6 +5391,14 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
 
+                //GAS code for function calls
+                string temp2 = "callq " + attr3AC[c].addrName + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(temp2);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+
                 pushLabelUp(nodeNum,c);
             }else{
                 int c = adj[nodeNum][0];
@@ -5412,6 +5428,14 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, fname, insideClassName);
                 pushLabelUp(nodeNum,c);
+
+                //GAS x86_64 code for function call
+                string temp2 = "callq " + fname + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(temp2);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
             }
         }
             break;
@@ -5453,6 +5477,35 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
                 pushLabelUp(nodeNum,c);
+
+                //GAS x86_64 code for function call with parameters
+                for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
+                    string p = attr3AC[c3].params[fcall];
+                    if(p[0]>='0' && p[0]<='9'){
+                        string temp = "pushq $" + p;
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }
+                    if(p[0]=='t'){
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }else{
+                        p = varToTemp[attr3AC[c3].params[fcall]];
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                    }
+                }
+                //call function in GAS
+                string callFun = "callq " + attr3AC[c].addrName + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(callFun);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+
             }else{
                 int c = adj[nodeNum][0];
                 int c3 = adj[nodeNum][2];
@@ -5492,6 +5545,34 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, fname, insideClassName);
                 pushLabelUp(nodeNum,c);
+
+                //GAS x86_64 code for function call with parameters
+                for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
+                    string p = attr3AC[c3].params[fcall];
+                    if(p[0]>='0' && p[0]<='9'){
+                        string temp = "pushq $" + p;
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }
+                    if(p[0]=='t'){
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }else{
+                        p = varToTemp[attr3AC[c3].params[fcall]];
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                    }
+                }
+                //call function in GAS
+                string callFun = "callq " + fname + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(callFun);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
             }
         }
             break;
