@@ -2,6 +2,7 @@
 #include "attr.h"
 
 using namespace std;
+vector<string> freeHeap;
 vector<vector<string>> ForInitVars; // ForInitVars[n-1] stores the popping 3ACs of the vars declared in the current "ForStatement"
 map<string,string> funcParamTemp;//maps function parameter list to their corresponding temp
 // ClassBody_NodeNumber->Class Name
@@ -2892,6 +2893,9 @@ void execVariableDeclarator(int nodeNum){
                 string temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 attr3AC[nodeNum].assemblyCode.push_back(temp3);
 
+                //Add location to freeHeap array so that we can free it in the end
+                freeHeap.push_back("movq "+ to_string(tempOffset) + "(%rbp), %rdi");
+
 
             }else{
                 string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
@@ -4619,7 +4623,12 @@ void execMethodDeclaration(int nodeNum){
             int c = adj[nodeNum][0];
             int c2 = adj[nodeNum][1];
             // cout << "inside method declaration " << insideClassName << endl;
-            string temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
+            string temp;
+            if(nodeType[attr3AC[c].nodeno]=="main"){
+                temp = nodeType[attr3AC[c].nodeno] +":";
+            }else{
+                temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
+            }
             attr3AC[nodeNum].threeAC.push_back(temp);
             //Add function label for GAS x86_64
             attr3AC[nodeNum].assemblyCode.push_back(temp);
@@ -5357,8 +5366,13 @@ void execArrayCreationExpression(int nodeNum){
             int tempOffset = -8*(stoi(temp.substr(1)))-8;
             string temp3 = "movq $" + to_string(totsize) + ", %rdi";
             attr3AC[nodeNum].assemblyCode.push_back(temp3);
-            temp3 = "callq malloc";
+            //call the sbrk syscall
+            temp3 = "movq $12, %rax";
             attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            temp3 = "syscall";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            // temp3 = "callq malloc";
+            // attr3AC[nodeNum].assemblyCode.push_back(temp3);
             // temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
             // attr3AC[nodeNum].assemblyCode.push_back(temp3);
         }
@@ -7776,9 +7790,30 @@ void print3AC(int nodeNum){
 
 void printAssemblyCode (int nodeNum){
     FILE* fp = freopen("assemblyCode.s","w",stdout);
+    int inMani = 0;
     // cout << attr3AC[nodeNum].assemblyCode.size() << endl;
+    cout << ".text" << endl;
+    cout << ".globl main" << endl;
     set<string> checkLabel;
     for(int i=0;i<attr3AC[nodeNum].assemblyCode.size();i++){
+        if(attr3AC[nodeNum].assemblyCode[i].substr(0,3)=="ret" && inMani){
+            int numtemps = 8*tempNum;
+            string makespace = "addq $" + to_string(numtemps) + ", %rsp";
+            cout << makespace << endl;
+            //push value 0 in register rax
+            //idk if this works
+            // for(int frH=0;frH<freeHeap.size();frH++){
+            //     cout << "movq $12, %rax" << endl;
+            //     cout << freeHeap[frH] << endl;
+            //     cout << "movq $0, %rsi" << endl;
+            //     cout << "syscall" << endl;
+            // }
+            cout << "popq %rbp" << endl;
+            cout << "movq $0, %rax" << endl;
+            cout << "ret" << endl;
+            inMani=0;
+            continue;
+        }
         int siz = attr3AC[nodeNum].assemblyCode[i].size();
         if(attr3AC[nodeNum].assemblyCode[i][0]=='L' && attr3AC[nodeNum].assemblyCode[i][siz-1]==':'){
             string lab=attr3AC[nodeNum].assemblyCode[i];
@@ -7788,6 +7823,19 @@ void printAssemblyCode (int nodeNum){
             }
         }
         else cout << (attr3AC[nodeNum].assemblyCode)[i] << endl;
+        if(attr3AC[nodeNum].assemblyCode[i].substr(0,4)=="main"){
+            inMani = 1;
+            cout << "pushq %rbp" << endl;
+            cout << "movq %rsp, %rbp" << endl;
+            int numtemps = 8*tempNum;
+            string makespace = "subq $" + to_string(numtemps) + ", %rsp";
+            cout << makespace << endl;
+            // for(int temppush=0;temppush<tempNum;temppush++){
+            //     //make more space on stack by subtracting %rsp by 8
+            //     string makespace = "subq $8, %rsp";
+            //     cout << makespace << endl;
+            // }    
+        }
     }
     fclose(fp);
 }
