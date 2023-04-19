@@ -495,10 +495,10 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
 
     // cout<<"after offset : "<<of1<<"\n";
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("addq %r9, %r8");
@@ -519,10 +519,10 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
     if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("subq %r9, %r8");
@@ -543,10 +543,10 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
     if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("imulq %r9, %r8");
@@ -565,10 +565,10 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
     if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r8");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t3)+", %r8");
 
     ret.push_back("idivq %r8");
@@ -4349,6 +4349,8 @@ void execMethodDeclaration(int nodeNum){
             // cout << "inside method declaration " << insideClassName << endl;
             string temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            //Add function label for GAS x86_64
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
             attr3AC[nodeNum].nodeno =  attr3AC[c].nodeno;
