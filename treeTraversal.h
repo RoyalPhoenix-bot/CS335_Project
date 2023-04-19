@@ -468,7 +468,7 @@ string getLabel(int nodeNum, int type){
 }
 
 int getStackOffset(string t1){
-    return -8*stoi(t1.substr(1, t1.size()-1))+8;
+    return -8*stoi(t1.substr(1, t1.size()-1));
 }
 
 vector<string> getAddAssemblyCode(string t1, string t2, string t3){
@@ -489,16 +489,16 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
 
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
     // cout<<"after offset : "<<of1<<"\n";
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("addq %r9, %r8");
@@ -515,14 +515,14 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     // cout<<"inside hereen\n";
     // cout << "inside here " << t1 << " " << t2 << " " << t3 << endl;
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("subq %r9, %r8");
@@ -539,14 +539,14 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     // cout<<"inside hereen\n";
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r9");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
     else ret.push_back("movq $"+(t3)+", %r9");
 
     ret.push_back("imulq %r9, %r8");
@@ -561,14 +561,14 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
 
-    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), $r8");
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t3)+", %r8");
 
     ret.push_back("idivq %r8");
@@ -577,6 +577,92 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
 
     return ret;
 }
+
+vector<string> getPerAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+    //t1=t2/t3
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %rax");
+    else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
+
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r8");
+    else ret.push_back("movq $"+(t3)+", %r8");
+
+    ret.push_back("xorq %rdx, %rdx");
+    ret.push_back("idivq %r8");
+
+    ret.push_back("movq %rdx, " + to_string(of1) + "(%rbp)");  
+
+    return ret;
+}
+
+vector<string> getRightShiftAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+    //t1=t2/t3
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
+
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
+    else ret.push_back("movq $"+(t3)+", %r9");
+
+    ret.push_back("sarq %r8, %r9");
+
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
+
+    return ret;
+}
+
+vector<string> getLeftShiftAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+    //t1=t2/t3
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
+
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
+    else ret.push_back("movq $"+(t3)+", %r9");
+
+    ret.push_back("salq %r8, %r9");
+
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
+
+    return ret;
+}
+
+vector<string> getUnsignedRightShiftAssemblyCode(string t1, string t2, string t3){
+    vector<string> ret;
+    //t1=t2/t3
+    int of1, of2, of3;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
+
+    if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r9");
+    else ret.push_back("movq $"+(t3)+", %r9");
+
+    ret.push_back("shrq %r8, %r9");
+
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)");  
+
+    return ret;
+}
+
 
 int getLabelNumber(string s){
     string r = "";
@@ -5853,6 +5939,28 @@ void execShiftExpression(int nodeNum){
             
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " << " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+            // string arg1 = varToTemp[attr3AC[nodeNum].addrName];
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
+
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            if(arg3=="") { arg3 = attr3AC[c3].addrName; }
+
+            auto x = getLeftShiftAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
         case 3:{
@@ -5865,6 +5973,28 @@ void execShiftExpression(int nodeNum){
 
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >> " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+            // string arg1 = varToTemp[attr3AC[nodeNum].addrName];
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
+
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            if(arg3=="") { arg3 = attr3AC[c3].addrName; }
+
+            auto x = getRightShiftAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
         case 4:{
@@ -5878,6 +6008,28 @@ void execShiftExpression(int nodeNum){
 
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " >>> " + attr3AC[c3].addrName;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+            // string arg1 = varToTemp[attr3AC[nodeNum].addrName];
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
+
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            if(arg3=="") { arg3 = attr3AC[c3].addrName; }
+
+            auto x = getUnsignedRightShiftAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
     }
@@ -6053,6 +6205,25 @@ void execMultiplicativeExpression(int nodeNum){
             string temp = "t" + to_string(tempNum) + " = " + attr3AC[c].addrName + " % " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            string arg3 = varToTemp[attr3AC[c3].addrName];
+
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
+            // cout << attr3AC[c].addrName << "idhaf" << endl;
+            if(attr3AC[c].addrName[0]>='0' && attr3AC[c].addrName[0]<='9') { arg2 = attr3AC[c].addrName; }
+            if(attr3AC[c3].addrName[0]>='0' && attr3AC[c3].addrName[0]<='9') { arg3 = attr3AC[c3].addrName; }
+
+            auto x = getPerAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
     }
