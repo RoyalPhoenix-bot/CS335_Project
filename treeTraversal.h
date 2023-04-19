@@ -2904,6 +2904,11 @@ void execVariableDeclarator(int nodeNum){
                 // cout << "variabledeclarator " << temp << endl;
                 typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
                 attr3AC[nodeNum].threeAC.push_back(temp);
+
+                string arg1 = getArg(attr3AC[c].addrName);
+                string arg2 = getArg(attr3AC[c3].addrName);
+                string tempac = "movq " + arg2 + ", " + arg1;
+                attr3AC[nodeNum].assemblyCode.push_back(tempac);
                 // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
 
