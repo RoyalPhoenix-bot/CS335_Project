@@ -508,7 +508,7 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
     // cout<<t1<<" "<<t2<<" "<<t3<<"\n";
     
     // cout<<"calc val :"<<8*stoi(t1.substr(1, t1.size()-1));
-    cout << "inside the add expresion " << t1 << " " << t2 << " " << t3 << endl;
+    // cout << "inside the add expresion " << t1 << " " << t2 << " " << t3 << endl;
     
     int of1, of2, of3;
     if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
@@ -2904,10 +2904,6 @@ void execVariableDeclarator(int nodeNum){
                 typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
                 attr3AC[nodeNum].threeAC.push_back(temp);
 
-                string arg1 = getArg(attr3AC[c].addrName);
-                string arg2 = getArg(attr3AC[c3].addrName);
-                string tempac = "movq " + arg2 + ", " + arg1;
-                attr3AC[nodeNum].assemblyCode.push_back(tempac);
                 // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
 
@@ -2915,6 +2911,12 @@ void execVariableDeclarator(int nodeNum){
                 tempNum++;
                 temp = "t" + to_string(tempNum);
                 varToTemp[nodeType[attr3AC[c].nodeno]] = temp;
+                // cout << "assigning temp " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
+
+                string arg1 = getArg(attr3AC[c].addrName);
+                string arg2 = getArg(attr3AC[c3].addrName);
+                string tempac = "movq " + arg2 + ", " + arg1;
+                attr3AC[nodeNum].assemblyCode.push_back(tempac);
                 // cout << "assigning temp2 " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
 
             }
@@ -3132,7 +3134,6 @@ void execReturnStatement(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c2];
             string temp = "RETURN " + attr3AC[c2].addrName;
             string t1 = attr3AC[c2].addrName;
-            cout<<t1<<endl;
             string arg1;
             if (t1[0] == 't'){
                 int of1 = -8*stoi(t1.substr(1));
@@ -5396,7 +5397,7 @@ void execArrayAccess(int nodeNum){
             int c3 = adj[nodeNum][2];
             auto mdata= getArrayInfo(attr3AC[c].addrName,attr3AC[c].nodeno);
             // auto mdata = getArrayInfo(nodeType[adj[attr3AC[c].nodeno][0]],attr3AC[c].nodeno);// lowestnode
-            cout << "in array access wefasdfsf " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << endl;
+            // cout << "in array access wefasdfsf " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << endl;
 
             // cout << "over here " << nodeNum << " " << attr3AC[c].nodeno << " " << nodeType[adj[attr3AC[c].nodeno][0]] << endl;
             string t = mdata.first;
@@ -5558,7 +5559,7 @@ void execPrimaryNoNewArray(int nodeNum){
         case 6:{
             int c = adj[nodeNum][0];
             attr3AC[nodeNum] = attr3AC[c];
-            cout << "idahr dekhra hu " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
+            // cout << "idahr dekhra hu " << attr3AC[nodeNum].dimsDone << " " << attr3AC[c].dimsDone << endl;
             // cout << "check dims " << attr3AC[nodeNum].dimsDone << " " << attr3AC[nodeNum].arrDims.size() << endl;
             attr3AC[nodeNum].dimsDone = attr3AC[c].dimsDone;
             if(attr3AC[nodeNum].dimsDone == attr3AC[nodeNum].arrDims.size()){
@@ -5567,7 +5568,7 @@ void execPrimaryNoNewArray(int nodeNum){
                 typeOfNode[attr3AC[nodeNum].addrName] = attr3AC[c].type;
                 string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
                 attr3AC[nodeNum].threeAC.push_back(temp);
-                cout << "idhar aagya " << endl;
+                // cout << "idhar aagya " << endl;
 
                 //Generate GAS code for array access
                 string tempArr = varToTemp[attr3AC[c].nameAtNode];
@@ -5929,7 +5930,7 @@ void execAssignment(int nodeNum){
                 arg2+= "(%rbp)";
             }
             string tempac = "movq " + arg2 + ", " + arg1;
-            cout<<tempac<<endl;
+            // cout<<tempac<<endl;
             if(attr3AC[c].isthis==0){
                 attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
                 string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
@@ -6205,6 +6206,7 @@ void execConditionalOrExpression(int nodeNum){
             string cFalse = getLabel(c,2);
             string temp = cFalse + ":";
             (attr3AC[nodeNum].threeAC).push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
 
             trueLabel[c] = trueLabel[nodeNum];
