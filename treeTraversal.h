@@ -3296,6 +3296,11 @@ void execInterfaceBody(int nodeNum){
 
 void execIntegerLiteral(int nodeNum){
     int c = adj[nodeNum][0];
+    // tempNum++;
+    // string temp = "t" + to_string(tempNum);
+    // string threAC = temp + " = " + nodeType[c];
+    // attr3AC[nodeNum].threeAC.push_back(threAC);
+    // attr3AC[nodeNum].addrName = temp;
     attr3AC[nodeNum].addrName = nodeType[c];
     attr3AC[nodeNum].nodeno = c;
     typeOfNode[to_string(c)]="int";
@@ -4960,6 +4965,7 @@ void execArrayCreationExpression(int nodeNum){
             for(int i=0;i<attr3AC[c3].arrDims.size();i++){
                 totsize*=attr3AC[c3].arrDims[i];
             }
+            cout << "idhar " << totsize << endl;
             tempNum++;
             string temp = "t" + to_string(tempNum);
             string temp2 = temp + " = " + to_string(totsize);
@@ -4978,6 +4984,15 @@ void execArrayCreationExpression(int nodeNum){
             // temp2 = temp + " = " + "popparam";
             // attr3AC[nodeNum].threeAC.push_back(temp2);
             attr3AC[nodeNum].addrName = "popparam";
+
+            //GAS x86_64 instructions
+            int tempOffset = -8*(stoi(temp.substr(1)));
+            string temp3 = "movq $" + to_string(totsize) + ", %rdi";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            temp3 = "callq malloc";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
         }
         break;
         case 2:{
@@ -5182,12 +5197,13 @@ void execPrimaryNoNewArray(int nodeNum){
                 string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
                 attr3AC[nodeNum].threeAC.push_back(temp);
                 cout << "idhar aagya " << endl;
+
                 //Generate GAS code for array access
                 string tempArr = varToTemp[attr3AC[c].nameAtNode];
                 //Put value of index from attr3AC[c].addrName inside %rsi
                 int tempOffset;string tempA;
                 if(attr3AC[c].addrName[0]=='t'){
-                    tempOffset = 8*stoi(attr3AC[c].addrName.substr(1));
+                    tempOffset = -8*(stoi(attr3AC[c].addrName.substr(1)));
                     tempA = "movq " + to_string(tempOffset) + "(%rbp), %rsi";
                 }else{
                     tempOffset = stoi(attr3AC[c].addrName);
@@ -5196,12 +5212,12 @@ void execPrimaryNoNewArray(int nodeNum){
                 attr3AC[nodeNum].assemblyCode.push_back(tempA);
                 // string arg1=getArgumentFromTemp(attr3AC[c].addrName);
                 cout << "over here now" << endl;
-                tempOffset = 8*stoi(tempArr.substr(1)); 
+                tempOffset = -8*stoi(tempArr.substr(1)); 
                 string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
                 string movins = "movq " + arg1 + ", %rax";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
                 cout << "okay " << endl;
-                tempOffset = 8*stoi(attr3AC[nodeNum].addrName.substr(1));
+                tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1));
                 movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 cout << "error here?" << endl;
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
@@ -6236,9 +6252,11 @@ void execSimpleName(int nodeNum){
 void execIdentifier(int nodeNum){
     //initialize varToTemp
     int c = adj[nodeNum][0];//Get child node number
-    tempNum++;
-    string temp = "t" + to_string(tempNum);
-    varToTemp[nodeType[c]] = temp;
+    if(varToTemp.find(nodeType[c])==varToTemp.end()){
+        tempNum++;
+        string temp = "t" + to_string(tempNum);
+        varToTemp[nodeType[c]] = temp;
+    }
     attr3AC[nodeNum].addrName = nodeType[c];//Add addrname of identifier 
     attr3AC[nodeNum].nodeno = c;
     if(inStatement && !(inMethodInvocation && inMN))checkIfDeclared(c,nodeType[c]);

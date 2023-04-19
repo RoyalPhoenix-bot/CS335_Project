@@ -3607,6 +3607,7 @@ int main(int argc, char* argv[])
 	fillClassSizes();
 	// printfilltypeOfNode();
 	generateLabels(rootNodenum);
+	cout << "over here" << endl;
 	postOrderTraversal3AC(rootNodenum);
 	print3AC(rootNodenum);
 	printAssemblyCode(rootNodenum);
