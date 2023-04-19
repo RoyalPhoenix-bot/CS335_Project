@@ -2942,13 +2942,36 @@ void execReturnStatement(int nodeNum){
             int c2 = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c2];
             string temp = "RETURN " + attr3AC[c2].addrName;
+            string t1 = attr3AC[c2].addrName;
+            cout<<t1<<endl;
+            string arg1;
+            if (t1[0] == 't'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            else if (t1[0]>='0' && t1[0]<='9'){
+                arg1 = "$" + t1;
+            }
+            else{
+                t1 = varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+
+            }
             attr3AC[nodeNum].threeAC.push_back(temp);
+            string tempac1 = "movq " + arg1 + ", %rax";
+            string tempac2 = "ret";
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
             pushLabelUp(nodeNum,c2);
         }
         break;
         case 2:{
             string temp = "RETURN";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("ret");
         }
         break;
     }
@@ -3897,7 +3920,7 @@ void execClassInstanceCreationExpression(int nodeNum){
 
             int size_class = typeSize[insideClassName];
 
-            cout << "over here" << endl;
+            // cout << "over here" << endl;
             tempNum++;
             string temp = "t"+to_string(tempNum)+" = "+to_string(size_class);
             attr3AC[nodeNum].threeAC.push_back(temp);
