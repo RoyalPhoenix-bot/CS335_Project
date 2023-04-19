@@ -724,7 +724,6 @@ vector<string> getMinusUnaryExpressionAssemblyCode(string t1){
 vector<string> getPreandPostIncrementAssemblyCode(string t1){
     vector<string> ret;
     //t1=++t2
-    cout<<"t1 "<<t1<<endl;
 
     int of1;
     of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
@@ -738,11 +737,10 @@ vector<string> getPreandPostIncrementAssemblyCode(string t1){
     return ret;
 }
 
-vector<string> getPreandPostDecrementAssemblyCode(string t1, string t2){
+vector<string> getPreandPostDecrementAssemblyCode(string t1){
     vector<string> ret;
     //t1=++t2
     // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
-
     int of1;
     of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
 
@@ -2834,6 +2832,7 @@ void execVariableDeclaratorId(int nodeNum){
 }
 
 void execVariableDeclarator(int nodeNum){
+
     
     // start Stack Allocation 3AC
 
@@ -2893,7 +2892,6 @@ void execVariableDeclarator(int nodeNum){
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             string tp = getTypeNode(c);
-            cout << "in vardec " << tp << endl;
             if(tp[tp.size()-1]==';'){
                 //for array initialization
                 cout << "sfadsfsdafsdafasdfdsfa" << endl;
@@ -2935,10 +2933,11 @@ void execVariableDeclarator(int nodeNum){
 
                 string arg1 = getArg(attr3AC[c].addrName);
                 string arg2 = getArg(attr3AC[c3].addrName);
-                string tempac = "movq " + arg2 + ", %r11";
-                attr3AC[nodeNum].assemblyCode.push_back(tempac);
-                tempac = "movq %r11, " + arg1;
-                attr3AC[nodeNum].assemblyCode.push_back(tempac);
+                // string tempac = "movq " + arg2 + ", " + arg1;
+                string tempac1 = "movq " + arg2 + ", %r10";
+                string tempac2 = "movq %r10, " + arg1;
+                attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+                attr3AC[nodeNum].assemblyCode.push_back(tempac2);
                 // cout << "assigning temp2 " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
 
             }
@@ -3243,7 +3242,7 @@ void execPreIncrementExpression(int nodeNum){
     // if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
     // if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName);
+    auto x = getPreandPostIncrementAssemblyCode(varToTemp[attr3AC[c].addrName]);
 
     for(auto el:x){
         // cout<<el<<"\n";
@@ -3275,7 +3274,7 @@ void execPreDecrementExpression(int nodeNum){
     if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
     if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-    auto x = getPreandPostDecrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+    auto x = getPreandPostDecrementAssemblyCode(varToTemp[attr3AC[c].addrName]);
 
     for(auto el:x){
         // cout<<el<<"\n";
@@ -3305,7 +3304,7 @@ void execPostIncrementExpression(int nodeNum){
     // if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
     // if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName);
+    auto x = getPreandPostIncrementAssemblyCode(varToTemp[attr3AC[c].addrName]);
 
     for(auto el:x){
         // cout<<el<<"\n";
@@ -3335,7 +3334,7 @@ void execPostDecrementExpression(int nodeNum){
     if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
     if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-    auto x = getPreandPostDecrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+    auto x = getPreandPostDecrementAssemblyCode(varToTemp[attr3AC[c].addrName]);
 
     for(auto el:x){
         // cout<<el<<"\n";
@@ -5974,60 +5973,118 @@ void execAssignment(int nodeNum){
             string arg2 ;
             string t1=attr3AC[c].addrName ;
             string t2=attr3AC[c3].addrName ;
-            if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1))-8;
-                arg1 = to_string(of1);
-                arg1+= "(%rbp)";
-            }
-            // else if t1[0] is integer character
-            else if (t1[0] >= '0' && t1[0] <= '9'){
-                arg1 = "$"+t1;
+            // cout<<"t1 "<<t1<<endl;
+            // cout<<t1.size()<<endl;
+            // cout<<"t2 "<<t2<<endl;
+            bool flag=false;
+            string tempac1,tempac2,tempac3,tempac4,tempac;
+            if (t1[0]=='*'|| t2[0]=='*'){
+                flag=true;
+                // cout<<"In wherersXdas\n";
+                if (t1[0]=='*'){
+                    // t1 is of the form *(t8 + t9) 
+                    string arg2=getArg(t2);
+                    string argti = getArg(t1.substr(2,t1.find("+")-2));
+                    string argtj = getArg(t1.substr(t1.find("+")+2, t1.find(")")-t1.find("+")-2));
+                    tempac1 = "movq " + argti + ", %r8";
+                    tempac2 = "movq " + argtj + ", %r9";
+                    tempac3 = "addq %r9, %r8";
+                    tempac4 = "movq " + arg2+ ", (%r8)";
+
+                }
+                else{
+                    string arg1=getArg(t1);
+                    string argti = getArg(t2.substr(2,t2.find("+")-2));
+                    string argtj = getArg(t2.substr(t2.find("+")+2, t2.find(")")-t2.find("+")-2));
+                    tempac1 = "movq " + argti + ", %r8";
+                    tempac2 = "movq " + argtj + ", %r9";
+                    tempac3 = "addq %r9, %r8";
+                    tempac4 = "movq 0(%r8), "+arg1;
+
+                }
+                // load t8 and t9 in registers
+                
+
             }
             else{
-                t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1))-8;
-                arg1 = to_string(of1);
-                arg1+= "(%rbp)";
+
+                if (t1[0]=='t'){
+                    
+                    int of1 = -8*stoi(t1.substr(1))-8;
+                    arg1 = to_string(of1);
+                    arg1+= "(%rbp)";
+                }
+                // else if t1[0] is integer character
+                else if (t1[0] >= '0' && t1[0] <= '9'){
+                    arg1 = "$"+t1;
+                }
+                else{
+                    t1=varToTemp[t1];
+                    int of1 = -8*stoi(t1.substr(1))-8;
+                    arg1 = to_string(of1);
+                    arg1+= "(%rbp)";
+                }
+                
+                if (t2[0]=='t'){
+                    int of2 = -8*stoi(t2.substr(1))-8;
+                    arg2 = to_string(of2);
+                    arg2+= "(%rbp)";
+                }
+                // else if t2[0] is integer character
+                else if (t2[0] >= '0' && t2[0] <= '9'){
+                    arg2 = "$"+t2;
+                }
+                else{
+                    t2=varToTemp[t2];
+                    int of2 = -8*stoi(t2.substr(1))-8;
+                    arg2 = to_string(of2);
+                    arg2+= "(%rbp)";
+                }
+                // tempac = "movq " + arg2 + ", " + arg1;
+                tempac = "movq " + arg2 + ", %r10" ;
+                tempac += "\nmovq %r10, " + arg1;
+
+                // cout<<tempac<<endl;
+
+            }
+
+            if(attr3AC[c].isthis==0){
+                    attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+                    string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
+                    // cout << "assignment " << temp << endl;
+                    typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+                    attr3AC[nodeNum].threeAC.push_back(temp);
+                    if(flag==false)
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac);
+                    else{
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+
+                    }
+                    // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
+                    attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+            }
+            else{
+                    attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
+                    string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
+
+                    typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
+                    attr3AC[nodeNum].threeAC.push_back(temp);
+                    if (flag==false)
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac);
+                    else{
+
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+                        attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+
+                    }
+                    attr3AC[nodeNum].addrName = attr3AC[c].addrName;
             }
             
-            if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1))-8;
-                arg2 = to_string(of2);
-                arg2+= "(%rbp)";
-            }
-            // else if t2[0] is integer character
-            else if (t2[0] >= '0' && t2[0] <= '9'){
-                arg2 = "$"+t2;
-            }
-            else{
-                t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1))-8;
-                arg2 = to_string(of2);
-                arg2+= "(%rbp)";
-            }
-            // cout<<tempac<<endl;
-            if(attr3AC[c].isthis==0){
-                attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
-                string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-                // cout << "assignment " << temp << endl;
-                typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
-                attr3AC[nodeNum].threeAC.push_back(temp);
-                // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
-                attr3AC[nodeNum].addrName = attr3AC[c].addrName;
-            }
-            else{
-                attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
-                string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
-
-                typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
-                attr3AC[nodeNum].threeAC.push_back(temp);
-
-                attr3AC[nodeNum].addrName = attr3AC[c].addrName;
-            }
-            string tempac = "movq " + arg2 + ", %r11";
-            attr3AC[nodeNum].assemblyCode.push_back(tempac);
-            tempac = "movq %r11, "+ arg1;
-            attr3AC[nodeNum].assemblyCode.push_back(tempac);
         }
         break;
         case 2:{
@@ -7065,7 +7122,7 @@ void execMultiplicativeExpression(int nodeNum){
             // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
             if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
             if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
-            cout << attr3AC[c].addrName << "idhaf" << endl;
+            // cout << attr3AC[c].addrName << "idhaf" << endl;
             if(attr3AC[c].addrName[0]>='0' && attr3AC[c].addrName[0]<='9') { arg2 = attr3AC[c].addrName; }
             if(attr3AC[c3].addrName[0]>='0' && attr3AC[c3].addrName[0]<='9') { arg3 = attr3AC[c3].addrName; }
 
@@ -7432,6 +7489,7 @@ void labelNot(int nodeNum){
 
 void generateLabels(int nodeNum){
     string s = nodeType[nodeNum];
+    // cout<<"going to "<<s<<endl;
     if("Statement"==s && (prodNum[nodeNum]==3 || prodNum[nodeNum]==4 || prodNum[nodeNum]==5 || prodNum[nodeNum]==6)){
         labelStatement(nodeNum);
     }else if("StatementNoShortIf"==s && (prodNum[nodeNum]==3 || prodNum[nodeNum]==4 || prodNum[nodeNum]==5)){
@@ -7838,6 +7896,7 @@ void postOrderTraversal3AC(int nodeNum){
         // cout << "function not written " << s << endl;
     }
 
+    // cout<<"exiting "<<s<<endl;
     return;
 }
 
@@ -7858,6 +7917,7 @@ void print3AC(int nodeNum){
 }
 
 void printAssemblyCode (int nodeNum){
+    cout<<"printing assembly code"<<endl;
     FILE* fp = freopen("assemblyCode.s","w",stdout);
     int inMani = 0;
     // cout << attr3AC[nodeNum].assemblyCode.size() << endl;
