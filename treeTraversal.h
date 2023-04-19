@@ -5977,7 +5977,7 @@ void execAssignment(int nodeNum){
             // cout<<t1.size()<<endl;
             // cout<<"t2 "<<t2<<endl;
             bool flag=false;
-            string tempac1,tempac2,tempac3,tempac4,tempac;
+            string tempac1,tempac2,tempac3,tempac4,tempac,tempac3a;
             if (t1[0]=='*'|| t2[0]=='*'){
                 flag=true;
                 // cout<<"In wherersXdas\n";
@@ -5989,7 +5989,10 @@ void execAssignment(int nodeNum){
                     tempac1 = "movq " + argti + ", %r8";
                     tempac2 = "movq " + argtj + ", %r9";
                     tempac3 = "addq %r9, %r8";
-                    tempac4 = "movq " + arg2+ ", (%r8)";
+                    tempac3a = "movq " + arg2 + ", %r10";
+                    tempac3 += "\n";
+                    tempac3 += tempac3a;
+                    tempac4 = "movq %r10, (%r8)";
 
                 }
                 else{
