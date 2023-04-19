@@ -467,6 +467,10 @@ string getLabel(int nodeNum, int type){
     }
 }
 
+int getStackOffset(string t1){
+    return -8*stoi(t1.substr(1, t1.size()-1))+8;
+}
+
 vector<string> getAddAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;//###t3 assumed to be temporary always
     //t1=t2+t3
@@ -485,9 +489,9 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
 
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
-    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
-    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
 
     // cout<<"after offset : "<<of1<<"\n";
 
@@ -509,11 +513,11 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     vector<string> ret;
     //t1=t2-t3
     // cout<<"inside hereen\n";
-
+    // cout << "inside here " << t1 << " " << t2 << " " << t3 << endl;
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
-    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
-    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -535,9 +539,9 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     // cout<<"inside hereen\n";
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
-    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
-    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -557,9 +561,9 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = 8*stoi(t1.substr(1, t1.size()-1))-8;
-    if(t2[0]=='t') of2 = 8*stoi(t2.substr(1, t2.size()-1))-8;
-    if(t3[0]=='t') of3 = 8*stoi(t3.substr(1, t3.size()-1))-8;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))+8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))+8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))+8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), $rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
@@ -5908,15 +5912,18 @@ void execAdditiveExpression(int nodeNum){
             
             // cout<<attr3AC[nodeNum].addrName<<"\n";
 
-            string arg1 = varToTemp[attr3AC[nodeNum].addrName];
+            // string arg1 = varToTemp[attr3AC[nodeNum].addrName];
             string arg2 = varToTemp[attr3AC[c].addrName];
             string arg3 = varToTemp[attr3AC[c3].addrName];
 
-            if(arg1.size()==0) arg2 = attr3AC[nodeNum].addrName;
-            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
-            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
 
-            auto x = getAddAssemblyCode(attr3AC[c].addrName, arg2, arg3);
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            if(arg3=="") { arg3 = attr3AC[c3].addrName; }
+
+            auto x = getAddAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
 
             for(auto el:x){
                 // cout<<el<<"\n";
@@ -5940,15 +5947,17 @@ void execAdditiveExpression(int nodeNum){
             
             // cout<<attr3AC[nodeNum].addrName<<"\n";
 
-            string arg1 = varToTemp[attr3AC[nodeNum].addrName];
             string arg2 = varToTemp[attr3AC[c].addrName];
             string arg3 = varToTemp[attr3AC[c3].addrName];
 
-            if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
-            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
-            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
 
-            auto x = getSubAssemblyCode(attr3AC[c].addrName, arg2, arg3);
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            if(arg3=="") { arg3 = attr3AC[c3].addrName; }
+
+            auto x = getSubAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
 
             for(auto el:x){
                 // cout<<el<<"\n";
@@ -5986,8 +5995,12 @@ void execMultiplicativeExpression(int nodeNum){
             string arg2 = varToTemp[attr3AC[c].addrName];
             string arg3 = varToTemp[attr3AC[c3].addrName];
 
-            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
-            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
+
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            if(arg3=="") { arg3 = attr3AC[c3].addrName; }
 
             auto x = getMulAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
 
@@ -6011,12 +6024,15 @@ void execMultiplicativeExpression(int nodeNum){
 
             attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
             
-            // cout<<attr3AC[nodeNum].addrName<<"\n";
             string arg2 = varToTemp[attr3AC[c].addrName];
             string arg3 = varToTemp[attr3AC[c3].addrName];
 
-            if(arg2.size()==0) arg2 = attr3AC[c].addrName;
-            if(arg3.size()==0) arg3 = attr3AC[c3].addrName;
+            // if(arg1.size()==0) arg1 = attr3AC[nodeNum].addrName;
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(varToTemp.find(attr3AC[c3].addrName)==varToTemp.end()){ arg3 = attr3AC[c3].addrName; }
+            cout << attr3AC[c].addrName << "idhaf" << endl;
+            if(attr3AC[c].addrName[0]>='0' && attr3AC[c].addrName[0]<='9') { arg2 = attr3AC[c].addrName; }
+            if(attr3AC[c3].addrName[0]>='0' && attr3AC[c3].addrName[0]<='9') { arg3 = attr3AC[c3].addrName; }
 
             auto x = getDivAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
 
