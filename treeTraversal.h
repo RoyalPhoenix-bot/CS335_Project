@@ -74,7 +74,8 @@ vector<attr> attr3AC;
 
 stack<pair<int,int>> currScope;
 stack<pair<int,int>> parentScope;
-
+map <string,bool> isFinalField;
+bool isInAssignment=false;
 bool inFormalParameterList=false;
 bool inForInit=false;
 map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
@@ -1364,6 +1365,14 @@ void preOrderTraversal(int nodeNum){
         // new variable(s) being declared
         // localTableParams localRow ;
 
+        if (prodNum[nodeNum]==1){
+            // Modifiersopt is present
+            // call Modifiers
+            int cb4=adj[nodeNum][0];
+            preOrderTraversal(cb4);
+
+        }
+
         // call Type (always 3rd from the back)
         int cb3=adj[nodeNum][adj[nodeNum].size()-3];
         preOrderTraversal(cb3);
@@ -1411,6 +1420,13 @@ void preOrderTraversal(int nodeNum){
             locRow.scope=currScope.top();
             locRow.parentScope=parentScope.top();
             (*currSymTab).push_back(locRow);
+        }
+
+        int c = adj[nodeNum][0];
+        if (prodNum[nodeNum]==1){
+            if (attrSymTab[c].name=="final"){
+                isFinalField[attrSymTab[cb2].name]=true;
+            }
         }
 
         return;
@@ -2244,6 +2260,7 @@ void preOrderTraversal(int nodeNum){
         preOrderTraversal(c1);
 
         if (prodNum[nodeNum]==1){
+            attrSymTab[nodeNum].name=attrSymTab[c1].name;
             attrSymTab[nodeNum].num=attrSymTab[c1].num;    
             attrSymTab[nodeNum].leafNodeNum=attrSymTab[c1].leafNodeNum;
             typeOfNode[to_string(attrSymTab[nodeNum].leafNodeNum)]=fillHelper(to_string(attrSymTab[nodeNum].leafNodeNum));
@@ -2322,8 +2339,34 @@ void preOrderTraversal(int nodeNum){
 
 
     }
-    else if (nodeType[nodeNum]=="Assignment"){
+    else if (nodeType[nodeNum]=="Modifier"){
+        preOrderTraversal(adj[nodeNum][0]);
+        attrSymTab[nodeNum].name=nodeType[adj[nodeNum][0]];
+    }
+    else if (nodeType[nodeNum]=="Modifiers"){
+        for (auto child:adj[nodeNum])
+            preOrderTraversal(child);
+        if (prodNum[nodeNum]==1){
+           attrSymTab[nodeNum].name = attrSymTab[adj[nodeNum][0]].name;
+        }
+    }
+    else if (nodeType[nodeNum]=="FieldAccess"){
+        for (auto child:adj[nodeNum])
+            preOrderTraversal(child);
+        
+        if (prodNum[nodeNum]==1 && isInAssignment){
 
+            if (attrSymTab[adj[nodeNum][0]].name=="this"){
+                // cout<<isFinalField["m"]<<endl;
+                if ((isFinalField.find(attrSymTab[adj[nodeNum][2]].name))!=isFinalField.end()){
+                    cout<<"[Compilation Error]: Cannot assign a value to final field '"<<attrSymTab[adj[nodeNum][2]].name<<"!\nAborting...\n";
+                    // exit(0);
+                }
+            }
+        }
+    }
+    else if (nodeType[nodeNum]=="Assignment"){
+        isInAssignment=true;
         for (auto child: adj[nodeNum])
             preOrderTraversal(child);
         
@@ -2356,6 +2399,7 @@ void preOrderTraversal(int nodeNum){
             // cout<<"[Compilation Error]: Type mismatch on line "<<lineNum[nodeNum]<<"\nType '"<<t1<<"' of '"<<var1<<"' does not match type '"<<t3<<"' of '"<<var2<<"'!\nAborting...\n";
             // exit(0);
         }
+        isInAssignment=false;
 
     }
     else if (nodeType[nodeNum]=="LeftHandSide"){
@@ -2544,6 +2588,12 @@ void preOrderTraversal(int nodeNum){
                 // cout<<attrSymTab[nodeNum].type<<endl;
             }
 
+            break;
+        }
+        case 2:{
+
+            int c1=adj[nodeNum][0];
+            attrSymTab[nodeNum].name=nodeType[c1];
             break;
         }
         case 3:{
