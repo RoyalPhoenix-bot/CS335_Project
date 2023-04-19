@@ -82,7 +82,7 @@ string getArg (string t){
     string arg1;
 
             if (t[0]=='t'){
-                int of1 = -8*stoi(t.substr(1));
+                int of1 = -8*stoi(t.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -92,7 +92,7 @@ string getArg (string t){
             }
             else{
                 t=varToTemp[t];
-                int of1 = -8*stoi(t.substr(1));
+                int of1 = -8*stoi(t.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -490,7 +490,7 @@ string getLabel(int nodeNum, int type){
 }
 
 int getStackOffset(string t1){
-    return -8*stoi(t1.substr(1, t1.size()-1));
+    return -8*stoi(t1.substr(1, t1.size()-1))-8;
 }
 
 vector<string> getAddAssemblyCode(string t1, string t2, string t3){
@@ -511,9 +511,9 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
     cout << "inside the add expresion " << t1 << " " << t2 << " " << t3 << endl;
     
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     // cout<<"after offset : "<<of1<<"\n";
 
@@ -537,9 +537,9 @@ vector<string> getSubAssemblyCode(string t1 , string t2, string t3){
     // cout<<"inside hereen\n";
     // cout << "inside here " << t1 << " " << t2 << " " << t3 << endl;
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -561,9 +561,9 @@ vector<string> getMulAssemblyCode(string t1, string t2, string t3){
     // cout<<"inside hereen\n";
 
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -583,9 +583,9 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
@@ -604,9 +604,9 @@ vector<string> getPerAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %rax");
     else ret.push_back("movq $"+(t2)+", %rax");  //if t2 is a constant
@@ -626,9 +626,9 @@ vector<string> getRightShiftAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -647,9 +647,9 @@ vector<string> getLeftShiftAssemblyCode(string t1, string t2, string t3){
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -668,9 +668,9 @@ vector<string> getUnsignedRightShiftAssemblyCode(string t1, string t2, string t3
     vector<string> ret;
     //t1=t2/t3
     int of1, of2, of3;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
-    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
+    if(t3[0]=='t') of3 = -8*stoi(t3.substr(1, t3.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant
@@ -691,8 +691,8 @@ vector<string> getMinusUnaryExpressionAssemblyCode(string t1, string t2){
     // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
 
     int of1, of2;
-    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
 
     if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant    
@@ -709,13 +709,14 @@ vector<string> getPreandPostIncrementAssemblyCode(string t1, string t2){
     // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
 
     int of1, of2;
-    of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
 
     ret.push_back("movq " + to_string(of2) + "(%rbp), %r8"); 
 
     ret.push_back("incq %r8");
     ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
+    // ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
 
     return ret;
 }
@@ -726,8 +727,8 @@ vector<string> getPreandPostDecrementAssemblyCode(string t1, string t2){
     // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
 
     int of1, of2;
-    of1 = -8*stoi(t1.substr(1, t1.size()-1));
-    of2 = -8*stoi(t2.substr(1, t2.size()-1));
+    of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
+    of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
 
     ret.push_back("movq " + to_string(of2) + "(%rbp), %r8"); 
 
@@ -2891,7 +2892,7 @@ void execVariableDeclarator(int nodeNum){
                 varToTemp[nodeType[attr3AC[c].nodeno]] = temp;
                 // cout << "assigning temp " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
 
-                int tempOffset = -8*(stoi(temp.substr(1)));
+                int tempOffset = -8*(stoi(temp.substr(1)))-8;
                 string temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 attr3AC[nodeNum].assemblyCode.push_back(temp3);
 
@@ -3130,7 +3131,7 @@ void execReturnStatement(int nodeNum){
             cout<<t1<<endl;
             string arg1;
             if (t1[0] == 't'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -3139,7 +3140,7 @@ void execReturnStatement(int nodeNum){
             }
             else{
                 t1 = varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
 
@@ -3367,7 +3368,7 @@ void execMethodHeader_(int nodeNum){
         // cout << "in lop " << i << " " << temp2 << endl;
 
         //Add GAS x86_64 for popping the params
-        int tempOffset = -8*(stoi(temp.substr(1)));
+        int tempOffset = -8*(stoi(temp.substr(1)))-8;
         string gas = "popq " + to_string(tempOffset) + "(%rbp)";
         attr3AC[nodeNum].assemblyCode.push_back(gas);
 
@@ -5352,7 +5353,7 @@ void execArrayCreationExpression(int nodeNum){
             attr3AC[nodeNum].addrName = "popparam";
 
             //GAS x86_64 instructions
-            int tempOffset = -8*(stoi(temp.substr(1)));
+            int tempOffset = -8*(stoi(temp.substr(1)))-8;
             string temp3 = "movq $" + to_string(totsize) + ", %rdi";
             attr3AC[nodeNum].assemblyCode.push_back(temp3);
             temp3 = "callq malloc";
@@ -5569,7 +5570,7 @@ void execPrimaryNoNewArray(int nodeNum){
                 //Put value of index from attr3AC[c].addrName inside %rsi
                 int tempOffset;string tempA;
                 if(attr3AC[c].addrName[0]=='t'){
-                    tempOffset = -8*(stoi(attr3AC[c].addrName.substr(1)));
+                    tempOffset = -8*(stoi(attr3AC[c].addrName.substr(1)))-8;
                     tempA = "movq " + to_string(tempOffset) + "(%rbp), %rsi";
                 }else{
                     tempOffset = stoi(attr3AC[c].addrName);
@@ -5579,7 +5580,7 @@ void execPrimaryNoNewArray(int nodeNum){
                 // string arg1=getArgumentFromTemp(attr3AC[c].addrName);
                 // cout << "over here now" << endl;
                 //Get base of array in %rax
-                tempOffset = -8*stoi(tempArr.substr(1)); 
+                tempOffset = -8*stoi(tempArr.substr(1))-8; 
                 // string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
                 string movins = "movq " + to_string(tempOffset) + "(%rbp), %rax";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
@@ -5587,7 +5588,7 @@ void execPrimaryNoNewArray(int nodeNum){
                 //add %rsi and %rax
                 attr3AC[nodeNum].assemblyCode.push_back("addq %rsi, %rax");
                 //move from %rax to tempvar
-                tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1));
+                tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1))-8;
                 movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 cout << "error here?" << endl;
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
@@ -5646,7 +5647,7 @@ void execMethodInvocation(int nodeNum){
                 string temp2 = "callq " + attr3AC[c].addrName + insideClassName;
                 attr3AC[nodeNum].assemblyCode.push_back(temp2);
                 //store rax in temp after getting its offset
-                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)))-8;
                 string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
 
@@ -5684,7 +5685,7 @@ void execMethodInvocation(int nodeNum){
                 string temp2 = "callq " + fname + insideClassName;
                 attr3AC[nodeNum].assemblyCode.push_back(temp2);
                 //store rax in temp after getting its offset
-                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)))-8;
                 string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
             }
@@ -5738,13 +5739,13 @@ void execMethodInvocation(int nodeNum){
                         continue;
                     }
                     if(p[0]=='t'){
-                        int pOffset = -8*(stoi(p.substr(1)));
+                        int pOffset = -8*(stoi(p.substr(1)))-8;
                         string temp = "pushq " + to_string(pOffset) + "(%rbp)";
                         attr3AC[nodeNum].assemblyCode.push_back(temp);
                         continue;
                     }else{
                         p = varToTemp[attr3AC[c3].params[fcall]];
-                        int pOffset = -8*(stoi(p.substr(1)));
+                        int pOffset = -8*(stoi(p.substr(1)))-8;
                         string temp = "pushq " + to_string(pOffset) + "(%rbp)";
                         attr3AC[nodeNum].assemblyCode.push_back(temp);
                     }
@@ -5753,7 +5754,7 @@ void execMethodInvocation(int nodeNum){
                 string callFun = "callq " + attr3AC[c].addrName + insideClassName;
                 attr3AC[nodeNum].assemblyCode.push_back(callFun);
                 //store rax in temp after getting its offset
-                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)))-8;
                 string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
 
@@ -5806,13 +5807,13 @@ void execMethodInvocation(int nodeNum){
                         continue;
                     }
                     if(p[0]=='t'){
-                        int pOffset = -8*(stoi(p.substr(1)));
+                        int pOffset = -8*(stoi(p.substr(1)))-8;
                         string temp = "pushq " + to_string(pOffset) + "(%rbp)";
                         attr3AC[nodeNum].assemblyCode.push_back(temp);
                         continue;
                     }else{
                         p = varToTemp[attr3AC[c3].params[fcall]];
-                        int pOffset = -8*(stoi(p.substr(1)));
+                        int pOffset = -8*(stoi(p.substr(1)))-8;
                         string temp = "pushq " + to_string(pOffset) + "(%rbp)";
                         attr3AC[nodeNum].assemblyCode.push_back(temp);
                     }
@@ -5821,7 +5822,7 @@ void execMethodInvocation(int nodeNum){
                 string callFun = "callq " + fname + insideClassName;
                 attr3AC[nodeNum].assemblyCode.push_back(callFun);
                 //store rax in temp after getting its offset
-                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)))-8;
                 string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
             }
@@ -5893,7 +5894,7 @@ void execAssignment(int nodeNum){
             string t1=attr3AC[c].addrName ;
             string t2=attr3AC[c3].addrName ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -5903,13 +5904,13 @@ void execAssignment(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -5919,7 +5920,7 @@ void execAssignment(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6334,7 +6335,7 @@ void execEqualityExpression(int nodeNum){
             string arg1 ;
             string arg2 ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -6344,13 +6345,13 @@ void execEqualityExpression(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6360,7 +6361,7 @@ void execEqualityExpression(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6395,7 +6396,7 @@ void execEqualityExpression(int nodeNum){
             string arg1 ;
             string arg2 ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -6405,13 +6406,13 @@ void execEqualityExpression(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6421,7 +6422,7 @@ void execEqualityExpression(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6470,7 +6471,7 @@ void execRelationalExpression(int nodeNum){
             string arg1 ;
             string arg2 ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -6480,13 +6481,13 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6496,7 +6497,7 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6532,7 +6533,7 @@ void execRelationalExpression(int nodeNum){
             string arg1 ;
             string arg2 ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -6542,13 +6543,13 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6558,7 +6559,7 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6595,7 +6596,7 @@ void execRelationalExpression(int nodeNum){
             string arg1 ;
             string arg2 ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -6605,13 +6606,13 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6621,7 +6622,7 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6658,7 +6659,7 @@ void execRelationalExpression(int nodeNum){
             string arg1 ;
             string arg2 ;
             if (t1[0]=='t'){
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
@@ -6668,13 +6669,13 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t1=varToTemp[t1];
-                int of1 = -8*stoi(t1.substr(1));
+                int of1 = -8*stoi(t1.substr(1))-8;
                 arg1 = to_string(of1);
                 arg1+= "(%rbp)";
             }
             
             if (t2[0]=='t'){
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
@@ -6684,7 +6685,7 @@ void execRelationalExpression(int nodeNum){
             }
             else{
                 t2=varToTemp[t2];
-                int of2 = -8*stoi(t2.substr(1));
+                int of2 = -8*stoi(t2.substr(1))-8;
                 arg2 = to_string(of2);
                 arg2+= "(%rbp)";
             }
