@@ -261,6 +261,24 @@ int getOffset(int _nodeNum){
     return 0;
 }
 
+int getClassSize(string class_name){
+    vector<locationTableParams> classTab;
+    for (auto &globRow:globalTable){
+
+        if (globRow.type=="class" && globRow.name==class_name){
+            classTab = *(globRow.localTablePointer);
+        }
+
+    }
+    int count=0;
+    for (auto &classRow:classTab){
+        if (classRow.type!="method"){
+            count++;
+        }
+    }
+    return 8*count;
+}
+
 int useOffset(int _nodeNum){
 
     vector<localTableParams>* funTabPtr = scopeAndTable[_nodeNum].second ;
@@ -7920,7 +7938,7 @@ void print3AC(int nodeNum){
 }
 
 void printAssemblyCode (int nodeNum){
-    cout<<"printing assembly code"<<endl;
+    // cout<<"printing assembly code"<<endl;
     FILE* fp = freopen("assemblyCode.s","w",stdout);
     int inMani = 0;
     // cout << attr3AC[nodeNum].assemblyCode.size() << endl;
