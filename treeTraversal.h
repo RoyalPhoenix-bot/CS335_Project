@@ -632,6 +632,13 @@ vector<string> getDivAssemblyCode(string t1, string t2, string t3){
     if(t3[0]=='t') ret.push_back("movq " + to_string(of3) + "(%rbp), %r8");
     else ret.push_back("movq $"+(t3)+", %r8");
 
+    //check divide by zero exception
+    ret.push_back("movq %r8, %r10");
+    ret.push_back("xor %r9, %r9");
+    ret.push_back("cmp %r8, %r9");
+    ret.push_back("je divide_by_zero");
+    //Sign extend rax to rdx:rax by cqto
+    ret.push_back("cqto");
     ret.push_back("idivq %r8");
 
     ret.push_back("movq %rax, " + to_string(of1) + "(%rbp)");  
@@ -654,6 +661,9 @@ vector<string> getPerAssemblyCode(string t1, string t2, string t3){
     else ret.push_back("movq $"+(t3)+", %r8");
 
     ret.push_back("xorq %rdx, %rdx");
+
+    //Sign extend rax to rdx:rax by cqto
+    ret.push_back("cqto");
     ret.push_back("idivq %r8");
 
     ret.push_back("movq %rdx, " + to_string(of1) + "(%rbp)");  
@@ -4402,27 +4412,7 @@ void execClassInstanceCreationExpression(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(oldsp);
             oldsp = "oldstackpointer = popfromstack";
             attr3AC[nodeNum].threeAC.push_back(oldsp);            
-            cout << "okay" << endl;
-            
-            string temp3 = "movq $" + to_string(size_class) + ", %rdi";
-            attr3AC[nodeNum].assemblyCode.push_back(temp3);
-            //call the sbrk syscall
-            temp3 = "movq $12, %rax";
-            attr3AC[nodeNum].assemblyCode.push_back(temp3);
-            temp3 = "syscall";
-            attr3AC[nodeNum].assemblyCode.push_back(temp3);
-
-            temp3 = "movq %rax, %r15";
-            attr3AC[nodeNum].assemblyCode.push_back(temp3);
-            
-            // string p = attr3AC[c].params[0];//have to push the this reference
-            // string ass = addFuncParamsToReg(p,"%rdi",c,0);
-            // attr3AC[nodeNum].assemblyCode.push_back(ass);
-
-            //have to jump to "insideClassname_ctor:"
-            temp3 = "call " + insideClassName + "_ctor";
-            attr3AC[nodeNum].assemblyCode.push_back(temp3);
-    
+            // cout << "okay" << endl;
             pushLabelUp(nodeNum,c);
             break;
         }
@@ -5588,7 +5578,7 @@ void execArrayCreationExpression(int nodeNum){
             for(int i=0;i<attr3AC[c3].arrDims.size();i++){
                 totsize*=attr3AC[c3].arrDims[i];
             }
-            cout << "idhar " << totsize << endl;
+            // cout << "idhar " << totsize << endl;
             tempNum++;
             string temp = "t" + to_string(tempNum);
             string temp2 = temp + " = " + to_string(totsize);
@@ -5680,19 +5670,19 @@ void execArrayAccess(int nodeNum){
             
             //Assembly code generation GAS x86_64
             // string temp2 = "movq " + attr3AC[c3].addrName + ", %rax";
-            cout << "oba here "<<attr3AC[nodeNum].addrName << " " << attr3AC[c3].addrName << " " << to_string(mult) << endl;
+            // cout << "oba here "<<attr3AC[nodeNum].addrName << " " << attr3AC[c3].addrName << " " << to_string(mult) << endl;
             vector<string> tempVec = getMulAssemblyCode(attr3AC[nodeNum].addrName,attr3AC[c3].addrName,to_string(mult));
-            cout << "after mul" << endl;
+            // cout << "after mul" << endl;
             for(int i=0;i<tempVec.size();i++){
                 attr3AC[nodeNum].assemblyCode.push_back(tempVec[i]);
             }
-            cout << "done with acess" << endl;
+            // cout << "done with acess" << endl;
         }
         break;
         case 2:{
             int c =adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
-            cout << "first print " << attr3AC[c].dimsDone << endl;
+            // cout << "first print " << attr3AC[c].dimsDone << endl;
             attr3AC[nodeNum] = attr3AC[c];
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             int mult = 8;
@@ -5840,6 +5830,7 @@ void execPrimaryNoNewArray(int nodeNum){
                 attr3AC[nodeNum].assemblyCode.push_back(tempA);// ith index of array pushed
                 // string arg1=getArgumentFromTemp(attr3AC[c].addrName);
                 // cout << "over here now" << endl;
+
                 //Get base of array in %rax
                 tempOffset = -8*stoi(tempArr.substr(1))-8; 
                 // string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
@@ -5847,13 +5838,15 @@ void execPrimaryNoNewArray(int nodeNum){
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
                 // cout << "okay " << endl;
                 //add %rsi and %rax
-                attr3AC[nodeNum].assemblyCode.push_back("addq %rsi, %rax");
+                attr3AC[nodeNum].assemblyCode.push_back("subq (%rax), %rsi");
                 //move from %rax to tempvar
                 tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1))-8;
-                movins = "movq (%rax), " + to_string(tempOffset) + "(%rbp)";
-                cout << "error here?" << endl;
+                movins = "movq (%rsi), %r9";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
-                cout << "done with this" << endl;
+                movins = "movq %r9, " + to_string(tempOffset) + "(%rbp)";
+                // cout << "error here?" << endl;
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+                // cout << "done with this" << endl;
             }
             pushLabelUp(nodeNum,c);
         }
@@ -6037,7 +6030,7 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].type = getFuncRet(attr3AC[c].nodeno,fname,insideClassName);
                 // string fname = attr3AC[adj[adj[c][0]][2]].addrName;
                 // cout << "in methodinvocation " << fname << endl;
-                cout << "inside method " << attr3AC[c].threeAC.size() << " " << attr3AC[c3].threeAC.size() << endl;
+                // cout << "inside method " << attr3AC[c].threeAC.size() << " " << attr3AC[c3].threeAC.size() << endl;
                 // cout << attr3AC[c].threeAC[0] << endl;
                 attr3AC[nodeNum] = attr3AC[c] + attr3AC[c3];
                 tempNum++;
@@ -6332,6 +6325,7 @@ void execAssignment(int nodeNum){
 
             attr3AC[nodeNum].assemblyCode.push_back(tempac1);
             attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back("cqto");
             attr3AC[nodeNum].assemblyCode.push_back(tempac3);
             attr3AC[nodeNum].assemblyCode.push_back(tempac4);
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
@@ -7865,7 +7859,7 @@ void postOrderTraversal3AC(int nodeNum){
         execPrimaryNoNewArray(nodeNum);
     }else if("MethodInvocation" == s){
         execMethodInvocation(nodeNum);
-        cout<<"outta MethodInvocation\n";
+        // cout<<"outta MethodInvocation\n";
         inMethodInvocation=0;
     }else if("VariableInitializer" == s){
         execVariableInitializer(nodeNum);
@@ -8130,6 +8124,13 @@ void print3AC(int nodeNum){
 void printAssemblyCode (int nodeNum){
     // cout<<"printing assembly code"<<endl;
     FILE* fp = freopen("assemblyCode.s","w",stdout);
+
+    cout << ".data\nmessage:\n"
+        << ".ascii \"The answer is 42\\n\\0\"\n"
+        << ".align 8\nmessage_len = . - message\n"
+        << "zeroErr:\n"
+        << ".ascii \"Divide by Zero Error. [EXIT 1]\\n\\0\"\n"
+        << ".align 8\n\n";
     int inMani = 0;
     // cout << attr3AC[nodeNum].assemblyCode.size() << endl;
     cout << ".text" << endl;
@@ -8177,6 +8178,17 @@ void printAssemblyCode (int nodeNum){
             // }    
         }
     }
+
+    cout << "\ndivide_by_zero:\n";
+    cout << "movq $1, %rax   # system call number for write()\n"
+    << "movq $1, %rdi   # file descriptor for stdout\n"
+    << "leaq zeroErr(%rip), %rsi   # address of message\n"
+    << "movq $32, %rdx   # length of message\n"
+    << "syscall\n"
+    << "movq $60, %rax\n"
+    << "movq $1, %rdx\n"
+    << "syscall\n";
+
     fclose(fp);
 }
 
