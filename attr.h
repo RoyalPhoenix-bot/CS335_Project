@@ -20,7 +20,7 @@ public:
 	string nameAtNode;
 	string addrName;
 	string type;
-	int addrConst;
+	string intTempNum;
 	int isthis=1;
 	vector<string> params;
 	vector<int> paramsNodeNo;
@@ -35,14 +35,14 @@ public:
 		dimsDone=0;
 		addrName="";
 		type=intType;
-		addrConst=0;
+		intTempNum="";
 	}
 
 	bool operator==(attr const& other){
 		if(nodeno!=other.nodeno) return false;
 		if(type!=other.type) return false;
 		if(addrName!=other.addrName) return false;
-		if(addrConst!=other.addrConst) return false;
+		if(intTempNum!=other.intTempNum) return false;
 
 		if(params.size()!=(other.params).size()) return false;
 		if(threeAC.size()!=(other.threeAC).size()) return false;
@@ -64,7 +64,7 @@ public:
 		isthis = other.isthis;
 		type = other.type;
 		addrName = other.addrName;
-		addrConst = other.addrConst;
+		intTempNum = other.intTempNum;
 		nameAtNode = other.nameAtNode;
 
 		// if(trueLabel.find())
@@ -106,7 +106,7 @@ public:
 		// res.type = other.type;//should be ensured by type checking
 		
 		// res.addrName = other.addrName;//not useful for +
-		// res.addrConst = other.addrConst;//not useful for +
+		// res.intTempNum = other.intTempNum;//not useful for +
 
 		
 

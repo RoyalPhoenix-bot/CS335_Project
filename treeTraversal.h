@@ -2698,12 +2698,15 @@ void execWhileStatementNoShortIf(int nodeNum){
     nextLabel[c5]= getLabelNumber(beg);
     string temp = beg + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
     temp = "goto " + beg;
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
     falseLabel[c3] = nextLabel[nodeNum];
 
@@ -3025,13 +3028,36 @@ void execReturnStatement(int nodeNum){
             int c2 = adj[nodeNum][1];
             attr3AC[nodeNum] = attr3AC[c2];
             string temp = "RETURN " + attr3AC[c2].addrName;
+            string t1 = attr3AC[c2].addrName;
+            cout<<t1<<endl;
+            string arg1;
+            if (t1[0] == 't'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            else if (t1[0]>='0' && t1[0]<='9'){
+                arg1 = "$" + t1;
+            }
+            else{
+                t1 = varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+
+            }
             attr3AC[nodeNum].threeAC.push_back(temp);
+            string tempac1 = "movq " + arg1 + ", %rax";
+            string tempac2 = "ret";
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
             pushLabelUp(nodeNum,c2);
         }
         break;
         case 2:{
             string temp = "RETURN";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("ret");
         }
         break;
     }
@@ -3178,6 +3204,12 @@ void execMethodHeader_(int nodeNum){
         attr3AC[nodeNum].threeAC.push_back(temp2);
         typeSize[temp] = 8;
         // cout << "in lop " << i << " " << temp2 << endl;
+
+        //Add GAS x86_64 for popping the params
+        int tempOffset = -8*(stoi(temp.substr(1)));
+        string gas = "popq " + to_string(tempOffset) + "(%rbp)";
+        attr3AC[nodeNum].assemblyCode.push_back(gas);
+
     }
     attr3AC[nodeNum].params.clear();
     attr3AC[nodeNum].paramsNodeNo.clear();
@@ -3323,6 +3355,7 @@ void execLabeledStatementNoShortIf(int nodeNum){
     string ctrue = getLabel(c,1);
     string temp = ctrue + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     pushLabelUp(nodeNum,c3);
     return;
@@ -3334,6 +3367,7 @@ void execLabeledStatement(int nodeNum){
     string ctrue = getLabel(c,1);
     string temp = ctrue + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     pushLabelUp(nodeNum,c3);
     return;
@@ -3382,6 +3416,11 @@ void execInterfaceBody(int nodeNum){
 
 void execIntegerLiteral(int nodeNum){
     int c = adj[nodeNum][0];
+    // tempNum++;
+    // string temp = "t" + to_string(tempNum);
+    // string threAC = temp + " = " + nodeType[c];
+    // attr3AC[nodeNum].threeAC.push_back(threAC);
+    // attr3AC[nodeNum].addrName = temp;
     attr3AC[nodeNum].addrName = nodeType[c];
     attr3AC[nodeNum].nodeno = c;
     typeOfNode[to_string(c)]="int";
@@ -3400,19 +3439,22 @@ void execIfThenElseStatementNoShortIf(int nodeNum){
     int c3 = adj[nodeNum][2];
     int c5 = adj[nodeNum][4];
     int c7 = adj[nodeNum][6];
-    cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
+    // cout << "ifthen else " << attr3AC[c3].threeAC.size() << " " << attr3AC[c5].threeAC.size() << " " << attr3AC[c7].threeAC.size() << endl;
     string c3true = getLabel(c3,1);
     string c3false = getLabel(c3,2);
     attr3AC[nodeNum] = attr3AC[c3];
     // cout << " vasf " << attr3AC[c3].threeAC[0] << endl;
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
     string pnext = getLabel(nodeNum,3);
     temp = "goto " + pnext;
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back("jmp "+pnext);
     temp = c3false + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
 
     return;
@@ -3438,14 +3480,18 @@ void execForStatementNoShortIf(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c9];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c5] = nextLabel[nodeNum];
         }
@@ -3459,14 +3505,18 @@ void execForStatementNoShortIf(int nodeNum){
             string c4true = getLabel(c4,1);
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c4];
             temp = c4true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c4] = nextLabel[nodeNum];
         }
@@ -3480,11 +3530,14 @@ void execForStatementNoShortIf(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
         }
         break;
         case 4:{
@@ -3497,13 +3550,17 @@ void execForStatementNoShortIf(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c5] = nextLabel[nodeNum];
         }
@@ -3516,11 +3573,14 @@ void execForStatementNoShortIf(int nodeNum){
             string temp = beg + ":";
             // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
         }
         break;
         case 6:{
@@ -3532,13 +3592,17 @@ void execForStatementNoShortIf(int nodeNum){
             string c4true = getLabel(c4,1);
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c4];
             temp = c4true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c4] = nextLabel[nodeNum];
         }
@@ -3552,10 +3616,13 @@ void execForStatementNoShortIf(int nodeNum){
             attr3AC[nodeNum] = attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
         }
         break;
         case 8:{
@@ -3565,10 +3632,13 @@ void execForStatementNoShortIf(int nodeNum){
             nextLabel[c6]= getLabelNumber(beg);
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp); 
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
             // pushLabelUp(nodeNum,c);
         }
         break;
@@ -3738,11 +3808,14 @@ void execDoStatement(int nodeNum){
     // nextLabel[c2] = getLabelNumber(beg);
     string temp = c5true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c2];
     attr3AC[nodeNum].threeAC.push_back(doContinueLabel + ":");
+    attr3AC[nodeNum].assemblyCode.push_back(doContinueLabel + ":");
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
     temp = c5false + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     return;
 }
 
@@ -3767,10 +3840,13 @@ void execDoStatement(int nodeNum){
 void execContinueStatement(int nodeNum){
     if(isFor){
         attr3AC[nodeNum].threeAC.push_back("goto " + forContinueLabel);
+        attr3AC[nodeNum].assemblyCode.push_back("jmp " + forContinueLabel);
     }else if(isWhile){
         attr3AC[nodeNum].threeAC.push_back("goto " + whileContinueLabel);
+        attr3AC[nodeNum].assemblyCode.push_back("jmp " + whileContinueLabel);
     }else if(isDo){
         attr3AC[nodeNum].threeAC.push_back("goto " + doContinueLabel);
+        attr3AC[nodeNum].assemblyCode.push_back("jmp " + doContinueLabel);
     }else{
         cout << "ERROR: Continue Statement must occur within a loop." << endl;
     }
@@ -3936,7 +4012,7 @@ void execClassInstanceCreationExpression(int nodeNum){
 
             int size_class = typeSize[insideClassName];
 
-            cout << "over here" << endl;
+            // cout << "over here" << endl;
             tempNum++;
             string temp = "t"+to_string(tempNum)+" = "+to_string(size_class);
             attr3AC[nodeNum].threeAC.push_back(temp);
@@ -4096,12 +4172,15 @@ void execBreakStatement(int nodeNum){
     if(isFor){
         string temp = "goto " + forBreakLabel;
         attr3AC[nodeNum].threeAC.push_back(temp);
+        attr3AC[nodeNum].assemblyCode.push_back("jmp " + forBreakLabel);
     }else if(isWhile){
         string temp = "goto " + whileBreakLabel;
         attr3AC[nodeNum].threeAC.push_back(temp);
+        attr3AC[nodeNum].assemblyCode.push_back("jmp " + whileBreakLabel);
     }else if(isDo){
         string temp = "goto " + doBreakLabel;
         attr3AC[nodeNum].threeAC.push_back(temp);
+        attr3AC[nodeNum].assemblyCode.push_back("jmp " + doBreakLabel);
     }
     return;
 }
@@ -4379,6 +4458,8 @@ void execMethodDeclaration(int nodeNum){
             // cout << "inside method declaration " << insideClassName << endl;
             string temp = nodeType[attr3AC[c].nodeno] + insideClassName +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            //Add function label for GAS x86_64
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
             attr3AC[nodeNum] =  attr3AC[nodeNum] + attr3AC[c2];
             attr3AC[nodeNum].nodeno =  attr3AC[c].nodeno;
@@ -4475,6 +4556,7 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             // start Stack Allocation 3AC
             attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
             attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
@@ -4489,6 +4571,7 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             // start Stack Allocation 3AC
             attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
             attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
@@ -4503,6 +4586,7 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             // start Stack Allocation 3AC
             attr3AC[nodeNum].threeAC.push_back("stackpointer = oldstackpointer");
             attr3AC[nodeNum].threeAC.push_back("stackpointer -8");
@@ -4517,6 +4601,7 @@ void execStatement(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             // start Stack Allocation 3AC
             
             if(prodNum[c]==1 || prodNum[c]==3 || prodNum[c]==4 || prodNum[c]== 7){
@@ -4556,6 +4641,7 @@ void execStatementNoShortIf(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -4565,6 +4651,7 @@ void execStatementNoShortIf(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -4574,6 +4661,7 @@ void execStatementNoShortIf(int nodeNum){
             string cNext = getLabel(c,3);
             string temp = cNext +":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -4592,6 +4680,7 @@ void execIfThenElseStatement(int nodeNum){
     // cout << " vasf " << attr3AC[c3].threeAC[0] << endl;
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     // start Stack Allocation 3AC
             
     attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
@@ -4603,8 +4692,10 @@ void execIfThenElseStatement(int nodeNum){
     string pnext = getLabel(nodeNum,3);
     temp = "goto " + pnext;
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back("jmp "+pnext);
     temp = c3false + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
         // start Stack Allocation 3AC
             
     attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
@@ -4625,6 +4716,7 @@ void execIfThenStatement(int nodeNum){
     attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
     string temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
 
     // start Stack Allocation 3AC
@@ -4663,9 +4755,11 @@ void execForStatement(int nodeNum){
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             
             // start Stack Allocation 3AC
             
@@ -4677,6 +4771,7 @@ void execForStatement(int nodeNum){
 
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c9];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
              
             // start Stack Allocation 3AC
@@ -4703,6 +4798,7 @@ void execForStatement(int nodeNum){
             // end Stack Allocation 3AC
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c5] = nextLabel[nodeNum];
         }
@@ -4716,14 +4812,18 @@ void execForStatement(int nodeNum){
             string c4true = getLabel(c4,1);
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c4];
             temp = c4true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
             falseLabel[c4] = nextLabel[nodeNum];
         }
         break;
@@ -4736,11 +4836,14 @@ void execForStatement(int nodeNum){
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
         }
         break;
         case 4:{
@@ -4754,13 +4857,17 @@ void execForStatement(int nodeNum){
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = c5true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c8];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c5] = nextLabel[nodeNum];
         }
@@ -4772,11 +4879,14 @@ void execForStatement(int nodeNum){
             nextLabel[c7]= getLabelNumber(beg);
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
         }
         break;
         case 6:{
@@ -4788,13 +4898,17 @@ void execForStatement(int nodeNum){
             string c4true = getLabel(c4,1);
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c4];
             temp = c4true + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
             falseLabel[c4] = nextLabel[nodeNum];
         }
@@ -4808,10 +4922,13 @@ void execForStatement(int nodeNum){
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c7];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
         }
         break;
         case 8:{
@@ -4821,10 +4938,13 @@ void execForStatement(int nodeNum){
             // attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
             string temp = beg + ":";
             attr3AC[nodeNum].threeAC.push_back(forContinueLabel + ":");
+            attr3AC[nodeNum].assemblyCode.push_back(forContinueLabel + ":");
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c6];
             temp = "goto " + beg;
             attr3AC[nodeNum].threeAC.push_back(temp); 
+            attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
             // pushLabelUp(nodeNum,c);
         }
         break;
@@ -4842,7 +4962,7 @@ void execWhileStatement(int nodeNum){
     nextLabel[c5]= getLabelNumber(beg);
     string temp = beg + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
-        
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     // start Stack Allocation 3AC
     
     attr3AC[nodeNum].threeAC.push_back("pushonstack oldstackpointer");
@@ -4852,9 +4972,11 @@ void execWhileStatement(int nodeNum){
     // end Stack Allocation 3AC
 
     attr3AC[nodeNum].threeAC.push_back(whileContinueLabel + ":");
+    attr3AC[nodeNum].assemblyCode.push_back(whileContinueLabel + ":");
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
     temp = c3true + ":";
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c5];
      // start Stack Allocation 3AC
 
@@ -4880,6 +5002,7 @@ void execWhileStatement(int nodeNum){
             // end Stack Allocation 3AC
     temp = "goto " + beg;
     attr3AC[nodeNum].threeAC.push_back(temp);
+    attr3AC[nodeNum].assemblyCode.push_back("jmp "+beg);
 
     falseLabel[c3] = nextLabel[nodeNum];
 
@@ -4919,6 +5042,7 @@ void execStatementWithoutTrailingSubstatement(int nodeNum){
             string snext = getLabel(c,3);
             string temp = snext + ":";
             attr3AC[nodeNum].threeAC.push_back(temp);
+            attr3AC[nodeNum].assemblyCode.push_back(temp);
             pushLabelUp(nodeNum,c);
         }
         break;
@@ -5046,6 +5170,7 @@ void execArrayCreationExpression(int nodeNum){
             for(int i=0;i<attr3AC[c3].arrDims.size();i++){
                 totsize*=attr3AC[c3].arrDims[i];
             }
+            cout << "idhar " << totsize << endl;
             tempNum++;
             string temp = "t" + to_string(tempNum);
             string temp2 = temp + " = " + to_string(totsize);
@@ -5064,6 +5189,15 @@ void execArrayCreationExpression(int nodeNum){
             // temp2 = temp + " = " + "popparam";
             // attr3AC[nodeNum].threeAC.push_back(temp2);
             attr3AC[nodeNum].addrName = "popparam";
+
+            //GAS x86_64 instructions
+            int tempOffset = -8*(stoi(temp.substr(1)));
+            string temp3 = "movq $" + to_string(totsize) + ", %rdi";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            temp3 = "callq malloc";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+            attr3AC[nodeNum].assemblyCode.push_back(temp3);
         }
         break;
         case 2:{
@@ -5268,12 +5402,13 @@ void execPrimaryNoNewArray(int nodeNum){
                 string temp = attr3AC[nodeNum].addrName + " = " + attr3AC[c].nameAtNode + " [ " + attr3AC[c].addrName + " ] ";
                 attr3AC[nodeNum].threeAC.push_back(temp);
                 cout << "idhar aagya " << endl;
+
                 //Generate GAS code for array access
                 string tempArr = varToTemp[attr3AC[c].nameAtNode];
                 //Put value of index from attr3AC[c].addrName inside %rsi
                 int tempOffset;string tempA;
                 if(attr3AC[c].addrName[0]=='t'){
-                    tempOffset = 8*stoi(attr3AC[c].addrName.substr(1));
+                    tempOffset = -8*(stoi(attr3AC[c].addrName.substr(1)));
                     tempA = "movq " + to_string(tempOffset) + "(%rbp), %rsi";
                 }else{
                     tempOffset = stoi(attr3AC[c].addrName);
@@ -5282,12 +5417,12 @@ void execPrimaryNoNewArray(int nodeNum){
                 attr3AC[nodeNum].assemblyCode.push_back(tempA);
                 // string arg1=getArgumentFromTemp(attr3AC[c].addrName);
                 cout << "over here now" << endl;
-                tempOffset = 8*stoi(tempArr.substr(1)); 
+                tempOffset = -8*stoi(tempArr.substr(1)); 
                 string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
                 string movins = "movq " + arg1 + ", %rax";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
                 cout << "okay " << endl;
-                tempOffset = 8*stoi(attr3AC[nodeNum].addrName.substr(1));
+                tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1));
                 movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 cout << "error here?" << endl;
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
@@ -5342,6 +5477,14 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
 
+                //GAS code for function calls
+                string temp2 = "callq " + attr3AC[c].addrName + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(temp2);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+
                 pushLabelUp(nodeNum,c);
             }else{
                 int c = adj[nodeNum][0];
@@ -5371,6 +5514,14 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, fname, insideClassName);
                 pushLabelUp(nodeNum,c);
+
+                //GAS x86_64 code for function call
+                string temp2 = "callq " + fname + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(temp2);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
             }
         }
             break;
@@ -5412,6 +5563,35 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, attr3AC[c].addrName, insideClassName);
                 pushLabelUp(nodeNum,c);
+
+                //GAS x86_64 code for function call with parameters
+                for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
+                    string p = attr3AC[c3].params[fcall];
+                    if(p[0]>='0' && p[0]<='9'){
+                        string temp = "pushq $" + p;
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }
+                    if(p[0]=='t'){
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }else{
+                        p = varToTemp[attr3AC[c3].params[fcall]];
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                    }
+                }
+                //call function in GAS
+                string callFun = "callq " + attr3AC[c].addrName + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(callFun);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
+
             }else{
                 int c = adj[nodeNum][0];
                 int c3 = adj[nodeNum][2];
@@ -5451,6 +5631,34 @@ void execMethodInvocation(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(oldsp);
                 typeOfNode[attr3AC[nodeNum].addrName] = getFuncRet(nodeNum, fname, insideClassName);
                 pushLabelUp(nodeNum,c);
+
+                //GAS x86_64 code for function call with parameters
+                for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
+                    string p = attr3AC[c3].params[fcall];
+                    if(p[0]>='0' && p[0]<='9'){
+                        string temp = "pushq $" + p;
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }
+                    if(p[0]=='t'){
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        continue;
+                    }else{
+                        p = varToTemp[attr3AC[c3].params[fcall]];
+                        int pOffset = -8*(stoi(p.substr(1)));
+                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
+                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                    }
+                }
+                //call function in GAS
+                string callFun = "callq " + fname + insideClassName;
+                attr3AC[nodeNum].assemblyCode.push_back(callFun);
+                //store rax in temp after getting its offset
+                int tempOffset = -8*(stoi(attr3AC[nodeNum].addrName.substr(1)));
+                string movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(movins);
             }
         }
             break;
@@ -5827,6 +6035,55 @@ void execEqualityExpression(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
             temp = "goto " + pFalse;
             attr3AC[nodeNum].threeAC.push_back(temp);
+
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            string arg1 ;
+            string arg2 ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+                
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "cmp %r8,%r9";
+            string tempac4 =  "je "+pTrue;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            tempac1 = "jmp "+pFalse;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+
         }
             break;
         case 3:{
@@ -5839,6 +6096,54 @@ void execEqualityExpression(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
             temp = "goto " + pFalse;
             attr3AC[nodeNum].threeAC.push_back(temp);
+           
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            string arg1 ;
+            string arg2 ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+                
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "cmp %r8,%r9";
+            string tempac4 =  "jne "+pTrue;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            tempac1 = "jmp "+pFalse;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
 
         }
             break;
@@ -5865,6 +6170,56 @@ void execRelationalExpression(int nodeNum){
             (attr3AC[nodeNum].threeAC).push_back(temp);
             temp = "goto " + pFalse;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+           
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            string arg1 ;
+            string arg2 ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+                
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "cmp %r8,%r9";
+            string tempac4 =  "jl "+pTrue;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            tempac1 = "jmp "+pFalse;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+
         }
             break;
         case 3:{
@@ -5877,6 +6232,56 @@ void execRelationalExpression(int nodeNum){
             (attr3AC[nodeNum].threeAC).push_back(temp);
             temp = "goto " + pFalse;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+        
+            
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            string arg1 ;
+            string arg2 ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+                
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "cmp %r8,%r9";
+            string tempac4 =  "jg "+pTrue;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            tempac1 = "jmp "+pFalse;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+
         }
             break;
         case 4:{
@@ -5890,6 +6295,56 @@ void execRelationalExpression(int nodeNum){
             (attr3AC[nodeNum].threeAC).push_back(temp);
             temp = "goto " + pFalse;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            string arg1 ;
+            string arg2 ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+                
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "cmp %r8,%r9";
+            string tempac4 =  "jle "+pTrue;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            tempac1 = "jmp "+pFalse;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+
         }
         }
             break;
@@ -5903,6 +6358,56 @@ void execRelationalExpression(int nodeNum){
             (attr3AC[nodeNum].threeAC).push_back(temp);
             temp = "goto " + pFalse;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+                        
+            
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            string arg1 ;
+            string arg2 ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+                
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "cmp %r8,%r9";
+            string tempac4 =  "jge "+pTrue;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            tempac1 = "jmp "+pFalse;
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+
         }
             break;
         case 6:{
@@ -6407,9 +6912,11 @@ void execSimpleName(int nodeNum){
 void execIdentifier(int nodeNum){
     //initialize varToTemp
     int c = adj[nodeNum][0];//Get child node number
-    tempNum++;
-    string temp = "t" + to_string(tempNum);
-    varToTemp[nodeType[c]] = temp;
+    if(varToTemp.find(nodeType[c])==varToTemp.end()){
+        tempNum++;
+        string temp = "t" + to_string(tempNum);
+        varToTemp[nodeType[c]] = temp;
+    }
     attr3AC[nodeNum].addrName = nodeType[c];//Add addrname of identifier 
     attr3AC[nodeNum].nodeno = c;
     if(inStatement && !(inMethodInvocation && inMN))checkIfDeclared(c,nodeType[c]);
