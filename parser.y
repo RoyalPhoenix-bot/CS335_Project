@@ -947,6 +947,7 @@ FieldAccess:
 		adj[countNodes].push_back($3);
 		countNodes++;	
 		prodNum[$$]=1;
+		lineNum[$$]=yylineno;
 	}
 	| SUPER DOT Identifier{
 		nodeType.push_back($1); int n1 = countNodes; countNodes++;
@@ -958,6 +959,7 @@ FieldAccess:
 		adj[countNodes].push_back($3);
 		countNodes++;
 		prodNum[$$]=2;	
+		lineNum[$$]=yylineno;
 	}
 ;
 
