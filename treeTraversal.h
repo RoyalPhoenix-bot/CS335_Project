@@ -508,8 +508,8 @@ vector<string> getAddAssemblyCode(string t1, string t2, string t3){
     // cout<<t1<<" "<<t2<<" "<<t3<<"\n";
     
     // cout<<"calc val :"<<8*stoi(t1.substr(1, t1.size()-1));
-
-
+    cout << "inside the add expresion " << t1 << " " << t2 << " " << t3 << endl;
+    
     int of1, of2, of3;
     if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
     if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
@@ -2814,6 +2814,10 @@ void execVariableDeclarator(int nodeNum){
             }
             // end Stack Allocation 3AC
             pushLabelUp(nodeNum,c);
+            
+            tempNum++;
+            string temp = "t" + to_string(tempNum);
+            varToTemp[nodeType[attr3AC[c].nodeno]] = temp;
 
         }
         break;
@@ -2821,12 +2825,26 @@ void execVariableDeclarator(int nodeNum){
             int c = adj[nodeNum][0];
             int c3 = adj[nodeNum][2];
             string tp = getTypeNode(c);
-            // cout << "in vardec " << tp << endl;
+            cout << "in vardec " << tp << endl;
             if(tp[tp.size()-1]==';'){
+                //for array initialization
+                cout << "sfadsfsdafsdafasdfdsfa" << endl;
                 string temp = attr3AC[c].addrName + " = popparam";
                 attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
                 attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c3];
                 attr3AC[nodeNum].threeAC.push_back(temp);
+
+                //Get GAS code for this line
+                tempNum++;
+                temp = "t" + to_string(tempNum);
+                varToTemp[nodeType[attr3AC[c].nodeno]] = temp;
+                // cout << "assigning temp " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
+
+                int tempOffset = -8*(stoi(temp.substr(1)));
+                string temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+                attr3AC[nodeNum].assemblyCode.push_back(temp3);
+
+
             }else{
                 string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
                 attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
@@ -2836,6 +2854,13 @@ void execVariableDeclarator(int nodeNum){
                 attr3AC[nodeNum].threeAC.push_back(temp);
                 // cout << "variabledeclarator me " << attr3AC[c3].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
+
+                //For GAS x86_64
+                tempNum++;
+                temp = "t" + to_string(tempNum);
+                varToTemp[nodeType[attr3AC[c].nodeno]] = temp;
+                // cout << "assigning temp2 " << nodeType[attr3AC[c].nodeno] << " " << temp << endl;
+
             }
         }
         break;
@@ -5188,7 +5213,7 @@ void execArrayCreationExpression(int nodeNum){
             int c2 = adj[nodeNum][1];
             int c3 = adj[nodeNum][2];
             attr3AC[nodeNum]=attr3AC[c2]+attr3AC[c3];
-            int totsize = typeSize[attr3AC[c2].type];
+            int totsize = 8;
             for(int i=0;i<attr3AC[c3].arrDims.size();i++){
                 totsize*=attr3AC[c3].arrDims[i];
             }
@@ -5218,8 +5243,8 @@ void execArrayCreationExpression(int nodeNum){
             attr3AC[nodeNum].assemblyCode.push_back(temp3);
             temp3 = "callq malloc";
             attr3AC[nodeNum].assemblyCode.push_back(temp3);
-            temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
-            attr3AC[nodeNum].assemblyCode.push_back(temp3);
+            // temp3 = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
+            // attr3AC[nodeNum].assemblyCode.push_back(temp3);
         }
         break;
         case 2:{
@@ -5258,7 +5283,7 @@ void execArrayAccess(int nodeNum){
             string t = mdata.first;
             vector<int> d = mdata.second;
             // cout << "idhar " << t << " " << d.size() << endl;
-            int mult=typeSize[t];
+            int mult=8;
             for(int i=0;i<d.size();i++){
                 // cout << "dims " << i << " " << d[i] << endl;
                 if(i)mult*=d[i];
@@ -5294,7 +5319,7 @@ void execArrayAccess(int nodeNum){
             cout << "first print " << attr3AC[c].dimsDone << endl;
             attr3AC[nodeNum] = attr3AC[c];
             attr3AC[nodeNum] = attr3AC[nodeNum]+attr3AC[c3];
-            int mult = typeSize[attr3AC[c].type];
+            int mult = 8;
             // cout << "in array access " << attr3AC[c].arrDims.size() << " " << attr3AC[c].dimsDone << " " << mult << endl;
             for(int i=attr3AC[c].dimsDone+1;i<attr3AC[c].arrDims.size();i++){
                 // cout << "multipling " << attr3AC[c].dimsDone << " " << i << " " << attr3AC[c].arrDims[i] <<" " << mult << endl;
@@ -5324,7 +5349,7 @@ void execArrayAccess(int nodeNum){
             attr3AC[nodeNum].threeAC.push_back(temp);
 
             //Call function getmulassembly to generate assemblycode
-            tempVec = getAddAssemblyCode(attr3AC[nodeNum].addrName,attr3AC[c].addrName,to_string(tempNum-1));
+            tempVec = getAddAssemblyCode(attr3AC[nodeNum].addrName,attr3AC[c].addrName,"t"+to_string(tempNum-1));
             for(int i=0;i<tempVec.size();i++){
                 attr3AC[nodeNum].assemblyCode.push_back(tempVec[i]);
             }
@@ -5436,14 +5461,18 @@ void execPrimaryNoNewArray(int nodeNum){
                     tempOffset = stoi(attr3AC[c].addrName);
                     tempA = "movq $" + attr3AC[c].addrName + ", %rsi"; 
                 }
-                attr3AC[nodeNum].assemblyCode.push_back(tempA);
+                attr3AC[nodeNum].assemblyCode.push_back(tempA);// ith index of array pushed
                 // string arg1=getArgumentFromTemp(attr3AC[c].addrName);
-                cout << "over here now" << endl;
+                // cout << "over here now" << endl;
+                //Get base of array in %rax
                 tempOffset = -8*stoi(tempArr.substr(1)); 
-                string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
-                string movins = "movq " + arg1 + ", %rax";
+                // string arg1 = to_string(tempOffset)+ "(%rbx,%rsi,8)";
+                string movins = "movq " + to_string(tempOffset) + "(%rbp), %rax";
                 attr3AC[nodeNum].assemblyCode.push_back(movins);
-                cout << "okay " << endl;
+                // cout << "okay " << endl;
+                //add %rsi and %rax
+                attr3AC[nodeNum].assemblyCode.push_back("addq %rsi, %rax");
+                //move from %rax to tempvar
                 tempOffset = -8*stoi(attr3AC[nodeNum].addrName.substr(1));
                 movins = "movq %rax, " + to_string(tempOffset) + "(%rbp)";
                 cout << "error here?" << endl;
@@ -6730,6 +6759,7 @@ void execAdditiveExpression(int nodeNum){
             if(arg2=="") { arg2 = attr3AC[c].addrName; }
             if(arg3=="") { arg3 = attr3AC[c3].addrName; }
 
+            cout << "obafasfsadfsafsd hre " << attr3AC[nodeNum].addrName << " " << arg2 << " " << arg3 << endl;
             auto x = getAddAssemblyCode(attr3AC[nodeNum].addrName, arg2, arg3);
 
             for(auto el:x){
