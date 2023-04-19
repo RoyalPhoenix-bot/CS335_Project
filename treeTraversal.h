@@ -685,6 +685,57 @@ vector<string> getUnsignedRightShiftAssemblyCode(string t1, string t2, string t3
     return ret;
 }
 
+vector<string> getMinusUnaryExpressionAssemblyCode(string t1, string t2){
+    vector<string> ret;
+    //t1=-t2
+    // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
+
+    int of1, of2;
+    if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1));
+
+    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
+    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant    
+
+    ret.push_back("negq %r8");
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
+
+    return ret;
+}
+
+vector<string> getPreandPostIncrementAssemblyCode(string t1, string t2){
+    vector<string> ret;
+    //t1=++t2
+    // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
+
+    int of1, of2;
+    of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    of2 = -8*stoi(t2.substr(1, t2.size()-1));
+
+    ret.push_back("movq " + to_string(of2) + "(%rbp), %r8"); 
+
+    ret.push_back("incq %r8");
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
+
+    return ret;
+}
+
+vector<string> getPreandPostDecrementAssemblyCode(string t1, string t2){
+    vector<string> ret;
+    //t1=++t2
+    // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
+
+    int of1, of2;
+    of1 = -8*stoi(t1.substr(1, t1.size()-1));
+    of2 = -8*stoi(t2.substr(1, t2.size()-1));
+
+    ret.push_back("movq " + to_string(of2) + "(%rbp), %r8"); 
+
+    ret.push_back("decq %r8");
+    ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
+
+    return ret;
+}
 
 int getLabelNumber(string s){
     string r = "";
@@ -3158,6 +3209,22 @@ void execPreIncrementExpression(int nodeNum){
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
     attr3AC[nodeNum].threeAC.push_back(temp);
     attr3AC[nodeNum] = attr3AC[nodeNum]+ attr3AC[c];
+
+    attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+    // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+    string arg2 = varToTemp[attr3AC[c].addrName];
+    if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+    if(arg2=="") { arg2 = attr3AC[c].addrName; }
+
+    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+
+    for(auto el:x){
+        // cout<<el<<"\n";
+        attr3AC[nodeNum].assemblyCode.push_back(el);
+    }
+
     // typeSize[attr3AC[nodeNum].addrName]=typeSize[attr3AC[c].addrName];
     pushLabelUp(nodeNum,c);
     return;
@@ -3175,6 +3242,21 @@ void execPreDecrementExpression(int nodeNum){
     attr3AC[nodeNum] = attr3AC[nodeNum] + attr3AC[c];
     // typeSize[attr3AC[nodeNum].addrName]=typeSize[attr3AC[c].addrName];
 
+    attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+    // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+    string arg2 = varToTemp[attr3AC[c].addrName];
+    if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+    if(arg2=="") { arg2 = attr3AC[c].addrName; }
+
+    auto x = getPreandPostDecrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+
+    for(auto el:x){
+        // cout<<el<<"\n";
+        attr3AC[nodeNum].assemblyCode.push_back(el);
+    }
+
     pushLabelUp(nodeNum,c);
     return;
 }
@@ -3189,6 +3271,22 @@ void execPostIncrementExpression(int nodeNum){
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
     attr3AC[nodeNum].threeAC.push_back(temp);
+
+    attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+    // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+    string arg2 = varToTemp[attr3AC[c].addrName];
+    if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+    if(arg2=="") { arg2 = attr3AC[c].addrName; }
+
+    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+
+    for(auto el:x){
+        // cout<<el<<"\n";
+        attr3AC[nodeNum].assemblyCode.push_back(el);
+    }
+
     pushLabelUp(nodeNum,c);
     return;
 }
@@ -3203,6 +3301,22 @@ void execPostDecrementExpression(int nodeNum){
     attr3AC[nodeNum].threeAC.push_back(temp);
     temp = attr3AC[c].addrName + " = " + attr3AC[nodeNum].addrName;
     attr3AC[nodeNum].threeAC.push_back(temp);
+
+    attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+    // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+    string arg2 = varToTemp[attr3AC[c].addrName];
+    if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+    if(arg2=="") { arg2 = attr3AC[c].addrName; }
+
+    auto x = getPreandPostDecrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+
+    for(auto el:x){
+        // cout<<el<<"\n";
+        attr3AC[nodeNum].assemblyCode.push_back(el);
+    }
+
     pushLabelUp(nodeNum,c);
     return;
 }
@@ -6954,6 +7068,21 @@ void execUnaryExpression(int nodeNum){
             string temp = "t" + to_string(tempNum) + " =- " + attr3AC[c].addrName;
             typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            attr3AC[nodeNum].addrName = "t" + to_string(tempNum);
+            
+            // cout<<attr3AC[nodeNum].addrName<<"\n";
+
+            string arg2 = varToTemp[attr3AC[c].addrName];
+            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+
+            auto x = getMinusUnaryExpressionAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+
+            for(auto el:x){
+                // cout<<el<<"\n";
+                attr3AC[nodeNum].assemblyCode.push_back(el);
+            }
         }
             break;
         case 5:
@@ -6988,6 +7117,9 @@ void execUnaryExpressionNotPlusMinus(int nodeNum){
             string temp = "t" + to_string(tempNum) + " =~ " + attr3AC[c].addrName;
             typeOfNode[attr3AC[nodeNum].addrName] = tp;
             (attr3AC[nodeNum].threeAC).push_back(temp);
+
+            
+
             pushLabelUp(nodeNum,c);
         }
             break;
