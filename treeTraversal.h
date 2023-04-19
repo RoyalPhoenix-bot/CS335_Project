@@ -685,17 +685,15 @@ vector<string> getUnsignedRightShiftAssemblyCode(string t1, string t2, string t3
     return ret;
 }
 
-vector<string> getMinusUnaryExpressionAssemblyCode(string t1, string t2){
+vector<string> getMinusUnaryExpressionAssemblyCode(string t1){
     vector<string> ret;
     //t1=-t2
     // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
 
-    int of1, of2;
+    int of1;
     if(t1[0]=='t') of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
-    if(t2[0]=='t') of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
 
-    if(t2[0]=='t') ret.push_back("movq " + to_string(of2) + "(%rbp), %r8");
-    else ret.push_back("movq $"+(t2)+", %r8");  //if t2 is a constant    
+    ret.push_back("movq " + to_string(of1) + "(%rbp), %r8");
 
     ret.push_back("negq %r8");
     ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
@@ -703,16 +701,15 @@ vector<string> getMinusUnaryExpressionAssemblyCode(string t1, string t2){
     return ret;
 }
 
-vector<string> getPreandPostIncrementAssemblyCode(string t1, string t2){
+vector<string> getPreandPostIncrementAssemblyCode(string t1){
     vector<string> ret;
     //t1=++t2
-    // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
+    cout<<"t1 "<<t1<<endl;
 
-    int of1, of2;
+    int of1;
     of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
-    of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
 
-    ret.push_back("movq " + to_string(of2) + "(%rbp), %r8"); 
+    ret.push_back("movq " + to_string(of1) + "(%rbp), %r8"); 
 
     ret.push_back("incq %r8");
     ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
@@ -726,11 +723,10 @@ vector<string> getPreandPostDecrementAssemblyCode(string t1, string t2){
     //t1=++t2
     // cout<<"t1 "<<t1<<" t2 "<<t2<<endl;
 
-    int of1, of2;
+    int of1;
     of1 = -8*stoi(t1.substr(1, t1.size()-1))-8;
-    of2 = -8*stoi(t2.substr(1, t2.size()-1))-8;
 
-    ret.push_back("movq " + to_string(of2) + "(%rbp), %r8"); 
+    ret.push_back("movq " + to_string(of1) + "(%rbp), %r8"); 
 
     ret.push_back("decq %r8");
     ret.push_back("movq %r8, " + to_string(of1) + "(%rbp)"); 
@@ -3215,11 +3211,11 @@ void execPreIncrementExpression(int nodeNum){
             
     // cout<<attr3AC[nodeNum].addrName<<"\n";
 
-    string arg2 = varToTemp[attr3AC[c].addrName];
-    if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
-    if(arg2=="") { arg2 = attr3AC[c].addrName; }
+    // string arg2 = varToTemp[attr3AC[c].addrName];
+    // if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+    // if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName);
 
     for(auto el:x){
         // cout<<el<<"\n";
@@ -3277,11 +3273,11 @@ void execPostIncrementExpression(int nodeNum){
             
     // cout<<attr3AC[nodeNum].addrName<<"\n";
 
-    string arg2 = varToTemp[attr3AC[c].addrName];
-    if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
-    if(arg2=="") { arg2 = attr3AC[c].addrName; }
+    // string arg2 = varToTemp[attr3AC[c].addrName];
+    // if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+    // if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+    auto x = getPreandPostIncrementAssemblyCode(attr3AC[nodeNum].addrName);
 
     for(auto el:x){
         // cout<<el<<"\n";
@@ -7074,11 +7070,11 @@ void execUnaryExpression(int nodeNum){
             
             // cout<<attr3AC[nodeNum].addrName<<"\n";
 
-            string arg2 = varToTemp[attr3AC[c].addrName];
-            if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
-            if(arg2=="") { arg2 = attr3AC[c].addrName; }
+            // string arg2 = varToTemp[attr3AC[c].addrName];
+            // if(varToTemp.find(attr3AC[c].addrName)== varToTemp.end()){ arg2 = attr3AC[c].addrName; }
+            // if(arg2=="") { arg2 = attr3AC[c].addrName; }
 
-            auto x = getMinusUnaryExpressionAssemblyCode(attr3AC[nodeNum].addrName, arg2);
+            auto x = getMinusUnaryExpressionAssemblyCode(attr3AC[nodeNum].addrName);
 
             for(auto el:x){
                 // cout<<el<<"\n";
