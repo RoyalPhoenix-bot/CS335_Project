@@ -5870,22 +5870,33 @@ void execMethodInvocation(int nodeNum){
 
                 //GAS x86_64 code for function call with parameters
                 for(int fcall=0; fcall<(attr3AC[c3].params).size();fcall++){
-                    string p = attr3AC[c3].params[fcall];
-                    if(p[0]>='0' && p[0]<='9'){
-                        string temp = "pushq $" + p;
-                        attr3AC[nodeNum].assemblyCode.push_back(temp);
-                        continue;
-                    }
-                    if(p[0]=='t'){
-                        int pOffset = -8*(stoi(p.substr(1)))-8;
-                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
-                        attr3AC[nodeNum].assemblyCode.push_back(temp);
-                        continue;
+                    if(fcall==0){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rdi",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==1){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rsi",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==2){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rdx",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==3){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%rcx",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==4){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%r8",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
+                    }else if(fcall==5){
+                        string p = attr3AC[c3].params[fcall];
+                        string ass = addFuncParamsToReg(p,"%r9",c3,fcall);
+                        attr3AC[nodeNum].assemblyCode.push_back(ass);
                     }else{
-                        p = varToTemp[attr3AC[c3].params[fcall]];
-                        int pOffset = -8*(stoi(p.substr(1)))-8;
-                        string temp = "pushq " + to_string(pOffset) + "(%rbp)";
-                        attr3AC[nodeNum].assemblyCode.push_back(temp);
+                        cout << "Too many func arguments" << endl;
+                        exit(0);
                     }
                 }
                 //call function in GAS
