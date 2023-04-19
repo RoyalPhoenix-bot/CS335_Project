@@ -77,6 +77,28 @@ stack<pair<int,int>> parentScope;
 bool inFormalParameterList=false;
 bool inForInit=false;
 map<vector<localTableParams>*,vector<localTableParams>*> parentTable;
+string getArg (string t){
+
+    string arg1;
+
+            if (t[0]=='t'){
+                int of1 = -8*stoi(t.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t[0] is integer character
+            else if (t[0] >= '0' && t[0] <= '9'){
+                arg1 = "$"+t;
+            }
+            else{
+                t=varToTemp[t];
+                int of1 = -8*stoi(t.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+    return arg1 ;
+}
+
 
 string getFuncRet(int calleNodeNum, string funcName, string className){
     for(int i=0;i<globalTable.size();i++){
@@ -5866,12 +5888,50 @@ void execAssignment(int nodeNum){
     int c3 = adj[nodeNum][2];
     switch(prodNum[c2]){
         case 1:{
+            string arg1 ;
+            string arg2 ;
+            string t1=attr3AC[c].addrName ;
+            string t2=attr3AC[c3].addrName ;
+            if (t1[0]=='t'){
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            // else if t1[0] is integer character
+            else if (t1[0] >= '0' && t1[0] <= '9'){
+                arg1 = "$"+t1;
+            }
+            else{
+                t1=varToTemp[t1];
+                int of1 = -8*stoi(t1.substr(1));
+                arg1 = to_string(of1);
+                arg1+= "(%rbp)";
+            }
+            
+            if (t2[0]=='t'){
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            // else if t2[0] is integer character
+            else if (t2[0] >= '0' && t2[0] <= '9'){
+                arg2 = "$"+t2;
+            }
+            else{
+                t2=varToTemp[t2];
+                int of2 = -8*stoi(t2.substr(1));
+                arg2 = to_string(of2);
+                arg2+= "(%rbp)";
+            }
+            string tempac = "movq " + arg2 + ", " + arg1;
+            cout<<tempac<<endl;
             if(attr3AC[c].isthis==0){
                 attr3AC[nodeNum] = attr3AC[c]+attr3AC[c3];
                 string temp = attr3AC[c].addrName + " = " + attr3AC[c3].addrName;
                 // cout << "assignment " << temp << endl;
                 typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                attr3AC[nodeNum].assemblyCode.push_back(tempac);
                 // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
             }
@@ -5881,6 +5941,7 @@ void execAssignment(int nodeNum){
 
                 typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
                 attr3AC[nodeNum].threeAC.push_back(temp);
+                attr3AC[nodeNum].assemblyCode.push_back(tempac);
 
                 attr3AC[nodeNum].addrName = attr3AC[c].addrName;
             }
@@ -5891,6 +5952,18 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " *= " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+            
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "imulq %r9,%r8" ;
+            string tempac4 =  "movq %r8,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
@@ -5900,6 +5973,18 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " /= " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%rax" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "idivq %r9" ;
+            string tempac4 =  "movq %rax,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
@@ -5909,6 +5994,19 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " += " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+                       
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "addq %r9,%r8" ;
+            string tempac4 =  "movq %r8,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+  
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
@@ -5918,6 +6016,19 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " -= " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+                       
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "subq %r9,%r8" ;
+            string tempac4 =  "movq %r8,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+  
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
@@ -5927,6 +6038,19 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " <<= " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+                       
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "salq %r8,%r9" ;
+            string tempac4 =  "movq %r8,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+            
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
@@ -5936,6 +6060,19 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " >>= " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+                                   
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "sarq %r8,%r9" ;
+            string tempac4 =  "movq %r8,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
@@ -5945,6 +6082,19 @@ void execAssignment(int nodeNum){
             string temp = attr3AC[c].addrName + " >>>= " + attr3AC[c3].addrName;
             typeOfNode[attr3AC[nodeNum].addrName]=getTypeNode(c3);
             attr3AC[nodeNum].threeAC.push_back(temp);
+                                   
+            string arg1 = getArg(attr3AC[c].addrName);
+            string arg2 = getArg(attr3AC[c3].addrName);
+            string tempac1 =  "movq "+arg1+",%r8" ;
+            string tempac2 =  "movq "+arg2+",%r9" ;
+            string tempac3 =  "shrq %r8,%r9" ;
+            string tempac4 =  "movq %r8,"+arg1 ;
+
+            attr3AC[nodeNum].assemblyCode.push_back(tempac1);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac2);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac3);
+            attr3AC[nodeNum].assemblyCode.push_back(tempac4);
+
             // cout << "assignment me " << attr3AC[c].addrName << " " << typeOfNode[attr3AC[nodeNum].addrName] << endl;
             attr3AC[nodeNum].addrName = attr3AC[c].addrName;
         }
